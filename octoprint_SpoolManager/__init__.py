@@ -926,6 +926,8 @@ class SpoolmanagerPlugin(
 				]
 
 
+	def is_blueprint_csrf_protected(self):
+		return True
 
 	# def message_on_connect(self, comm, script_type, script_name, *args, **kwargs):
 	# 	print(script_name)

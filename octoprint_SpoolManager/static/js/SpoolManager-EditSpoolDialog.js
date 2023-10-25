@@ -865,7 +865,7 @@ function SpoolManagerEditSpoolDialog(){
         // reset values that should'nt be copied
 
 
-        var defaultExcludedFields = ["selectedForTool","version", "databaseId", "isTemplate","firstUseKO", "lastUseKO",
+        var defaultExcludedFields = ["selectedForTool","version", "isTemplate", "firstUseKO", "lastUseKO",
                                     "remainingWeight","remainingPercentage","usedLength", "usedLengthPercentage","remainingLength", "remainingLengthPercentage",
                                     "usedWeight", "usedPercentage", "totalCombinedWeight", "remainingCombinedWeight"];
         var allFieldNames = Object.keys(spoolItem);

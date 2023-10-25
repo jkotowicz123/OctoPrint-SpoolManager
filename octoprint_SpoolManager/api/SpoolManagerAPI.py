@@ -747,7 +747,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	def downloadDatabase(self):
 		return send_file(self._databaseManager.getDatabaseSettings().fileLocation,
 						 mimetype='application/octet-stream',
-						 attachment_filename='spoolmanager.db',
+						#  attachment_filename='spoolmanager.db', Was throwing: TypeError: send_file() got an unexpected keyword argument 'attachment_filename'
 						 as_attachment=True)
 
 

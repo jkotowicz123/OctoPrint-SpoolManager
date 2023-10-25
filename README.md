@@ -4,7 +4,7 @@
 [![Released](https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=released&url=https://api.github.com/repos/OllisGit/OctoPrint-SpoolManager/releases&query=$[0].published_at)]()
 ![GitHub Releases (by Release)](https://img.shields.io/github/downloads/OllisGit/OctoPrint-SpoolManager/latest/total.svg)
 
-The OctoPrint-Plugin manages all spool informations and stores it in a database.
+The OctoPrint-Plugin manages all spool informations and stores it in a database. Now includes the option to store to an external Postgres or MySQL database to share across multiple instances of OctoPrint.
 
 #### Support my Efforts
 
@@ -14,7 +14,7 @@ If you like it, I would be thankful about a cup of coffee :)
 [![More coffee, more code](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6SW5R6ZUKLB5E&source=url)
 
 ## Tested with:
-- OctoPrint 1.7.2:  with Python 3.7.3
+- OctoPrint 1.9.3:  with Python 3.11.5
 
 ## Included features
 
