@@ -140,7 +140,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._databaseManager.closeDatabase()
 				if (spoolModel == None):
 					self._logger.warning(
-						"Last selected Spool for Tool %d from plugin-settings not found in database. Maybe deleted in the meantime." % i)
+						"Last selected Spool for Tool %d from plugin-settings not found in database. Maybe deleted in the meantime." % toolIndex)
 			spoolModelList.append(spoolModel)
 			if (spoolModel != None):
 				eventPayload = {
@@ -635,6 +635,16 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		if input_upload_path in flask.request.values:
 
+			databaseSettings = self._databaseManager.getDatabaseSettings()
+			backupDatabaseSettings = self._databaseManager.getDatabaseSettings()
+
+			if (flask.request.form["externalDatabaseGroup"] == "true"):
+				databaseSettings.useExternal = True
+			else:
+				databaseSettings.useExternal = False
+
+			self._databaseManager.assignNewDatabaseSettings(databaseSettings)
+
 			importMode = flask.request.form["importCSVMode"]
 			# file was uploaded
 			sourceLocation = flask.request.values[input_upload_path]
@@ -645,7 +655,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			shutil.copy(sourceLocation, archive.name)
 			sourceLocation = archive.name
 
-
 			thread = threading.Thread(target=self._processCSVUploadAsync,
 									  args=(sourceLocation,
 											importMode,
@@ -654,6 +663,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 											self._logger))
 			thread.daemon = True
 			thread.start()
+
+			self._databaseManager.assignNewDatabaseSettings(backupDatabaseSettings)
 
 			# targetLocation = self._cameraManager.buildSnapshotFilenameLocation(snapshotFilename, False)
 			# os.rename(sourceLocation, targetLocation)
@@ -765,9 +776,22 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		return flask.jsonify({
 			"result": "success"
 		})
+	
+	#######################################################################################   COPY DATABASE
+	@octoprint.plugin.BlueprintPlugin.route("/copyDatabase", methods=["POST"])
+	def copyDatabase(self):
+		# metaDataResult = self._databaseManager.loadDatabaseMetaInformations(None)
 
+		jsonData = request.json
+		databaseSettings = self._buildDatabaseSettingsFromJson(jsonData)
+		# databaseSettings.useExternal = True
+		# self._databaseManager.reCreateDatabase(databaseSettings)
+		metaDataResult = self._databaseManager.copySpoolData(databaseSettings)
 
-
+		return flask.jsonify({
+			"metadata": metaDataResult
+		})
+	
 	#######################################################################################   LOAD DATABASE METADATA
 	@octoprint.plugin.BlueprintPlugin.route("/loadDatabaseMetaData", methods=["GET"])
 	def loadDatabaseMetaData(self):
@@ -786,7 +810,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		jsonData = request.json
 
 		databaseSettings = self._buildDatabaseSettingsFromJson(jsonData)
-
+		
 		# databaseId = self._getValueFromJSONOrNone("databaseId", jsonData)
 		metaDataResult = self._databaseManager.loadDatabaseMetaInformations(databaseSettings)
 
@@ -809,8 +833,21 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	@octoprint.plugin.BlueprintPlugin.route("/exportSpools/<string:exportType>", methods=["GET"])
 	def exportSpoolsData(self, exportType):
 
+		databaseSettings = self._databaseManager.getDatabaseSettings()
+		backupDatabaseSettings = self._databaseManager.getDatabaseSettings()
+
 		if exportType == "CSV":
+
+			if (flask.request.values["instance"] == "external"):
+				databaseSettings.useExternal = True
+			else:
+				databaseSettings.useExternal = False
+
+			self._databaseManager.assignNewDatabaseSettings(databaseSettings)
+
 			allSpoolModels = self._databaseManager.loadAllSpoolsByQuery(None)
+			
+			self._databaseManager.assignNewDatabaseSettings(backupDatabaseSettings)
 
 			now = datetime.datetime.now()
 			currentDate = now.strftime("%Y%m%d-%H%M")

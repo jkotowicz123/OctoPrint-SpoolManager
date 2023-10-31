@@ -10,6 +10,7 @@ import sqlite3
 
 from octoprint_SpoolManager.WrappedLoggingHandler import WrappedLoggingHandler
 from peewee import *
+from playhouse.shortcuts import model_to_dict, dict_to_model
 
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.common import StringUtils
@@ -641,8 +642,8 @@ class DatabaseManager(object):
 				backupCurrentDatabaseSettings = self._databaseSettings
 				self._databaseSettings = databaseSettings
 
-			succesfull = self.connectoToDatabase()
-			if (succesfull == False):
+			succesful = self.connectoToDatabase()
+			if (succesful == False):
 				result = self.getCurrentErrorMessageDict()
 		finally:
 			try:
@@ -755,6 +756,7 @@ class DatabaseManager(object):
 	def reCreateDatabase(self, databaseSettings = None):
 		self._currentErrorMessageDict = None
 		self._logger.info("ReCreating Database")
+		self._logger.info(databaseSettings)
 
 		backupCurrentDatabaseSettings = None
 		if (databaseSettings != None):
@@ -773,6 +775,74 @@ class DatabaseManager(object):
 			if (backupCurrentDatabaseSettings != None):
 				self._databaseSettings = backupCurrentDatabaseSettings
 
+	def copySpoolData(self, databaseSettings = None):
+
+		loadResult = False
+		copySpoolCount = 0
+
+		backupCurrentDatabaseSettings = None
+		if (databaseSettings != None):
+			backupCurrentDatabaseSettings = self._databaseSettings
+		else:
+			# use default settings
+			databaseSettings = self._databaseSettings
+			backupCurrentDatabaseSettings = self._databaseSettings
+
+		try:
+			currentDatabaseType = databaseSettings.type
+			currentUseExternal = databaseSettings.useExternal
+
+			# First load meta from local sqlite database
+			databaseSettings.type = "sqlite"
+			databaseSettings.baseFolder = self._databaseSettings.baseFolder
+			databaseSettings.fileLocation = self._databaseSettings.fileLocation
+			databaseSettings.useExternal = False
+			self._databaseSettings = databaseSettings
+
+			try:
+				self.connectoToDatabase( sendErrorPopUp=False)
+				allSpools = SpoolModel.select()
+				self.closeDatabase()
+			except Exception as e:
+				errorMessage = "local database: " + str(e)
+				self._logger.error("Connecting to local database not possible")
+				self._logger.exception(e)
+				try:
+					self.closeDatabase()
+				except Exception:
+					pass  # ignore close exception
+
+
+			databaseSettings.type = currentDatabaseType
+			databaseSettings.useExternal = True
+			self._databaseSettings = databaseSettings
+
+			try:
+				self.connectoToDatabase( sendErrorPopUp=False)
+				self._createDatabase(True)
+				for spool in allSpools:
+					spoolJson = model_to_dict(spool)
+					SpoolModel.insert(spoolJson).execute()
+					copySpoolCount = copySpoolCount + 1
+				self.closeDatabase()
+			except Exception as e:
+				errorMessage = "database: " + str(e)
+				self._logger.error("Connecting to external database not possible")
+				self._logger.exception(e)
+				try:
+					self.closeDatabase()
+				except Exception:
+					pass  # ignore close exception			
+
+		finally:
+			# restore orig. databasettings
+			if (backupCurrentDatabaseSettings != None):
+				self._databaseSettings = backupCurrentDatabaseSettings
+
+		return {
+			"success": loadResult,
+			"copySpoolCount": copySpoolCount
+		}
 
 	################################################################################################ DATABASE OPERATIONS
 	def _handleReusableConnection(self, databaseCallMethode, withReusedConnection, methodeNameForLogging, defaultReturnValue=None):
