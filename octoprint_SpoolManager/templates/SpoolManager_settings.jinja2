@@ -268,15 +268,12 @@ FPE;	2.16
                 <h3>Export</h3>
                 <div class="control-group">
                     <div class="controls">
-                        <span><b>SpoolManager Database</b>: Export all data as 
-                            <a target="_newTab" href="#" data-bind="visible: pluginSettings.useExternal, attr: {href: $root.apiClient.getExportUrl('CSV', 'external')}">CSV-File</a>
-                            <a target="_newTab" href="#" data-bind="hidden: pluginSettings.useExternal, attr: {href: $root.apiClient.getExportUrl('CSV', 'internal')}">CSV-File</a>
-                        </span>
+                        <span><b>SpoolManager Database</b>: Export all data as <a target="_newTab" href="#" data-bind="attr: {href: $root.apiClient.getExportUrl('CSV')}">CSV-File</a></span>
                     </div>
                 </div>
                 <div class="control-group" data-bind="visible: isFilamentManagerPluginAvailable">
                     <div class="controls">
-                        <span><b>Legacy: Filament Manager Database</b>: Export all data as <a target="_newTab" href="#" data-bind="attr: {href: $root.apiClient.getExportUrl('legacyFilamentManager', 'internal'), css: {disabled: !$root.apiClient.getExportUrl('legacyFilamentManager', 'internal')}}">CSV-File</a></span>
+                        <span><b>Legacy: Filament Manager Database</b>: Export all data as <a target="_newTab" href="#" data-bind="attr: {href: $root.apiClient.getExportUrl('legacyFilamentManager'), css: {disabled: !$root.apiClient.getExportUrl('legacyFilamentManager')}}">CSV-File</a></span>
                     </div>
                 </div>
 
@@ -295,10 +292,10 @@ FPE;	2.16
                         <div class="row">
                             <div class="span6">
                                 <label class="radio">
-                                    <input type="radio" name="importCSVMode" value="replace" data-bind="checked: pluginSettings.importCSVMode"> Replace <span data-bind="text: databaseInUse().toLowerCase()"></span> database
+                                    <input type="radio" name="importCSVMode" value="replace" data-bind="checked: pluginSettings.importCSVMode"> Replace current database
                                 </label>
                                 <label class="radio">
-                                        <input type="radio" name="importCSVMode" value="append" data-bind="checked: pluginSettings.importCSVMode"> Append to <span data-bind="text: databaseInUse().toLowerCase()"></span> database
+                                        <input type="radio" name="importCSVMode" value="append" data-bind="checked: pluginSettings.importCSVMode"> Append to database
                                 </label>
                             </div>
 
@@ -328,10 +325,10 @@ FPE;	2.16
                 <div class="control-group">
                     <div class="controls">
                         <div>
-                            The CSV data will be added into or totally replace the current database.
+                            The CSV data will be added or totaly replaced the current database.
                         </div>
-                        <div data-bind="hidden: pluginSettings.useExternal">
-                            HINT: Before importing, a backup file of the database will be automatically created. See Storage tab for more details.<!-- <a href="#tab-pjh-Storage" data-toggle="tab">storage folder</a>. -->
+                        <div>
+                            HINT: Before importing a backup file of the database will be automatically created. See Storage-Tab for more details.<!-- <a href="#tab-pjh-Storage" data-toggle="tab">storage folder</a>. -->
                         </div>
                         <br>
                         <div>
@@ -381,27 +378,21 @@ FPE;	2.16
                         </div>
                     </div>
 -->
-
                     <!-- LOCAL DATABASE -->
                     <h4>Local SQLite3 Database <i class='fa fa-spinner fa-spin' data-bind="visible: showLocalBusyIndicator"></i></h4>
                     <label class="radio">
                         <input type="radio" name="externalDatabaseGroup" data-bind="checked: pluginSettings.useExternal, checkedValue: false"> Use local SqLite3 database
                     </label>
 
-                    <div class="control-group">
-                        <div class="controls">
-                            <div style="margin-top: 20px">
-                                <span class="badge rounded-pill badge-success" style="padding: 5px;">Spool Count - <span data-bind="text: databaseMetaData.localSpoolItemCount"></span></span>
-                                <span class="badge rounded-pill badge-info" style="padding: 5px;">Schema Version - <span data-bind="text: databaseMetaData.localSchemeVersionFromDatabaseModel"></span></span>
-                                <span class="badge rounded-pill badge-info" style="padding: 5px;">Plugin Version - <span data-bind="text: databaseMetaData.schemeVersionFromPlugin"></span></span>
-                            </div>
-                        </div>
+                    <div class="controls">
                     </div>
 
                     <label class="control-label">Database file location</label>
                     <div class="controls">
                         <div class="input-append">
                             <input type="text" disabled class="input-xlarge text-right" data-bind="value: pluginSettings.databaseFileLocation"/>
+                            <a href="#" class="btn btn-danger" title="ReCreate Database" data-bind="click: function() {deleteDatabaseAction('internal');}"><i class="icon-trash"></i></a>
+                            <a href="#" class="btn btn-primary" title="Download Database" data-bind="attr: {href: downloadDatabaseUrl}" target="_blank"><i class="icon-download"></i></a>
                         </div>
                     </div>
                 </div>
@@ -412,53 +403,28 @@ FPE;	2.16
                         e.g.<code>spoolmanager-backup-20200812-0924.db</code>
                     </div>
                 </div>
-
-                <div class="control-group" data-bind="hidden: pluginSettings.useExternal">
+                <div class="control-group no-bottom-gap">
+                    <label class="control-label">Item count</label>
                     <div class="controls">
-                        <button class="btn btn-info" title="Test Connection" data-bind="click: testDatabaseConnection" style="margin-right: 5px;">Test Connection</button>
-                        <button class="btn btn-danger" title="ReCreate Database" data-bind="click: function() {deleteDatabaseAction('internal');}" style="margin-right: 5px;"><i class="icon-trash"></i></button>
-                        <a href="#" class="btn btn-primary" title="Download Database" data-bind="attr: {href: downloadDatabaseUrl}" target="_blank" style="margin-right: 5px;"><i class="icon-download"></i></a>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.localSpoolItemCount" value="123">
                     </div>
                 </div>
 
                 <div class="control-group">
+                    <label class="control-label">Scheme version</label>
                     <div class="controls">
-                        <div class="help-block" data-bind="visible: showInternalSuccessMessage">
-                            <div class="alert">
-                                <font color="green"><b>Database connection successful</b></font>
-                            </div>
-                        </div>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.localSchemeVersionFromDatabaseModel" value="5">
+                        <span>Plugin version</span>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.schemeVersionFromPlugin" value="5">
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <div class="controls">
-                        <div class="help-block" data-bind="visible: showInternalDatabaseErrorMessage">
-                            <div class="alert">
-                                <span style="color: red; "><b><div data-bind="text: internalDatabaseErrorMessage"></div></b></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h4>External Database <i class='fa fa-spinner fa-spin' data-bind="visible: showExternalBusyIndicator"></i></h4>
+                <!-- EXTERNAL DATABASE
+                <h4>External Database <i class='fa fa-spinner fa-spin' data-bind="visible: showLocalBusyIndicator"></i></h4>
                 <label class="radio">
-                    <input type="radio" name="externalDatabaseGroup" data-bind="checked: pluginSettings.useExternal, checkedValue: true"> Use external database<br>
-                    <span class="help-inline" style="color: red;">
-                        When using an external database, you will be responsible for performing your own backups
-                    </span>
+                    <input type="radio" name="externalDatabaseGroup" data-bind="checked: pluginSettings.useExternal, checkedValue: true"> Use external database
                 </label>
-                
 
-                <div class="control-group">
-                    <div class="controls">
-                        <div style="margin-top: 20px">
-                            <span class="badge rounded-pill badge-success" style="padding: 5px;">Spool Count - <span data-bind="text: databaseMetaData.externalSpoolItemCount"></span></span>
-                            <span class="badge rounded-pill badge-info" style="padding: 5px;">Schema Version - <span data-bind="text: databaseMetaData.externalSchemeVersionFromDatabaseModel"></span></span>
-                            <span class="badge rounded-pill badge-info" style="padding: 5px;">Plugin Version - <span data-bind="text: databaseMetaData.schemeVersionFromPlugin"></span></span>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="control-group">
                     <label class="control-label">Type</label>
@@ -467,12 +433,14 @@ FPE;	2.16
                                 <option value="postgres">PostgreSQL</option>
                                 <option value="mysql">mySQL</option>
                         </select>
+                        <button class="btn btn-warning pull-right" data-bind="click: function() {deleteDatabaseAction('external');}" style="margin-right: 80px;">ReCreate database</button>
                     </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Host</label>
                     <div class="controls">
                         <input type="text" data-bind="value: pluginSettings.databaseHost"/>
+                        <button class="btn btn-info pull-right" data-bind="click: testDatabaseConnection" style="margin-right: 80px;">Test connection</button>
                     </div>
                 </div>
                 <div class="control-group">
@@ -501,37 +469,31 @@ FPE;	2.16
                     </div>
                 </div>
 
-                <div class="control-group" data-bind="visible: pluginSettings.useExternal">
+                <div class="control-group no-bottom-gap">
+                    <label class="control-label">Item count</label>
                     <div class="controls">
-                        <button class="btn btn-info" title="Test Connection" data-bind="click: testDatabaseConnection" style="margin-right: 5px;">Test Connection</button>
-                        <button class="btn btn-danger" title="ReCreate Database" data-bind="click: function() {deleteDatabaseAction('external');}" style="margin-right: 5px;"><i class="icon-trash"></i></button>
-                        <button class="btn btn-primary" title="Copy Spools from Internal DB" data-bind="enable: showExternalSuccessMessage, click: copySpools" style="margin-right: 5px;">Copy Spools from Internal DB</button>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.externalSpoolItemCount" value="123">
                     </div>
                 </div>
 
                 <div class="control-group">
+                    <label class="control-label">Scheme version</label>
                     <div class="controls">
-                        <div class="help-block" data-bind="visible: showExternalDatabaseErrorMessage">
-                            <div class="alert">
-                                <span style="color: red;"><b><div data-bind="text: externalDatabaseErrorMessage"></div></b></span>
-                            </div>
-                        </div>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.externalSchemeVersionFromDatabaseModel" value="5">
+                        <span>Plugin version</span>
+                        <input type="text" disabled class="input-small text-right" data-bind="value: databaseMetaData.schemeVersionFromPlugin" value="5">
                     </div>
                 </div>
-                
-                <div class="control-group">
-                    <div class="controls">
-                        <div class="help-block" data-bind="visible: showExternalSuccessMessage">
-                            <div class="alert">
-                                <font color="green"><b>Database connection successful</b></font>
-                            </div>
-                        </div>
-                    </div>
+                -->
+                <div class="help-block" data-bind="visible: showDatabaseErrorMessage">
+                    <span style="color: red; "><b><div data-bind="text: databaseErrorMessage"></div></b></span>
                 </div>
-
+                <div class="help-block" data-bind="visible: showSuccessMessage">
+                    <font color="green"><b>Database connection successful</b></font>
+                </div>
                 <!-- TODO add
                 <div class="help-block" data-bind="visible: showUpdateSchemeMessage">
-                    <font color="orange"><b>Database scheme doesn't match with required scheme version. Please do an <a target="newTab" href="https://github.com/OllisGit/OctoPrint-SpoolManager/wiki/Roadmap-to-an-external-Database">update</a>!</b></font>
+                    <font color="orange"><b>Databasescheme doesn't match with required scheme version. Please do an <a target="newTab" href="https://github.com/dojohnso/OctoPrint-SpoolManager/wiki/Roadmap-to-an-external-Database">update</a>!</b></font>
                 </div>
                 -->
             </div>
