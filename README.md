@@ -58,6 +58,8 @@ The OctoPrint-Plugin manages all spool informations and stores it in a database.
 
 ![scanSpool-dialog](screenshots/scanSpool-dialog.png "ScanSpool-Dialog")
 
+![externaldb-dialog](screenshots/externalDatabase.png "External-Database")
+
 ## Setup
 Install via the bundled [Plugin Manager](http://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html)
 or manually using this URL:
