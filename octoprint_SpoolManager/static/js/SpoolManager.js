@@ -675,6 +675,8 @@ $(function() {
 
         self.sidebarOpenSelectSpoolDialog = function(toolIndex, spoolItem){
 
+            self.loadSpoolsForSidebar();
+
             /* needed for Filter-Search dropdown-menu */
             $('.dropdown-menu.keep-open').click(function(e) {
                 e.stopPropagation();
