@@ -66,7 +66,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel.usedLength = self._toIntFromJSONOrNone("usedLength", jsonData)
 		spoolModel.usedWeight = self._toFloatFromJSONOrNone("usedWeight", jsonData)
 		spoolModel.code = self._getValueFromJSONOrNone("code", jsonData)
-		spoolModel.serialNumber = self._getValueFromJSONOrNone("code", jsonData)
+		spoolModel.serialNumber = self._getValueFromJSONOrNone("serialNumber", jsonData)
 
 		# spoolModel.firstUse = StringUtils.transformToDateTimeOrNone(self._getValueFromJSONOrNone("firstUse", jsonData))
 		# spoolModel.lastUse = StringUtils.transformToDateTimeOrNone(self._getValueFromJSONOrNone("lastUse", jsonData))
@@ -900,6 +900,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# sp1.usedPercentage = str(1234.0 / (2000.0 / 100.0))
 		# sp1.usedLength = 32
 		# sp1.code = "XS-28787-HKH-234"
+		# sp1.serialNumber = "2021/21/21 12:12:12"
 		# sp1.purchasedOn = datetime.datetime(2018, 4, 3)
 		# sp1.purchasedFrom = "http://www.amazon.de/eorjoeiirjfoiejfoijeroffjeroeoidj"
 		# sp1.cost = 3.14
