@@ -1079,13 +1079,13 @@ class DatabaseManager(object):
 					myQuery = myQuery.order_by(SpoolModel.material.desc())
 				else:
 					myQuery = myQuery.order_by(SpoolModel.material.asc())
-
-					self._logger.info("Quering spools: %s" % myQuery)
 			if ("databaseId" == sortColumn):
 				if ("desc" == sortOrder):
-					myQuery = myQuery.order_by(fn.Lower(SpoolModel.databaseId).desc())
+					myQuery = myQuery.order_by(SpoolModel.databaseId.desc())
 				else:
-					myQuery = myQuery.order_by(fn.Lower(SpoolModel.databaseId).asc())
+					myQuery = myQuery.order_by(SpoolModel.databaseId.asc())
+	
+			self._logger.info("Quering spools: %s" % myQuery)
 			return myQuery
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadAllSpoolsByQuery")
