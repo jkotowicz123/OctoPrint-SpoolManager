@@ -66,6 +66,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel.usedLength = self._toIntFromJSONOrNone("usedLength", jsonData)
 		spoolModel.usedWeight = self._toFloatFromJSONOrNone("usedWeight", jsonData)
 		spoolModel.code = self._getValueFromJSONOrNone("code", jsonData)
+		spoolModel.serialNumber = self._getValueFromJSONOrNone("code", jsonData)
 
 		# spoolModel.firstUse = StringUtils.transformToDateTimeOrNone(self._getValueFromJSONOrNone("firstUse", jsonData))
 		# spoolModel.lastUse = StringUtils.transformToDateTimeOrNone(self._getValueFromJSONOrNone("lastUse", jsonData))
