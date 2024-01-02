@@ -706,6 +706,7 @@ $(function() {
             this.weight = ko.observable(true);
             this.used = ko.observable(true);
             this.note = ko.observable(true);
+            this.serialNumber = ko.observable(true);
         }
         self.tableAttributeVisibility = new TableAttributeVisibility();
 

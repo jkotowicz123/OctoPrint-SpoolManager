@@ -229,6 +229,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="span3" style="margin-bottom:-10px">
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="checkbox" style="margin-left:10px">
+                                        <input type="checkbox" data-bind="checked: tableAttributeVisibility.serialNumber"> Serial Number
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -247,6 +258,7 @@
                     <th style="text-align: center; width: 15%;" data-bind="visible: tableAttributeVisibility.weight">Weight</th>
                     <th style="text-align: center; width: 15%;" data-bind="visible: tableAttributeVisibility.used">Used</th>
                     <th style="width: 15%;" data-bind="visible: tableAttributeVisibility.note">Note</th>
+                    <th style="width: 20%;" data-bind="visible: tableAttributeVisibility.serialNumber">Serial No.</th>
     <!-- TODO remove action column                <th style="width: 9%"></th>
     -->
                 </tr>
@@ -269,6 +281,7 @@
                 <span data-bind="text: usedPercentage, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedPercentage')}"></span>%<br>
                                                                                                         <span data-bind="text: usedLength, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used length: ', 'usedLength')}"></span>mm</td>
                 <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }"></span></td>
+                <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
               </tr>
             </tbody>
         </table>
