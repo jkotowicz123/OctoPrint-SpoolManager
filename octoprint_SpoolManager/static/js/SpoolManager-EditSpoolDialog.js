@@ -100,6 +100,7 @@ function SpoolManagerEditSpoolDialog(){
         this.usedWeight = ko.observable();
         this.usedPercentage = ko.observable();
         this.code = ko.observable();
+        this.serialNumber = ko.observable();
 //        this.labels = ko.observable();
 //            this.allLabels = ko.observable();
         this.noteText = ko.observable()
@@ -239,6 +240,7 @@ function SpoolManagerEditSpoolDialog(){
         this.remainingWeight(parseFloat(updateData.remainingWeight));
         this.remainingPercentage(updateData.remainingPercentage);
         this.code(updateData.code);
+        this.serialNumber(updateData.serialNumber);
         this.usedPercentage(updateData.usedPercentage);
 
         this.totalLength(updateData.totalLength);
