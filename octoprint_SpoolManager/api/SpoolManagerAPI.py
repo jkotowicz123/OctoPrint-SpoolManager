@@ -545,9 +545,9 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				backgroundColor = ImageColor.getcolor(backgroundColor, "RGB")
 
 			# windowLocation = request.args.get("windowlocation")
-			from PIL import Image
-			imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
-			olliImage = Image.open(imageFileLocation)#.crop((175, 90, 235, 150))
+			#from PIL import Image
+			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
+			#olliImage = Image.open(imageFileLocation)#.crop((175, 90, 235, 150))
 
 			# https://note.nkmk.me/en/python-pillow-qrcode/
 			qrMaker = qrcode.QRCode(
@@ -574,15 +574,15 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				spoolSelectionUrl = qrCodeUrlPrefix + "/plugin/SpoolManager/selectSpoolByQRCode/"+databaseId
 			else:
 				#spoolSelectionUrl = flask.url_for("plugin.SpoolManager.selectSpoolByQRCode", _external=True, databaseId=databaseId)
-				spoolSelectionUrl = databaseId
+				spoolSelectionUrl = flask.text(databaseId)
 
 			qrMaker.add_data(spoolSelectionUrl)
 			qrMaker.make(fit=True, )
 
 
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
-			pos = ((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2)
-			img_qr_big.paste(olliImage, pos)
+			#pos = ((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2)
+			#img_qr_big.paste(olliImage, pos)
 
 			# img_qr_big.save('data/dst/qr_lena2.png')
 			#
