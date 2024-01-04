@@ -12,7 +12,7 @@
 }
 
 .qr-code {
-    width: 100px;
+    width: 200px;
     height: 100px;
 }
 
@@ -105,7 +105,7 @@
 .myspan7{width:540px}
 .myspan6{width:460px}
 .myspan5{width:380px}
-.myspan4{width:300px}
+.myspan4{width:100px}
 .myspan3{width:220px}
 .myspan2{width:140px}
 .myspan1{width:60px}
