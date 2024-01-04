@@ -522,6 +522,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	#####################################################################################################   GENERATE QR FOR SPOOL
 	@octoprint.plugin.BlueprintPlugin.route("/generateQRCode/<string:databaseId>", methods=["GET"])
 	def generateSpoolQRCode(self, databaseId):
+		spoolModel = self._databaseManager.loadSpool(databaseId);
 
 		if (databaseId == "qrPreviewId" or self._databaseManager.loadSpool(databaseId) is not None):
 			self._logger.info("API generate QR code for Spool with databaseId: " +str(databaseId))
@@ -584,13 +585,13 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
-			fontBig = ImageFont.truetype("Lato-Regular.ttf", 18)
-			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 12)
+			fontBig = ImageFont.truetype("Lato-Regular.ttf", 36)
+			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 24)
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
 			textDraw = ImageDraw.Draw(textImage)
-			textDraw.text((10, 20), "spoolModel.displayName",fill="black",font=fontBig)
-			textDraw.text((10, 50), databaseId,fill="black",font=fontSmall)
+			textDraw.text((10, 20), spoolModel.displayName,fill="black",font=fontBig)
+			textDraw.text((10,80), databaseId,fill="black",font=fontSmall)
 
 		
 
