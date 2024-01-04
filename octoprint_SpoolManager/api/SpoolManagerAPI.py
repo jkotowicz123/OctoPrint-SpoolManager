@@ -583,7 +583,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
-			displayNamePos = (((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2))
+			#displayNamePos = (((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2))
 			#pos = ((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2)
 			#img_qr_big.paste(olliImage, pos)
 
