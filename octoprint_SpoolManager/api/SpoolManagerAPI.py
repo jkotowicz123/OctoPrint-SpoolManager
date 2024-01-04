@@ -577,8 +577,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				#spoolSelectionUrl = flask.url_for(databaseId)
 			
 			#qrMaker.add_data(spoolSelectionUrl)
-			qrMaker.add_data("Easy PLA Pastel Mint\n 430g")
-			#qrMaker.add_data(databaseId)
+			#qrMaker.add_data("Easy PLA Pastel Mint\n 430g")
+			qrMaker.add_data(databaseId)
 			qrMaker.make(fit=True, )
 
 
