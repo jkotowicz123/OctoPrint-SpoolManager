@@ -583,19 +583,22 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
+			displayNamePos = (((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2))
 			#pos = ((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2)
 			#img_qr_big.paste(olliImage, pos)
 
 			# img_qr_big.save('data/dst/qr_lena2.png')
-			#
-			#
-			#
 			# # qrImage = qrMaker.make_image(fill_color="darkgreen", back_color="white")
 			# qrImage = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor)
 
 			qr_io = BytesIO()
 			# qrImage.save(qr_io, 'JPEG', quality=100)
 			img_qr_big.save(qr_io, 'JPEG', quality=100)
+
+			from PIL import Image, ImageDraw, ImageFont, ImageColor
+			draw = ImageDraw.Draw(qr_io)
+			draw.text((140, 100), "test123")
+			draw.save(qr_io,'JPEG',quality=100)
 			qr_io.seek(0)
 
 			return send_file(qr_io, mimetype='image/jpeg')
