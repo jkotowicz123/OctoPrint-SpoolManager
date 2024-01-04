@@ -584,6 +584,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
+			
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "red")
 
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
@@ -598,8 +599,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			# qrImage.save(qr_io, 'JPEG', quality=100)
 			img_qr_big.save(qr_io, 'JPEG', quality=100)
 
-			from PIL import Image, ImageDraw, ImageFont, ImageColor
-			draw = ImageDraw.Draw()
+			#from PIL import Image, ImageDraw, ImageFont, ImageColor
+			#draw = ImageDraw.Draw()
 			#draw = ImageDraw.Draw(qr_io)
 			#draw.text((140, 100), "test123")
 			#draw.save(qr_io,'JPEG',quality=100)
