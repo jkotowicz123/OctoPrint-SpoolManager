@@ -14,6 +14,7 @@ import threading
 import qrcode
 from io import BytesIO     # for handling byte strings
 from math import pi as PI
+import textwrap
 
 from octoprint_SpoolManager import DatabaseManager
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
@@ -585,12 +586,13 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
-			fontBig = ImageFont.truetype("Lato-Regular.ttf", 36)
-			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 24)
+			fontBig = ImageFont.truetype("Lato-Bold.ttf", 48)
+			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 30)
+			displayNameBroken= textwrap.wrap(spoolModel.displayName, width=15)
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
 			textDraw = ImageDraw.Draw(textImage)
-			textDraw.text((10, 20), spoolModel.displayName,fill="black",font=fontBig)
+			textDraw.text((10, 20),displayNameBroken,fill="black",font=fontBig)
 			textDraw.text((10,80), databaseId,fill="black",font=fontSmall)
 
 		
