@@ -587,12 +587,15 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
 			fontBig = ImageFont.truetype("Lato-Bold.ttf", 48)
-			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 30)
-			displayNameBroken= textwrap.fill(spoolModel.displayName,12)
+			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 36)
+			displayNameBroken= textwrap.wrap(spoolModel.displayName,12)
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
 			textDraw = ImageDraw.Draw(textImage)
-			textDraw.text((10, 20),displayNameBroken,fill="black",font=fontBig)
+			textDraw.text((10, 20),displayNameBroken[0],fill="black",font=fontBig)
+			displayNameBroken=displayNameBroken[1:]
+			displayNameLower=displayNameBroken.join()
+			textDraw.text((10,70), displayNameLower,fill="black",font=fontSmall)
 			textDraw.text((10,150), databaseId,fill="black",font=fontBig)
 
 		
