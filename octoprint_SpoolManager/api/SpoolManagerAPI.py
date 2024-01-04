@@ -582,13 +582,16 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			qrMaker.make(fit=True, )
 
 
+			from PIL import Image, ImageDraw, ImageFont, ImageColor
+			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
+			textImage = Image.new(mode = "RGB", size = (290,290), color = "red")
+
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
-			#displayNamePos = (((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2))
-			#pos = ((img_qr_big.size[0] - olliImage.size[0]) // 2, (img_qr_big.size[1] - olliImage.size[1]) // 2)
-			#img_qr_big.paste(olliImage, pos)
+			textImagePos = (((-img_qr_big.size[0]), (0)))
+			img_qr_big.paste(textImage, textImagePos)
 
 			# img_qr_big.save('data/dst/qr_lena2.png')
-			# # qrImage = qrMaker.make_image(fill_color="darkgreen", back_color="white")
+			# qrImage = qrMaker.make_image(fill_color="darkgreen", back_color="white")
 			# qrImage = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor)
 
 			qr_io = BytesIO()
@@ -596,9 +599,11 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			img_qr_big.save(qr_io, 'JPEG', quality=100)
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
-			draw = ImageDraw.Draw(qr_io)
-			draw.text((140, 100), "test123")
-			draw.save(qr_io,'JPEG',quality=100)
+			draw = ImageDraw.Draw()
+			#draw = ImageDraw.Draw(qr_io)
+			#draw.text((140, 100), "test123")
+			#draw.save(qr_io,'JPEG',quality=100)
+
 			qr_io.seek(0)
 
 			return send_file(qr_io, mimetype='image/jpeg')
