@@ -585,7 +585,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
 			
-			textImage = Image.new(mode = "RGB", size = (290,290), color = "red")
+			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
+			textDraw = ImageDraw.Draw(textImage)
+			textDraw.text((0, 0), "Marilyn Monroe",fill="black")
+		
 
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
 			textImagePos = ((0,0))
