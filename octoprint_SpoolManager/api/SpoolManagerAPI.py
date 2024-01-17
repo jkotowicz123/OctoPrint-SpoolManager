@@ -586,8 +586,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
-			fontBig = ImageFont.truetype("Lato-Bold.ttf", 48)
-			fontSmall = ImageFont.truetype("Lato-Regular.ttf", 36)
+			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Bold.ttf", 48)
+			fontSmall = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Regular.ttf", 36)
 			displayNameBroken= textwrap.wrap(spoolModel.displayName,12)
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
