@@ -794,7 +794,7 @@ class SpoolmanagerPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_ENABLED] = True
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_USE_URL_PREFIX] = False
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_URL_PREFIX] = None
-		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_FILL_COLOR] = "#008000"
+		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_FILL_COLOR] = "#000000"
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_BACKGROUND_COLOR] = "#ffffff"
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_WIDTH] = "100"
 		settings[SettingsKeys.SETTINGS_KEY_QR_CODE_HEIGHT] = "100"
