@@ -589,7 +589,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			fontExtraBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 96)
 			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Bold.ttf", 48)
 			fontSmall = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Regular.ttf", 36)
-			displayNameBroken= textwrap.wrap(spoolModel.displayName,12)
+			displayNameBroken= textwrap.wrap(spoolModel.displayName,10)
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
 			textDraw = ImageDraw.Draw(textImage)
