@@ -587,7 +587,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
 			fontExtraBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 96)
-			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Bold.ttf", 48)
+			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 48)
 			fontSmall = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Regular.ttf", 36)
 			displayNameBroken= textwrap.wrap(spoolModel.displayName,10)
 			material = spoolModel.material
@@ -595,10 +595,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			textImage = Image.new(mode = "RGB", size = (290,290), color = "white")
 			textDraw = ImageDraw.Draw(textImage)
-			textDraw.text((10, 20),displayNameBroken[0],fill="black",font=fontBig)
+			textDraw.text((10, 15),displayNameBroken[0],fill="black",font=fontBig)
 			displayNameBroken=displayNameBroken[1:]
 			displayNameLower = "".join(displayNameBroken)
-			textDraw.text((10,80), displayNameLower,fill="black",font=fontBig)
+			textDraw.text((10,70), displayNameLower,fill="black",font=fontBig)
 			#textDraw.text((10,120), material,fill="black",font=fontBig)
 			textDraw.text((10,130), vendor,fill="black",font=fontSmall)
 			textDraw.text((10,160), databaseId,fill="black",font=fontExtraBig)
