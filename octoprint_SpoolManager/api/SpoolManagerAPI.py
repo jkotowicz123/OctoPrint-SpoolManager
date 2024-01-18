@@ -554,7 +554,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			# https://note.nkmk.me/en/python-pillow-qrcode/
 			qrMaker = qrcode.QRCode(
 				border=4,
-				error_correction=qrcode.constants.ERROR_CORRECT_H
+				error_correction=qrcode.constants.ERROR_CORRECT_L
 			)
 
 			# spoolSelectionUrl = flask.url_for("plugin.SpoolManager.selectSpoolByQRCode", _external=True, _scheme="https", databaseId=databaseId)
