@@ -599,8 +599,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			displayNameBroken=displayNameBroken[1:]
 			displayNameLower = "".join(displayNameBroken)
 			textDraw.text((10,80), displayNameLower,fill="black",font=fontBig)
-			textDraw.text((10,120), material,fill="black",font=fontSmall)
-			textDraw.text((10,140), vendor,fill="black",font=fontSmall)
+			#textDraw.text((10,120), material,fill="black",font=fontBig)
+			textDraw.text((10,130), vendor,fill="black",font=fontSmall)
 			textDraw.text((10,160), databaseId,fill="black",font=fontExtraBig)
 			
 
