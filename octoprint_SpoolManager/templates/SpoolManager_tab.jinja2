@@ -251,7 +251,7 @@
         <table class="table table-striped table-hover table-condensed table-hover" style="clear: both;">
             <thead>
                 <tr>
-                    <th style="width: 5%" data-bind="visible: tableAttributeVisibility.databaseId">ID</th>
+                    <th style="width: 5%" data-bind="visible: tableAttributeVisibility.databaseId"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('databaseId'); }">ID <span data-bind="text: spoolItemTableHelper.sortOrderLabel('displayName')"></span></a></th>
                     <th style="width: 23%" data-bind="visible: tableAttributeVisibility.displayName">Name</th>
                     <th style="width: 15%" data-bind="visible: tableAttributeVisibility.material">Material</th>
                     <th style="width: 12%;" data-bind="visible: tableAttributeVisibility.lastFirstUse">Last / First use</th>
