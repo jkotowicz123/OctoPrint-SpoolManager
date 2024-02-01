@@ -505,7 +505,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			databaseId = spoolModel.databaseId
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
-		#spoolModel = self._selectSpool(0, databaseId)
+		spoolModel = self._selectSpool(0, databaseId)
 
 		#spoolModelAsDict = None
 		#if (spoolModel != None):
@@ -513,8 +513,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		#	#Take us back to the SpoolManager plugin tab
 		#	redirectURLWithSpoolSelection = flask.url_for("index", _external=True)+"#tab_plugin_SpoolManager-spoolId"+str(databaseId)
 		#	return flask.redirect(redirectURLWithSpoolSelection,307)
-		else:
-			abort(404)
+		#else:
+		#	abort(404)
 
 	# hmmm..TODO not fully tested
 	def is_blueprint_protected(self):
