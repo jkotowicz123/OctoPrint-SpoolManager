@@ -4,6 +4,10 @@
  * defaultSortColumn,
  * defaultFilterName
  */
+
+defaultSortColumn = "databaseId"
+defaultPageSize="all"
+
 function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
 
     var self = this;
