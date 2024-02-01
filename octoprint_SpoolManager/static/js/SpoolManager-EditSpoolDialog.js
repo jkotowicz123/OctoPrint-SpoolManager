@@ -798,7 +798,7 @@ function SpoolManagerEditSpoolDialog(){
     this.showDialog = function(spoolItem, closeDialogHandler){
         self.autoUpdateEnabled = false;
         self.closeDialogHandler = closeDialogHandler;
-        // get the current tool count
+        // get the current tool number
         self.allToolIndices([]);
         var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
