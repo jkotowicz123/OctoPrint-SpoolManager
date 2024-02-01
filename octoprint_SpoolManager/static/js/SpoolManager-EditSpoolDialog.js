@@ -809,7 +809,7 @@ function SpoolManagerEditSpoolDialog(){
         self.allPrinterIndices([]);
         var printerCount = 3;
         for (var printerIndex=0; printerIndex<printerCount; toolIndex++){
-            self.allPrinterIndices.push("Prusa #"+String(toolIndex));
+            self.allPrinterIndices.push("Prusa  #"+String(toolIndex));
         }
 
         // initial coloring
