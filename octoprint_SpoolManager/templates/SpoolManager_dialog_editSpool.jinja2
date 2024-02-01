@@ -553,7 +553,7 @@
                                                                              click: spoolDialog.copySpoolItem" >Copy</button>
                     <!-- visible: spoolDialog.spoolItemForEditing.selectedFromQRCode() == true,                        -->
                     <!-- ko if: spoolDialog.spoolItemForEditing.databaseId -->
-                    <select class="span2" style="margin-bottom: 0px" data-bind="optionsCaption: 'Choose printer...',
+                    <select class="span2" style="margin-bottom: 0px;width:200px;" data-bind="optionsCaption: 'Choose printer...',
                                                                                 value: spoolDialog.spoolItemForEditing.selectedForTool,
                                                                                 options: spoolDialog.allToolIndices,
                                                                                 optionsText: function(item) {
