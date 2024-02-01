@@ -5,9 +5,9 @@
  * defaultFilterName
  */
 
-defaultSortColumn = "databaseId"
+defaultSortColumn = "ID"
 defaultPageSize = "all"
-defaultFilterName = "onlySuccess"
+defaultFilterName = "hideEmptySpools"
 
 function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
 
