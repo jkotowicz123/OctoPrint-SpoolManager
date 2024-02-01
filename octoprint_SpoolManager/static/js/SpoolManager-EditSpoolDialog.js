@@ -805,6 +805,12 @@ function SpoolManagerEditSpoolDialog(){
             self.allToolIndices.push(toolIndex);
         }
 
+        self.allPrinterindices([]);
+        var printerCount = 3;
+        for (var printerIndex=0; printerIndex<printerCount; toolIndex++){
+            self.allPrinterindices.push("Prusa #"+String(toolIndex));
+        }
+
         // initial coloring
         self._reColorFilamentIcon(self.spoolItemForEditing.color());
 
