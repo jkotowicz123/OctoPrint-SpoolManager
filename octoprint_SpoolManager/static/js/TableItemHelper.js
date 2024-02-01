@@ -6,7 +6,8 @@
  */
 
 defaultSortColumn = "databaseId"
-defaultPageSize="all"
+defaultPageSize = "all"
+defaultFilterName = "onlySuccess"
 
 function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
 
