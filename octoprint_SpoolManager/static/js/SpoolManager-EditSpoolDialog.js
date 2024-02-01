@@ -338,6 +338,7 @@ function SpoolManagerEditSpoolDialog(){
     self.allColors = ko.observableArray([]);
 
     self.allToolIndices = ko.observableArray([]);
+    self.allPrinterIndices = ko.observableArray([]);
 
     // Knockout stuff
     this.isExistingSpool = ko.observable(false);
@@ -805,7 +806,7 @@ function SpoolManagerEditSpoolDialog(){
             self.allToolIndices.push(toolIndex);
         }
 
-        self.allPrinterindices([]);
+        self.allPrinterIndices([]);
         var printerCount = 3;
         for (var printerIndex=0; printerIndex<printerCount; toolIndex++){
             self.allPrinterindices.push("Prusa #"+String(toolIndex));
