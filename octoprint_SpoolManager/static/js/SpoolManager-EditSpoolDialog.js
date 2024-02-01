@@ -337,7 +337,7 @@ function SpoolManagerEditSpoolDialog(){
     self.allVendors = ko.observableArray([]);
     self.allColors = ko.observableArray([]);
 
-    self.allToolIndices = ko.observableArray([]);
+    self.allPrinterIndices = ko.observableArray([]);
 
     // Knockout stuff
     this.isExistingSpool = ko.observable(false);
@@ -799,11 +799,11 @@ function SpoolManagerEditSpoolDialog(){
         self.autoUpdateEnabled = false;
         self.closeDialogHandler = closeDialogHandler;
         // get the current tool caunt
-        self.allToolIndices([]);
+        self.allPrinterIndices([]);
         //var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
         var toolCount = 3;
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
-            self.allToolIndices.push("Prusa #"+String(toolIndex));
+            self.allPrinterlIndices.push("Prusa #"+String(toolIndex));
         }
         // initial coloring
         self._reColorFilamentIcon(self.spoolItemForEditing.color());
@@ -950,6 +950,13 @@ function SpoolManagerEditSpoolDialog(){
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);
+        
+    }
+
+    self.assignSpoolToPrinter = function(){
+        self.spoolItemForEditing.isSpoolVisible(false);
+        self.spoolDialog.modal('hide');
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);        
     }
 
     self.selectAndCopyTemplateSpool = function(){
