@@ -804,7 +804,6 @@ function SpoolManagerEditSpoolDialog(){
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
             self.allToolIndices.push(toolIndex);
         }
-
         // initial coloring
         self._reColorFilamentIcon(self.spoolItemForEditing.color());
 
