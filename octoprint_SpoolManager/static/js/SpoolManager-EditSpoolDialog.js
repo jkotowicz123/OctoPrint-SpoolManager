@@ -803,7 +803,7 @@ function SpoolManagerEditSpoolDialog(){
         //var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
         var toolCount = 3;
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
-            self.allToolIndices.push("Prusa #"+str(toolIndex));
+            self.allToolIndices.push("Prusa #"+String(toolIndex));
         }
         // initial coloring
         self._reColorFilamentIcon(self.spoolItemForEditing.color());
