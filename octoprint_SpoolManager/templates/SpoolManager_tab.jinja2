@@ -271,13 +271,12 @@
                         <span class="color-preview" data-bind="style: {'background-color': color}, attr: { title: colorName }" ></span>
                         <span style="vertical-align:super" data-bind="text: material"></span>
                     </div></td>
-                <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"><span data-bind="text: formatOnlyDate($data, 'lastUse')"></span></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: right;">
 {#                                                                                           <span data-bind="text: usedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedWeight')}"></span>g<br/>#}
-                                                                                           <span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight/with spool  ', 'remainingWeight')}"></span>g<br>
+                                                                                           <span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight', 'remainingWeight')}"></span>g<br>
                 </td>
                 <td data-bind="visible: $root.tableAttributeVisibility.used" style="text-align: right;">
-                
+                <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"><span data-bind="text: formatOnlyDate($data, 'lastUse')"></span></td>
                 <span data-bind="text: usedPercentage, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedPercentage')}"></span>%<br></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }"></span></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
