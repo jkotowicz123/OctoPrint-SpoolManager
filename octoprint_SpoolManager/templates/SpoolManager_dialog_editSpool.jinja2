@@ -553,14 +553,16 @@
                                                                              click: spoolDialog.copySpoolItem" >Copy</button>
                     <!-- visible: spoolDialog.spoolItemForEditing.selectedFromQRCode() == true,                        -->
                     <!-- ko if: spoolDialog.spoolItemForEditing.databaseId -->
-                    <select class="span2" style="margin-bottom: 0px;width:200px;" data-bind="optionsCaption: 'Choose printer...',
+                   <!-- <select class="span2" style="margin-bottom: 0px;width:200px;" data-bind="optionsCaption: 'Choose printer...',
                                                                                 value: spoolDialog.spoolItemForEditing.selectedForTool,
                                                                                 options: spoolDialog.allToolIndices,
                                                                                 optionsText: function(item) {
                                                                                                 return item
                                                                                                 }"></select>
-                    <button class="btn btn-info" data-bind="click: spoolDialog.selectSpoolItemForPrinting" style="text-align:right">Select for Printing</button>
-                    <button class="btn btn-info" data-bind="click: spoolDialog.assignSpoolToPrinter" style="text-align:right">Prusa #2</button>
+                    <button class="btn btn-info" data-bind="click: spoolDialog.selectSpoolItemForPrinting" style="text-align:right">Select for Printing</button>-->
+                    <button class="btn btn-info" data-bind="click: spoolDialog.assignSpoolToPrinter1(" style="text-align:right">Prusa #1</button>
+                    <button class="btn btn-info" data-bind="click: spoolDialog.assignSpoolToPrinter2" style="text-align:right">Prusa #2</button>
+                    <button class="btn btn-info" data-bind="click: spoolDialog.assignSpoolToPrinter3" style="text-align:right">Prusa #3</button>
                     <!-- /ko -->
 
                     <button class="btn btn-info" data-bind="visible: spoolDialog.isExistingSpool()==false,

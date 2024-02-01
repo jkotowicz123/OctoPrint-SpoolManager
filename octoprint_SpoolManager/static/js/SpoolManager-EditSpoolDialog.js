@@ -960,13 +960,30 @@ function SpoolManagerEditSpoolDialog(){
         return xmlHttp.responseText;
     }
 
-    self.assignSpoolToPrinter = function(){
+    self.assignSpoolToPrinter1 = function(){
+        url = "http://192.168.215.13/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
+        httpGet(url);
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
+        self.spoolItemForEditing.isSpoolVisible(false);
+        self.spoolDialog.modal('hide');
+    }
+
+    self.assignSpoolToPrinter2 = function(){
         url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
     }
+
+    self.assignSpoolToPrinter3 = function(){
+        url = "http://192.168.215.47/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
+        httpGet(url);
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
+        self.spoolItemForEditing.isSpoolVisible(false);
+        self.spoolDialog.modal('hide');
+    }
+    
 
     self.selectAndCopyTemplateSpool = function(){
 
