@@ -961,11 +961,11 @@ function SpoolManagerEditSpoolDialog(){
     }
 
     self.assignSpoolToPrinter = function(){
-        /*self.spoolItemForEditing.isSpoolVisible(false);
-        self.spoolDialog.modal('hide');
-        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);       */
-        url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+this.spoolItemForEditing.databaseId;
+        url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
         httpGet(url);
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
+        self.spoolItemForEditing.isSpoolVisible(false);
+        self.spoolDialog.modal('hide');
     }
 
     self.selectAndCopyTemplateSpool = function(){
