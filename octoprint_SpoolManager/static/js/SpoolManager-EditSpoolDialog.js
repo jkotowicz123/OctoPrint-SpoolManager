@@ -337,7 +337,7 @@ function SpoolManagerEditSpoolDialog(){
     self.allVendors = ko.observableArray([]);
     self.allColors = ko.observableArray([]);
 
-    self.allPrinterIndices = ko.observableArray([]);
+    self.allToolIndices = ko.observableArray([]);
 
     // Knockout stuff
     this.isExistingSpool = ko.observable(false);
@@ -799,11 +799,11 @@ function SpoolManagerEditSpoolDialog(){
         self.autoUpdateEnabled = false;
         self.closeDialogHandler = closeDialogHandler;
         // get the current tool caunt
-        self.allPrinterIndices([]);
-        //var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
-        var toolCount = 3;
+        self.allToolIndices([]);
+        var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
+        //var toolCount = 3;
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
-            self.allPrinterlIndices.push("Prusa #"+String(toolIndex));
+            self.allToolIndices.push("Tool "+String(toolIndex));
         }
         // initial coloring
         self._reColorFilamentIcon(self.spoolItemForEditing.color());
