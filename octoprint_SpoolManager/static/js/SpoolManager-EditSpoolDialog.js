@@ -952,10 +952,20 @@ function SpoolManagerEditSpoolDialog(){
         
     }
 
+    function httpGet(theUrl)
+    {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
     self.assignSpoolToPrinter = function(){
-        self.spoolItemForEditing.isSpoolVisible(false);
+        /*self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);        
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);       */
+        url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+this.spoolItemForEditing.databaseId;
+        httpGet(url);
     }
 
     self.selectAndCopyTemplateSpool = function(){
