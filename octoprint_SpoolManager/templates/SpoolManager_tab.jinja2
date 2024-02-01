@@ -272,7 +272,7 @@
                         <span style="vertical-align:super" data-bind="text: material"></span>
                     </div></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"><span data-bind="text: formatOnlyDate($data, 'lastUse')"></span></td>
-                <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: right;">
+                <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: left;">
 {#                  <span data-bind="text: usedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedWeight')}"></span>g<br/>#}
                    <b><span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight: ', 'remainingWeight')}"></span>g</b> (<span data-bind="text: totalCombinedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Total weight with spool: ', 'totalCombinedWeight')}"></span>g) <br>
                 </td>
