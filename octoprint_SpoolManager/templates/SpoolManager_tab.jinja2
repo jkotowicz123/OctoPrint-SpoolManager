@@ -254,8 +254,8 @@
                     <th style="width: 5%" data-bind="visible: tableAttributeVisibility.databaseId"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('databaseId'); }">ID </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('databaseId')"></span></th>
                     <th style="width: 23%" data-bind="visible: tableAttributeVisibility.displayName"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('displayName'); }">Name </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('displayName')"></span></th>
                     <th style="width: 15%" data-bind="visible: tableAttributeVisibility.material"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('material'); }">Material </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('material')"></span></th>
-                    <th style="width: 12%;" data-bind="visible: tableAttributeVisibility.lastFirstUse"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('lastUse'); }">Last use </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('lastUse')"></span></th>
                     <th style="text-align: center; width: 15%;" data-bind="visible: tableAttributeVisibility.weight"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('remaining'); }">Remaining weight </a><span data-bind="text: spoolItemTableHelper.sortOrderLabel('remaining')"></span></th>
+                    <th style="width: 12%;" data-bind="visible: tableAttributeVisibility.lastFirstUse"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('lastUse'); }">Last use </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('lastUse')"></span></th>
                     <th style="text-align: center; width: 15%;" data-bind="visible: tableAttributeVisibility.used"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('usedPercentage'); }">Used</a><span data-bind="text: spoolItemTableHelper.sortOrderLabel('usedPercentage')"></span></th>
                     <th style="width: 15%;" data-bind="visible: tableAttributeVisibility.note">Note</th>
                     <th style="width: 20%;" data-bind="visible: tableAttributeVisibility.serialNumber">Serial No.</th>
@@ -274,7 +274,7 @@
                 <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"><span data-bind="text: formatOnlyDate($data, 'lastUse')"></span></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: right;">
 {#                                                                                           <span data-bind="text: usedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedWeight')}"></span>g<br/>#}
-                                                                                           <span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight: ', 'remainingWeight')}"></span>g<br>
+                                                                                           <span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight/with spool  ', 'remainingWeight')}"></span>g<br>
                 </td>
                 <td data-bind="visible: $root.tableAttributeVisibility.used" style="text-align: right;">
                 

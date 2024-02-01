@@ -543,7 +543,7 @@ $(function() {
                 filterName: currentFilterName,
                 from: 0,
                 to: 3333,
-                sortColumn: "lastUse",
+                sortColumn: "displayName",
                 sortOrder: "desc"
             }
 
