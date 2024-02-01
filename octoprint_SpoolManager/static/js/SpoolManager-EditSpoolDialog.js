@@ -800,16 +800,17 @@ function SpoolManagerEditSpoolDialog(){
         self.autoUpdateEnabled = false;
         self.closeDialogHandler = closeDialogHandler;
         // get the current tool caunt
-        self.allToolIndices([]);
+        
+        /*self.allToolIndices([]);
         var toolCount = self.printerProfilesViewModel.currentProfileData().extruder.count();
         for (var toolIndex=0; toolIndex<toolCount; toolIndex++){
             self.allToolIndices.push(toolIndex);
-        }
+        }*/
 
         self.allPrinterIndices([]);
         var printerCount = 3;
-        for (var printerIndex=0; printerIndex<printerCount; toolIndex++){
-            self.allPrinterIndices.push("Prusa #"+String(toolIndex));
+        for (var printerIndex=0; printerIndex<printerCount; printerIndex++){
+            self.allPrinterIndices.push("Prusa #"+String(printerIndex));
         }
 
         // initial coloring
