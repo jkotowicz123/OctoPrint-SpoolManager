@@ -780,8 +780,8 @@ $(function() {
             });
             },
             "all",
-            "displayName",
-            "onlySuccess"
+            "databaseId",
+            "hideEmptySpools"
         );
 
         self.showSpoolDialogAction = function(selectedSpoolItem) {
