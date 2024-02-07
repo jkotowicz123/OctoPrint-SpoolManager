@@ -26,11 +26,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.sortColumn = ko.observable(defaultSortColumn);
     self.sortOrder = ko.observable("desc");
     // Filtering - all, hide empty, hide inactive
-    self.filterOptions = ["all", "onlySuccess", "onlyFailed"];
+    //self.filterOptions = ["all", "onlySuccess", "onlyFailed"];
     self.selectedFilterName = ko.observable(defaultFilterName);
 
     self.selectedFilterNameArrayKO = ko.observableArray([]);
-    self.toggleFilter("hideEmptySpools");
 
     // Filtering - Material
     self.allMaterials = ko.observableArray([]);
