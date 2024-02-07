@@ -779,9 +779,9 @@ $(function() {
                 observableTableModel(dataRows);
             });
             },
-            10,
+            "all",
             "displayName",
-            "all"
+            "onlySuccess"
         );
 
         self.showSpoolDialogAction = function(selectedSpoolItem) {
