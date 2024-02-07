@@ -983,6 +983,14 @@ function SpoolManagerEditSpoolDialog(){
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
     }
+
+    self.assignSpoolToPrinter4 = function(){
+        url = "http://192.168.215.23/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
+        httpGet(url);
+        self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
+        self.spoolItemForEditing.isSpoolVisible(false);
+        self.spoolDialog.modal('hide');
+    }
     
 
     self.selectAndCopyTemplateSpool = function(){
