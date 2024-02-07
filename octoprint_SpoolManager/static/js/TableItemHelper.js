@@ -30,6 +30,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.selectedFilterName = ko.observable(defaultFilterName);
 
     self.selectedFilterNameArrayKO = ko.observableArray([]);
+    self.toggleFilter("hideEmptySpools");
 
     // Filtering - Material
     self.allMaterials = ko.observableArray([]);
