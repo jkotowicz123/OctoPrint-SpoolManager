@@ -284,6 +284,12 @@
                 <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
               </tr>
             </tbody>
+            <tfoot>
+            <tr>
+            <th scope="row">Totals</th>
+            <td></td><td></td><td></td><td><span data-bind="text:totalWeight"></span>/21,000g</td><td></td>
+            </tr>
+        </tfoot>
         </table>
         {{ forms.tablePagination() }}
     </div> <!-- visible -->
