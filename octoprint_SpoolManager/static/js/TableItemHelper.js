@@ -233,6 +233,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     self.doFilterSelectAll = function(data, catalogName){
         let checked;
+        let totalFilamentsWeight;
         switch (catalogName) {
             case "material":
                 checked = self.showAllMaterialsForFilter();
@@ -261,6 +262,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                     for (let i = 0; i < self.allColors().length; i++) {
                         let colorObject = self.allColors()[i];
                         self.selectedColorsForFilter().push(colorObject.colorId);
+                        totalFilamentsWeight = totalFilamentsWeight + colorObject.remainingFilament;
                     }
                     self.selectedColorsForFilter.valueHasMutated();
                 } else {
