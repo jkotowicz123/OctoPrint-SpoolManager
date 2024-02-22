@@ -329,8 +329,8 @@ function SpoolSelectionTableComp() {
                     }
                     break;
                 case "color":
-                    checked = self.showAllColorsForFilter();
-                    //if (checked == true) {
+                    //checked = self.showAllColorsForFilter();
+                    /*if (checked == true) {
                         self.selectedColorsForFilter().length = 0;
                         // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
                         // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
@@ -338,9 +338,9 @@ function SpoolSelectionTableComp() {
                             let colorObject = self.allColors()[i];
                             self.selectedColorsForFilter().push(colorObject.colorId);
                         }
-                        self.selectedColorsForFilter.valueHasMutated();
+                    self.selectedColorsForFilter.valueHasMutated();*/
                     //} else {
-                    //    self.selectedColorsForFilter.removeAll();
+                        self.selectedColorsForFilter.removeAll();
                     //}
                     break;
             }
