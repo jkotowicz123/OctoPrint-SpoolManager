@@ -126,6 +126,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.selectedColorsForFilter.subscribe(function(newValues) {
         if (self.selectedColorsForFilter().length == 0){
             self.showAllColorsForFilter(true);
+            self.reloadItems();
         } else{
             self.showAllColorsForFilter(false);
         }
@@ -253,7 +254,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 break;
             case "color":
                 checked = self.showAllColorsForFilter();
-                if (checked == false) {
+                if (checked == true) {
                     self.selectedColorsForFilter().length = 0;
                     // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
                     // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
