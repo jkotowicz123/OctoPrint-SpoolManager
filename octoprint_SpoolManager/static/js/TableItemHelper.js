@@ -268,12 +268,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 }
                 break;
         }
-        var total = $('tbody td:nth-child(2)').toArray().reduce(function (sum, el) {
-            var value = isNaN($(el).text()) ? 0 : parseInt($(el).text(), 10);
-            return sum + value;
-          }, 0);
-          
-          console.log(total);
     }
 
     self.buildFilterLabel = function(filterLabelName){
