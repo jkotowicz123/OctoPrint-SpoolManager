@@ -260,8 +260,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 for (let i = 0; i < self.allColors().length; i++) {
                     let colorObject = self.allColors()[i];
                     self.selectedColorsForFilter().push(colorObject.colorId);
-                //}
-                    self.selectedColorsForFilter.valueHasMutated();
+                }
+                self.selectedColorsForFilter.valueHasMutated();
                 //} else {
                 //    self.selectedColorsForFilter.removeAll();
                 //}
