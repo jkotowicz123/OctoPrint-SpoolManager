@@ -124,7 +124,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         self.reloadItems();
     });
     self.selectedColorsForFilter.subscribe(function(newValues) {
-        if (self.selectedColorsForFilter().length > 0){
+        if (self.selectedColorsForFilter().length == 0){
             self.showAllColorsForFilter(true);
         } else{
             self.showAllColorsForFilter(false);

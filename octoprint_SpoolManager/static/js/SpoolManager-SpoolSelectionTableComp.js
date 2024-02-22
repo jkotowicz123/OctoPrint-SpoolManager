@@ -170,7 +170,7 @@ function SpoolSelectionTableComp() {
             self._storeFilterSelectionsToBrowserStorage();
         });
         self.selectedColorsForFilter.subscribe(function(newValues) {
-            if (self.selectedColorsForFilter().length > 0){
+            if (self.selectedColorsForFilter().length == 0){
                 self.showAllColorsForFilter(true);
             } else{
                 self.showAllColorsForFilter(false);
