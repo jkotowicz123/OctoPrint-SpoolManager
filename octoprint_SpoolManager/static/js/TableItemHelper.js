@@ -253,7 +253,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 break;
             case "color":
                 checked = self.showAllColorsForFilter();
-                if (checked == true) {
+                if (checked == false) {
                     self.selectedColorsForFilter().length = 0;
                     // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
                     // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
