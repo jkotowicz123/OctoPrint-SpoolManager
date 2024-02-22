@@ -252,7 +252,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 }
                 break;
             case "color":
-                /*checked = self.showAllColorsForFilter();
+                checked = self.showAllColorsForFilter();
                 //if (checked == true) {
                 self.selectedColorsForFilter().length = 0;
                     // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
@@ -261,10 +261,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                     let colorObject = self.allColors()[i];
                     self.selectedColorsForFilter().push(colorObject.colorId);
                 }
-                self.selectedColorsForFilter.valueHasMutated();*/
-                //} else {
+                    self.selectedColorsForFilter.valueHasMutated();
+                } else {
                     self.selectedColorsForFilter.removeAll();
-                //}
+                }
                 break;
         }
     }

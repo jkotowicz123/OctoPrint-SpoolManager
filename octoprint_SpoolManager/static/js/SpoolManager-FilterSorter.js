@@ -218,12 +218,12 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         switch (catalogName) {
             case "material":
                 checked = self.showAllMaterialsForFilter();
-                //if (checked == true) {
-                self.selectedMaterialsForFilter().length = 0;
-                ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
-                //} else {
-                //    self.selectedMaterialsForFilter.removeAll();
-                //}
+                if (checked == true) {
+                    self.selectedMaterialsForFilter().length = 0;
+                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+                } else {
+                    self.selectedMaterialsForFilter.removeAll();
+                }
                 break;
             case "vendor":
                 checked = self.showAllVendorsForFilter();
@@ -235,8 +235,8 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                 }
                 break;
             case "color":
-                /*checked = self.showAllColorsForFilter();
-                //if (checked == true) {
+                checked = self.showAllColorsForFilter();
+                if (checked == true) {
                     self.selectedColorsForFilter().length = 0;
                     // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
                     // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
@@ -244,10 +244,10 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                         let colorObject = self.allColors()[i];
                         self.selectedColorsForFilter().push(colorObject.colorId);
                     }
-                    self.selectedColorsForFilter.valueHasMutated();*/
-                //} else {
+                    self.selectedColorsForFilter.valueHasMutated();
+                } else {
                     self.selectedColorsForFilter.removeAll();
-                //}
+                }
                 break;
         }
     }
