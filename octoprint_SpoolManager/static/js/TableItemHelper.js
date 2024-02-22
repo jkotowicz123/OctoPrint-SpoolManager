@@ -12,6 +12,7 @@ defaultFilterName = "hideEmptySpools"
 function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
 
     var self = this;
+    var totalFilamentsWeight;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -233,7 +234,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     self.doFilterSelectAll = function(data, catalogName){
         let checked;
-        let totalFilamentsWeight;
         switch (catalogName) {
             case "material":
                 checked = self.showAllMaterialsForFilter();
