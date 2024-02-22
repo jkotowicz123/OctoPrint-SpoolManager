@@ -218,12 +218,12 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         switch (catalogName) {
             case "material":
                 checked = self.showAllMaterialsForFilter();
-                if (checked == true) {
-                    self.selectedMaterialsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
-                } else {
-                    self.selectedMaterialsForFilter.removeAll();
-                }
+                //if (checked == true) {
+                self.selectedMaterialsForFilter().length = 0;
+                ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+                //} else {
+                //    self.selectedMaterialsForFilter.removeAll();
+                //}
                 break;
             case "vendor":
                 checked = self.showAllVendorsForFilter();
