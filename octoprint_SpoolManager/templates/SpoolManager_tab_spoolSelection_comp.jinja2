@@ -146,6 +146,7 @@ File includes all Templates that are needed for custom Knockout.js components, s
                     <td class="spool-label">
                         <span class="color-preview" data-bind="style: {'background-color': color}, attr: { title: colorName }"></span>
                         <span data-bind="attr: { title: 'Last use: ' + lastUse() + ' / First use: ' + firstUse() }">
+                            <span data-bind="text: databaseId"></span> -
                             <!-- ko if: material -->
                             <span data-bind="text: material"></span> -
                             <!-- /ko -->
