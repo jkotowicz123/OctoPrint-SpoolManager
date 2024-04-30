@@ -161,10 +161,6 @@ $(function() {
             }
         }
 
-        function printImg() {
-            pwin = window.open(document.getElementById("qr-label").src,"_blank");
-            pwin.onload = function () {window.print();}
-        }
 
         ///////////////////////////////////////////////////// START: SETTINGS
         self.pluginNotWorking = ko.observable(undefined);
