@@ -39,10 +39,11 @@ jobs:
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
            
-      - name: Delete Release
-        uses: larryjoelane/delete-release-action@v1.4
-                     
-               
+      - name: delete latest release
+        uses: liudonghua123/delete-release-action@v1
+        with:
+          release_name: 'latest'
+                           
       - name: release
         uses: actions/create-release@latest
         id: create_release
