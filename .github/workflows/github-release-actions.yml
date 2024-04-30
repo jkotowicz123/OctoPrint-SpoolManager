@@ -38,14 +38,16 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-                                      
+
+
       - name: release
         uses: actions/create-release@latest
         id: create_release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          draft: false
+          draft: true
+          commitish: ${{ steps.branch.outputs.branch_name }}
           prerelease: false
           release_name: V${{ steps.version.outputs.version }}-draft
           tag_name: ${{ steps.version.outputs.version }}-draft
