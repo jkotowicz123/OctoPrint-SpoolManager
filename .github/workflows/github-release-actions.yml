@@ -38,13 +38,10 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-
-      - name: Delete Package Versions
-        uses: actions/delete-package-versions@v5.0.0
-        with:
-           release_name: V${{ steps.version.outputs.version }}-draft
-           tag_name: ${{ steps.version.outputs.version }}-draft
-          
+           
+      - name: Delete Release
+        uses: larryjoelane/delete-release-action@v1.4
+                     
                
       - name: release
         uses: actions/create-release@latest
