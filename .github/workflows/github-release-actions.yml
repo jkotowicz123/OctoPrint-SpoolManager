@@ -46,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          draft: true
+          draft: false
           commitish: ${{ steps.branch.outputs.branch_name }}
           prerelease: false
           release_name: V${{ steps.version.outputs.version }}-draft
