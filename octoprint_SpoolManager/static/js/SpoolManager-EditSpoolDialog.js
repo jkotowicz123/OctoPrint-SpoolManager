@@ -1016,7 +1016,7 @@ function SpoolManagerEditSpoolDialog(){
             });
     }
     
-    self.printImg = function() {
+    self.printImg = function(){
         pwin = window.open(document.getElementById("qr-label").src,"_blank");
         pwin.onload = function () {window.print();}
     }
