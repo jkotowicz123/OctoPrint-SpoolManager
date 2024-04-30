@@ -1015,8 +1015,11 @@ function SpoolManagerEditSpoolDialog(){
                 show: true
             });
     }
+    
     self.printImg = function() {
         pwin = window.open(document.getElementById("qr-label").src,"_blank");
         pwin.onload = function () {window.print();}
     }
+
+
 }
