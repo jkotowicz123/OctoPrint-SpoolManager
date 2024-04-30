@@ -38,19 +38,13 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-           
-      - name: delete latest release
-        uses: liudonghua123/delete-release-action@v1
-        with:
-          release_name: 'latest'
-                           
+                                      
       - name: release
         uses: actions/create-release@latest
         id: create_release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          draft: true
           commitish: ${{ steps.branch.outputs.branch_name }}
           prerelease: false
           release_name: V${{ steps.version.outputs.version }}-draft
