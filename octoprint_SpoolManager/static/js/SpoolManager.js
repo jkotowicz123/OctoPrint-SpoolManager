@@ -559,7 +559,6 @@ $(function() {
                     }); // transform to SpoolItems with KO.obseravables
                     self.allSpoolsForSidebar(allSpoolItems);
 
-                    var groupedSpoolItems =  Object.groupBy(allSpoolItems, ({ displayName }) => displayName);
                     
                     var spoolsData = responseData["selectedSpools"],
                         slot, spoolData, spoolItem;
@@ -762,6 +761,7 @@ $(function() {
                 totalItemCount = responseData["totalItemCount"];
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
+                groupedSpoolItems =  Object.groupBy(allSpoolItems, ({ displayName }) => displayName);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
