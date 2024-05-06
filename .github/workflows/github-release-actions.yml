@@ -43,7 +43,7 @@ jobs:
         uses: liudonghua123/delete-release-action@v1
         with:
           release_name: "V1.7.1-draft"
-         env:
+        env:
           GITHUB_TOKEN: ${{ github.token }}
             
 
