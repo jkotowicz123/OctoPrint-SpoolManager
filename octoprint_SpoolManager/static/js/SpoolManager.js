@@ -790,7 +790,7 @@ $(function() {
                     var categories = ko.utils.arrayMap(groupedSpoolItems, function(item) {
                         return item.displayName();
                     });
-                    return displaName.sort();
+                    return displayName.sort();
                 });
 
                 observableTotalItemCount(totalItemCount);
