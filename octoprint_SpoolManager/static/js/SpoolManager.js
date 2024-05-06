@@ -786,9 +786,9 @@ $(function() {
     
                 }, {});
 
-                2dArray = Object.entries(groupedSpoolItems);
-                console.log(groupedSpoolItems);
-                console.log(2dArray);
+                //2dArray = Object.entries(groupedSpoolItems);
+                //console.log(groupedSpoolItems);
+                //console.log(2dArray);
 
                 displayNames = Object.keys(groupedSpoolItems);
 
