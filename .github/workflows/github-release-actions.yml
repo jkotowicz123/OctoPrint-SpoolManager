@@ -39,13 +39,21 @@ jobs:
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
   
-     - uses: dev-drprasad/delete-tag-and-release@v1.1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: delete last release
+      - uses: sgpublic/delete-release-action@v1.1
         with:
-          tag_name: "V1.7.1-draft" #(required) - The name of the tag to delete. This is expected to be solely the tag name, not the name of a git reference.
-          delete_release: true #(optional) default: true - also delete all releases and their assets that are associated to the tag name
-          github_token: ${{ secrets.GITHUB_TOKEN }} # (required) - a GitHub token with write access to the repo where tags and releases will be searched and deleted
+          # repo: '<owner>/<repoName>' # you can input a another repo here, defaults to current repo
+          release-drop: true
+          release-keep-count: 2
+          release-drop-tag: true
+          pre-release-drop: true
+          pre-release-keep-count: -1
+          pre-release-drop-tag: true
+          draft-drop: true
+          draft-drop-count: -1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
 
 
       - name: release
