@@ -791,6 +791,8 @@ $(function() {
                     return result;
                 });
 
+                groups = groupedSpoolItems.keys();
+
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
             });
