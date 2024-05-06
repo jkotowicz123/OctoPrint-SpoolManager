@@ -626,7 +626,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			#draw = ImageDraw.Draw(qr_io)
 			#draw.text((140, 100), "test123")
 			#draw.save(qr_io,'JPEG',quality=100)
-			label = Image.new(mode = "RGB", size = (580,290), color = backgroundColor)
+			label = Image.new(mode = "RGB", size = (475,355), color = backgroundColor)
 			label.paste(textImage,textImagePos)
 			label.paste(img_qr_big,qrImagePos)
 			label.save(qr_io,'JPEG',quality=100)
