@@ -781,9 +781,16 @@ $(function() {
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
 
-                var dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
+                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
+                });
+
+                justCategories = ko.computed(function() {
+                    var categories = ko.utils.arrayMap(groupedSpoolItems, function(item) {
+                        return item.displayName();
+                    });
+                    return displaName.sort();
                 });
 
                 observableTotalItemCount(totalItemCount);
