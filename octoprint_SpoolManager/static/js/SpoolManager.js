@@ -786,11 +786,9 @@ $(function() {
                     return result;
                 });
 
-                justCategories = ko.computed(function() {
-                    var categories = ko.utils.arrayMap(groupedSpoolItems, function(item) {
-                        return item.displayName();
-                    });
-                    return displayName.sort();
+                categories = ko.utils.arrayMap(groupedSpoolItems, function (item) {
+                    var result = item[0]
+                    return result;
                 });
 
                 observableTotalItemCount(totalItemCount);
