@@ -39,17 +39,6 @@ jobs:
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
   
-      - name: delete last release
-      - uses: sgpublic/delete-release-action@v1.1
-        with:
-          repo: 'jkotowicz123/OctoPrint-SpoolManager' # you can input a another repo here, defaults to current repo
-          release-drop: true
-          release-keep-count: 2
-          release-drop-tag: true
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-
 
       - name: release
         uses: actions/create-release@latest
