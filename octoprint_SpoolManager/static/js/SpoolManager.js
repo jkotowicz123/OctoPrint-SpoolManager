@@ -786,8 +786,8 @@ $(function() {
                     return result;
                 });
 
-                categories = ko.utils.arrayMap(groupedSpoolItems, function (item) {
-                    var result = item[0]
+                displayNames = ko.utils.arrayMap(groupedSpoolItems, function (item) {
+                    var result = item.keys;
                     return result;
                 });
 
