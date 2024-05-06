@@ -24,7 +24,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.pageSize = ko.observable(self.selectedPageSize());
     self.currentPage = ko.observable(0);
     // Sorting
-    self.sortColumn = ko.observable(defaultSortColumn);
+    self.sortColumn = ko.observable("displayName");
     self.sortOrder = ko.observable("desc");
     // Filtering - all, hide empty, hide inactive
     //self.filterOptions = ["all", "onlySuccess", "onlyFailed"];
