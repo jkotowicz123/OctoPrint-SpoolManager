@@ -243,7 +243,6 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     for (let i = 0; i < self.allColors().length; i++) {
                         let colorObject = self.allColors()[i];
                         self.selectedColorsForFilter().push(colorObject.colorId);
-                        console.log(colorObject);
                     }
                     self.selectedColorsForFilter.valueHasMutated();
                 } else {

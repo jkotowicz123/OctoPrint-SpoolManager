@@ -5,7 +5,7 @@
  * defaultFilterName
  */
 
-defaultSortColumn = "ID"
+defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
 
