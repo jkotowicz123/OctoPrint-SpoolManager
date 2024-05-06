@@ -761,7 +761,15 @@ $(function() {
                 totalItemCount = responseData["totalItemCount"];
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
-                groupedSpoolItems =  Object.groupBy(allSpoolItems, ({ displayName }) => displayName);
+                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
+
+                    (x[y.displayName] = x[y.displayName] || []).push(y);
+    
+                    return x;
+    
+                }, {});
+    
+                console.log(groupedSpoolItems);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
