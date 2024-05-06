@@ -259,6 +259,15 @@
         </tr>
     </tbody>
 
+    <table>
+    <tbody data-bind="foreach: {groupedSpoolItems: groupedSpoolItems, as: '_data'}">
+        <tr data-bind="foreach: {data: Object.keys(props), as: '_propkey'}">
+        <th data-bind="text: _propkey"></th>
+        <td data-bind="text: _data.props[_propkey]"></td>
+        </tr>
+    </tbody>
+    </table>
+
 
         <!-- Table start -->
         {{ forms.tablePagination() }}
