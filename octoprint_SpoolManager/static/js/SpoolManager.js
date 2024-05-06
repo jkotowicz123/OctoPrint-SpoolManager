@@ -761,15 +761,7 @@ $(function() {
                 totalItemCount = responseData["totalItemCount"];
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
-                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
-
-                    (x[y.displayName] = x[y.displayName] || []).push(y);
-    
-                    return x;
-    
-                }, {});
-    
-                console.log(groupedSpoolItems);
+        
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
@@ -786,12 +778,17 @@ $(function() {
                     return result;
                 });
 
-                displayNames = ko.utils.arrayMap(groupedSpoolItems, function (item) {
-                    var result = item.keys;
-                    return result;
-                });
+                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
 
-                groups = groupedSpoolItems.keys();
+                    (x[y.displayName] = x[y.displayName] || []).push(y);
+    
+                    return x;
+    
+                }, {});
+    
+                console.log(groupedSpoolItems);
+
+                displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
