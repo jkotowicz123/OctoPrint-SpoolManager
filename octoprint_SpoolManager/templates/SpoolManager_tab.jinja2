@@ -264,15 +264,12 @@
     -->
                 </tr>
             </thead>
-            <tbody data-bind="foreach: $root.groupedSpoolItems">
+            <tbody data-bind="foreach: SpoolManager.groupedSpoolItems">
                 <tr>
-                <td data-bind="visible: $root.groupedSpoolItems.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
+                <td data-bind="visible: SpoolManager.groupedSpoolItems.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
                 </tr>
             </tbody>
             <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
-                <tr>
-                <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
-                </tr>
                 <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                     <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
