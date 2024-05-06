@@ -250,13 +250,14 @@
     <thead>
         <tr><th>ID</th><th>DisplayNAme</th></tr>
     </thead>
-    <tbody data-bind="foreach: displayNames">
+    <tbody data-bind="foreach: groupedSpoolItems">
         <tr>
             <td data-bind="text: $data"></td>
             <td>"testowa wartość"</td>
         </tr>
     </tbody>
-</table>
+    </table>
+
 
         <!-- Table start -->
         {{ forms.tablePagination() }}
