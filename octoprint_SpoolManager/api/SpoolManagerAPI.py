@@ -588,9 +588,9 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			from PIL import Image, ImageDraw, ImageFont, ImageColor
 			#imageFileLocation = self._basefolder + "/static/images/SPMByOlli.png"
-			fontExtraBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 96)
-			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 48)
-			fontSmall = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Regular.ttf", 36)
+			fontExtraBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 88)
+			fontBig = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Black.ttf", 46)
+			fontSmall = ImageFont.truetype(self._basefolder + "/static/fonts/Lato-Regular.ttf", 32)
 			displayNameBroken= textwrap.wrap(spoolModel.displayName,10)
 			material = spoolModel.material
 			vendor = spoolModel.vendor
@@ -611,7 +611,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			img_qr_big = qrMaker.make_image(fill_color=fillColor, back_color=backgroundColor).convert('RGB')
 			textImagePos = ((0,0))
 			#img_qr_big.paste(textImage, textImagePos)
-			qrImagePos = ((230,0))
+			qrImagePos = ((220,0))
 
 			# img_qr_big.save('data/dst/qr_lena2.png')
 			# qrImage = qrMaker.make_image(fill_color="darkgreen", back_color="white")

@@ -10,15 +10,15 @@
 .control-group.no-bottom-gap {
     margin-bottom:3px
 }
-
+/*475 × 355 piks*/
 .qr-code {
-    width: 200px;
-    height: 100px;
+    width: 238px;
+    height: 178px;
 }
 
 .qr-code-large {
-    width: 300px;
-    height: 300px;
+    width: 475px;
+    height: 355px;
 }
 
 .qr-code-label{
