@@ -38,7 +38,15 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-  
+      
+      - name: delete latest
+      - uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo
+            const { data: { id } } = await github.repos.getLatestRelease({ owner, repo })
+            await github.repos.deleteRelease({ owner, repo, release_id: id })
 
       - name: release
         uses: actions/create-release@latest
