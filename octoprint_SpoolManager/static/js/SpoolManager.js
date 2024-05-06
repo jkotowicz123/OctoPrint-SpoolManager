@@ -559,6 +559,8 @@ $(function() {
                     }); // transform to SpoolItems with KO.obseravables
                     self.allSpoolsForSidebar(allSpoolItems);
 
+                    var groupedSpoolItems =  Object.groupBy(allSpoolItems, ({ displayName }) => displayName);
+                    
                     var spoolsData = responseData["selectedSpools"],
                         slot, spoolData, spoolItem;
                     for(var i=0; i<self.selectedSpoolsForSidebar().length; i++) {
