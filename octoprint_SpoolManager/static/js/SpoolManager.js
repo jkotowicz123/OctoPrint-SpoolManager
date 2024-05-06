@@ -786,7 +786,7 @@ $(function() {
     
                 }, {});
 
-                2dArray = Object.entries(objVariable)
+                2dArray = Object.entries(groupedSpoolItems);
                 console.log(groupedSpoolItems);
                 console.log(2dArray);
 
