@@ -38,7 +38,7 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-    
+  
 
       - name: release
         uses: actions/create-release@latest
@@ -48,7 +48,7 @@ jobs:
         with:
           draft: false
           prerelease: false
-          release_name: V${{ steps.version.outputs.version+0.0.1}}-draft
+          release_name: $GITHUB_RUN_NUMBER
           tag_name: "V1.7.1-draft"
           body: |
             ## [BugFix]
