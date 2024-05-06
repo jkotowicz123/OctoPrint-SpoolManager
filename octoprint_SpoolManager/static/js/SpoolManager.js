@@ -781,7 +781,7 @@ $(function() {
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
 
-                var dataRows = ko.utils.arrayMap(groupedSpoolItems, function (spoolData) {
+                var dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
