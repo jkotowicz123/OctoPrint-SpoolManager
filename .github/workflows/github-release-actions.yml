@@ -39,14 +39,12 @@ jobs:
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
   
-      - uses: dev-drprasad/delete-older-releases@v0.3.3
+     - uses: dev-drprasad/delete-tag-and-release@v1.1
         with:
-          keep_latest: 0
-          keep_min_download_counts: 1 # Optional parameters
-          delete_expired_data: 10 # Optional parameters
-          delete_tag_pattern: beta # defaults to ""
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: "V1.7.1-draft" #(required) - The name of the tag to delete. This is expected to be solely the tag name, not the name of a git reference.
+          delete_release: true #(optional) default: true - also delete all releases and their assets that are associated to the tag name
+          #repo: <owner>/<repoName> #(optional) default: repo running this action - the target repository. 
+          github_token: ${{ secrets.GITHUB_TOKEN }} # (required) - a GitHub token with write access to the repo where tags and releases will be searched and deleted
 
 
       - name: release
