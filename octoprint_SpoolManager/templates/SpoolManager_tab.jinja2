@@ -264,8 +264,14 @@
     -->
                 </tr>
             </thead>
-            <tbody data-bind="foreach: $root.displayNames">
+            <tbody data-bind="foreach: groupedSpoolItems">
+             <tr>
+                    <td data-bind="text: databaseId"></td>
+                    <td data-bind="text: displayName"></td>
+                    <td data-bind="text: groupedSpoolItems"></td>
+                </tr>
             </tbody>
+            
             <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
                 <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                     <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
