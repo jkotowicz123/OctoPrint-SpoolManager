@@ -40,8 +40,8 @@ jobs:
                echo "::set-output name=repo_name::$repo_name"
       
       - name: delete latest
-      - uses: actions/github-script@v4
-       env:
+        uses: actions/github-script@v4
+        env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           script: |
