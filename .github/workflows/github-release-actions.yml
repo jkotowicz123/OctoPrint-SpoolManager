@@ -38,14 +38,7 @@ jobs:
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
                echo "::set-output name=repo_name::$repo_name"
-
-      - name: Delete a Release
-        uses: liudonghua123/delete-release-action@v1
-        with:
-          release_name: "V1.7.1-draft"
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-            
+    
 
       - name: release
         uses: actions/create-release@latest
@@ -55,7 +48,7 @@ jobs:
         with:
           draft: false
           prerelease: false
-          release_name: "V1.7.1-draft"
+          release_name: V${{ steps.version.outputs.version+0.0.1}}-draft
           tag_name: "V1.7.1-draft"
           body: |
             ## [BugFix]
