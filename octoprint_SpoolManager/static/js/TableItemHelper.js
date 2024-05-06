@@ -180,6 +180,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             return self.items();
         }
     });
+
     // ############################################## SORTING
     self.changeSortOrder = function(newSortColumn){
         if (newSortColumn == self.sortColumn()){

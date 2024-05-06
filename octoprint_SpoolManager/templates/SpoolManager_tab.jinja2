@@ -265,6 +265,7 @@
                 </tr>
             </thead>
             <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
+            <tr data-bind="visible: $root.tableAttributeVisibility.displayName">
               <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                 <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
@@ -283,6 +284,7 @@
                 <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }"></span></td>
                 <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
               </tr>
+            </tr>
             </tbody>
             <tfoot>
             <tr>
