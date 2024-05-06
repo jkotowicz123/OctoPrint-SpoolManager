@@ -264,6 +264,8 @@
     -->
                 </tr>
             </thead>
+            <tbody data-bind="foreach: $root.displayNames">
+            </tbody>
             <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
                 <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                     <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
