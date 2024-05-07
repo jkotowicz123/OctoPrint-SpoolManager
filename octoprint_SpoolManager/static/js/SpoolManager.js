@@ -786,7 +786,7 @@ $(function() {
     
                 }, {});
 
-                //flattenArray = Object.entries(groupedSpoolItems);
+                flattenArray = Object.entries(groupedSpoolItems);
                 console.log(groupedSpoolItems);
                 //console.log(flattenArray);
 
