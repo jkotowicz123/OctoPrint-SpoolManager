@@ -349,8 +349,9 @@
                 </tr>
             </thead>
 
-            <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems.displayName" >
+            <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
                 <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
+                    <td data-bind="text: $data"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.material"><div class="pick-a-color-markup">
