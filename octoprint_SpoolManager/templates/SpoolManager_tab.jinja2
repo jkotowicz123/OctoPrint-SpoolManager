@@ -284,9 +284,9 @@
         <tbody data-bind="foreach: flattenArray">
             <tr>
                 <td colspan="8" data-bind="text: $data[0]"></td>
-                <table data-bind="foreach:flattenArray">
+                <table border="2" data-bind="foreach:flattenArray">
                     <tr>
-                        <td data-bind="text: $data[1]"></td>
+                        <td colspan="7" data-bind="text: $data[1]"></td>
                     </tr>
                 </table>
             </tr>
