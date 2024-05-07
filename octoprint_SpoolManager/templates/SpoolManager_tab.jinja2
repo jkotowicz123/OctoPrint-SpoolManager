@@ -256,10 +256,8 @@
                 <td data-bind="text: $data[0]"></td>
                 <td data-bind="text: $data[1]"></td>
             </tr>
-            <tr data-bind="foreach: $data[1]">
-                <td data-bind="text: $data></td>            
-                <td data-bind="text: $data[1]"></td>
-                <td>"sztywna wartośc"</td>
+            <tr data-bind="foreach: $data()[1]">
+                <td data-bind="text: $data></td>
             </tr>
         </tbody>
     </table>
