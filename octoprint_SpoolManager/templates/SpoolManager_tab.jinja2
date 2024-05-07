@@ -253,15 +253,15 @@
     
         <tbody data-bind="foreach: { data: flattenArray, as: 'filamentType', noChildContext: true }">
             <tr>
-                <td colspan="5">This text should be as long as the entire table's width...</td>
+                <td colspan="8">This text should be as long as the entire table's width...</td>
             </tr>
             <tr>
-                <td colspan="5" data-bind="text: filamentType[0]"></td>
+                <td colspan="8" data-bind="text: filamentType[0]"></td>
             </tr>
-            <tr data-bind="foreach: { data: filamentType[1], as: 'item', noChildContext: true }">
-                <td data-bind="text: item></td>
-                <td data-bind="text: item[0]></td>
-                <td data-bind="text: item.displayName></td>
+            <tr data-bind="foreach: { data: filamentType[1], as: 'filamentSpool', noChildContext: true }">
+                <td data-bind="text: filamentSpool></td>
+                <td data-bind="text: filamentSpool[0]></td>
+                <td data-bind="text: filamentSpool.displayName></td>
             </tr>
         </tbody>
     </table>
