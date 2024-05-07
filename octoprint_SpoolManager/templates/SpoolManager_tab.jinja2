@@ -253,10 +253,9 @@
     
         <tbody data-bind="foreach: { data: flattenArray, as: 'filamentType', noChildContext: true }">
             <tr>
-                <td data-bind="text: $data[0]"></td>
-                <td data-bind="text: filamentType"></td>
+                <td data-bind="text: filamentType[0]"></td>
             </tr>
-            <tr data-bind="foreach: { data: filamentTypes.items, as: 'item', noChildContext: true }"">
+            <tr data-bind="foreach: { data: filamentType[1], as: 'item', noChildContext: true }"">
                 <td data-bind="text: item></td>
                 <td data-bind="text: item[0]></td>
                 <td data-bind="text: item.displayName></td>
