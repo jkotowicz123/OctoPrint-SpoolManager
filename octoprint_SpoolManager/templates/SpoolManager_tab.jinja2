@@ -256,7 +256,7 @@
                 <td data-bind="text: $data[0]"></td>
             </tr>
             <tr data-bind="foreach: $data[1]">
-                <td data-bind="text: $data"></td>
+                <td data-bind="value: $data"></td>
             </tr>
             <tbody data-bind="foreach: { data: filamentType()[1], as: 'filamentSpool', noChildContext: true }">
                 <tr>
