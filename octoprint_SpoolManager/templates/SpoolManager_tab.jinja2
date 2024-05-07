@@ -267,7 +267,7 @@
     -->
     
      <table>
-       thead>
+       <thead>
                 <tr>
                     <th style="width: 5%" data-bind="visible: tableAttributeVisibility.databaseId"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('databaseId'); }">ID </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('databaseId')"></span></th>
                     <th style="width: 23%" data-bind="visible: tableAttributeVisibility.displayName"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('displayName'); }">Name </a> <span data-bind="text: spoolItemTableHelper.sortOrderLabel('displayName')"></span></th>
@@ -283,7 +283,7 @@
             </thead>
         <tbody data-bind="foreach: flattenArray">
             <tr>
-                <td colspan="8" data-bind="text: $data[0]"></td>
+                <td colspan="8" data-bind="text: $data[0]">
                 <table>
                     <tbody border="2" data-bind="foreach:flattenArray">
                         <tr>
@@ -291,8 +291,8 @@
                         </tr>
                     </tbody>
                 </table>
+                </td>
             </tr>
-                
         </tbody>
     </table>
 
