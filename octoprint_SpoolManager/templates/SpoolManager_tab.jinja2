@@ -258,7 +258,7 @@
             <tr>
                 <td colspan="8" data-bind="text: filamentType[0]"></td>
             </tr>
-            <tr data-bind="foreach: { data: filamentType[1], as: 'filamentSpool', noChildContext: true }">
+            <tr data-bind="foreach: { data: filamentType()[1], as: 'filamentSpool', noChildContext: true }">
                 <td data-bind="text: filamentSpool></td>
                 <td data-bind="text: filamentSpool[0]></td>
                 <td data-bind="text: filamentSpool.displayName></td>
