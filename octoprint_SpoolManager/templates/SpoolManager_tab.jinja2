@@ -254,7 +254,9 @@
         <tbody data-bind="foreach: flattenArray">
             <tr>
                 <td data-bind="text: $data[0]"></td>
-                <td data-bind="text: $data[1]"></td>
+            </tr>
+            <tr data-bind="foreach: $data[1]">
+                <td data-bind="text: $data"></td>
             </tr>
             <tbody data-bind="foreach: { data: filamentType()[1], as: 'filamentSpool', noChildContext: true }">
                 <tr>
