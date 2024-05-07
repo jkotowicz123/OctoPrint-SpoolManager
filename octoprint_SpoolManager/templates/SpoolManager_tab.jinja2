@@ -251,16 +251,16 @@
             <tr><th>ID</th> <th>DisplayNAme</th></tr>
         </thead>
     
-        <tbody data-bind="foreach: { data: flattenArray, as: 'filamentType', noChildContext: true }">
+        <tbody data-bind="foreach: flattenArray">
             <tr>
-                <td data-bind="text: filamentType[0]"></td>
-                <td data-bind="text: filamentType[1]"></td>
+                <td data-bind="text: $data[0]"></td>
+                <td data-bind="text: $data[1]"></td>
             </tr>
-        </tbody>
-        <tbody data-bind="foreach: { data: filamentType[1], as: 'filamentSpool', noChildContext: true }">
-            <tr>
-                <td data-bind="text: filamentSpool.databaseId></td>
-            </tr>
+            <tbody data-bind="foreach: { data: filamentType()[1], as: 'filamentSpool', noChildContext: true }">
+                <tr>
+                    <td data-bind="text: filamentSpool.databaseId></td>
+                </tr>
+            </tbody>
         </tbody>
     </table>
     <!--
