@@ -288,18 +288,11 @@
             <tr>
                 <td colspan="8">
                     <table border="1">
-                        <tr>
-                            <td>test fdaljgadg adg sfdg</td>
-                        </tr>
-                        <tr>
-                            <td>test fdaljgadg adg sfdg</td>
-                        </tr>
-                        <tr>
-                            <td>test fdaljgadg adg sfdg</td>
-                        </tr>
-                        <tr>
-                            <td>test fdaljgadg adg sfdg</td>
-                        </tr>
+                        <tbody data-bind="foreach: flattenArray">
+                            <tr>
+                                <td colspan="8" data-bind="text: $data[0]"></td>
+                            <tr>
+                        </tbody>
                     </table>
                 </td>
             </tr>
