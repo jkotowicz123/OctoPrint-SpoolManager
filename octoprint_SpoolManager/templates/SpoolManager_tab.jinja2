@@ -264,6 +264,24 @@
         </tbody>
     </table>
 
+     <table>
+        <thead>
+            <tr><th>ID</th> <th>DisplayNAme</th></tr>
+        </thead>
+    
+        <tbody data-bind="foreach: flattenArray">
+            <tr>
+                <td data-bind="text: $data[0]"></td>
+                <td data-bind="value: $data[1]"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="foreach:$data[1]">
+            <tr>
+                <td data-bind="text: $data.databaseId></td>
+            </tr>
+        </tbody>
+    </table>
+
 
 
         <!-- Table start -->
