@@ -785,7 +785,7 @@ $(function() {
                     return x;
     
                 }, {});
-                flattenArray=ko.observableArray([]);
+                self.flattenArray=ko.observableArray([]);
                 flattenArray = Object.entries(groupedSpoolItems);
                 console.log(groupedSpoolItems);
                 //console.log(flattenArray);
