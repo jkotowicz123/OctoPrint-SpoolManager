@@ -253,12 +253,10 @@
     
     <tbody data-bind="foreach: flattenArray">
         <tr>
-            <td data-bind="text: Items()[0].name"></td>
-            <td data-bind="text: Items()[0]"></td>
-            <td data-bind="text: Items[0].name"></td>
-            <td data-bind="text: Items[0]"></td>
-            <td data-bind="text:[0]"></td>
-            <td data-bind="text:[0]"></td>
+            <td data-bind="text: flattenArray()[0].name"></td>
+            <td data-bind="text: flattenArray()[0]"></td>
+            <td data-bind="text: flattenArray[0].name"></td>
+            <td data-bind="text: flattenArray[0]"></td>
             <td>"sztywna wartośc"</td>
         </tr>
     </tbody>
