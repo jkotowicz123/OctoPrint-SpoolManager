@@ -250,25 +250,15 @@
     <thead>
         <tr><th>ID</th> <th>DisplayNAme</th></tr>
     </thead>
-    <!--
+    
     <tbody data-bind="foreach: flattenArray">
         <tr>
-            <td data-bind="text:$data.name"></td>
-            <ul data-bind="foreach: Object.keys(props)">
-            <li><span data-bind="text: $data"></span>: <em data-bind="text: $parent.props[$data]"></em></li>
+            <td data-bind="text:$data"></td>
             <td>"sztywna wartośc"</td>
         </tr>
     </tbody>
     </table>
--->
-    <table>
-    <tbody data-bind="foreach: {groupedSpoolItems: groupedSpoolItems, as: '_data'}">
-        <tr data-bind="foreach: {data: Object.keys(props), as: '_propkey'}">
-        <th data-bind="text: _propkey"></th>
-        <td data-bind="text: _data.props[_propkey]"></td>
-        </tr>
-    </tbody>
-    </table>
+
 
 
         <!-- Table start -->
