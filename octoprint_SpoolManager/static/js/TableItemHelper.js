@@ -36,7 +36,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     //self.filterOptions = ["all", "onlySuccess", "onlyFailed"];
     self.selectedFilterName = ko.observable("hideEmptySpools");
 
-    self.selectedFilterNameArrayKO = ko.observableArray(["hideEmptySpools"]);
+    self.selectedFilterNameArrayKO = ko.observableArray([]);
 
     // Filtering - Material
     self.allMaterials = ko.observableArray([]);
@@ -76,7 +76,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         var vendorFilter = self._evalFilter(self.allVendors(), self.selectedVendorsForFilter());
         var colorFilter = self._evalFilter(self.allColors(), self.selectedColorsForFilter());
 
-        var selectedFilterNamesString = "";
+        var selectedFilterNamesString = "hideEmptySpools";
         var selectedFilterNames = self.selectedFilterNameArrayKO();
         if (selectedFilterNames.length != 0){
             selectedFilterNamesString = selectedFilterNames.sort().join();
