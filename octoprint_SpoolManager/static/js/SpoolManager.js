@@ -772,23 +772,32 @@ $(function() {
 
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
-
+                /*
                 dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
-                });
-                
+                });*/
+
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
                     return x;
                 }, {});
+
+                flattenArray = Object.entries(groupedSpoolItems);
+
+                dataRows = ko.utils.arrayMap(flattenArray, function (spoolData) {
+                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                    return result;
+                });
+                
+              
                 
                 dataRows4 = ko.utils.arrayMap(groupedSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
 
-                flattenArray = Object.entries(groupedSpoolItems);
+
 
                 dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
                     var result = { 
