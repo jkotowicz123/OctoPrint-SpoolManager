@@ -315,7 +315,7 @@ function SpoolManagerEditSpoolDialog(){
     };
 
     var filamentItem = function(filamentData, editable){
-        this.name = ko.observable(false);
+        this.displayName = ko.observable();
     }
 
 
