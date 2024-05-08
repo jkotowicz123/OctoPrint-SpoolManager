@@ -442,6 +442,15 @@
             </tr>
         </tfoot>
         </table>
+
+        <h4>People</h4>
+        <ul data-bind="foreach: dataRows3">
+            <li>
+                Name at position <span data-bind="text: $index"> </span>:
+                <span data-bind="text: name"> </span>
+            </li>
+        </ul>
+
         {{ forms.tablePagination() }}
     </div> <!-- visible -->
 </div>
