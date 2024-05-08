@@ -785,9 +785,17 @@ $(function() {
 
                 flattenArray = Object.entries(groupedSpoolItems);
 
-                dataRows = ko.utils.arrayMap(flattenArray, function (spoolData) {
+                dataRows6 = ko.utils.arrayMap(flattenArray, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
+                });
+
+                //get a list of used categories
+                dataRows = ko.computed(function() {
+                    var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
+                        return item.displayName();
+                    });
+                    return categories.sort();
                 });
                 
               
