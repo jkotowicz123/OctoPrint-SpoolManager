@@ -772,11 +772,11 @@ $(function() {
 
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
-                /*
+                
                 dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
-                });*/
+                });
 
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
@@ -784,12 +784,12 @@ $(function() {
                 }, {});
 
                 flattenArray = Object.entries(groupedSpoolItems);
-
+                /*
                 dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
-            
+                */
 
                 //get a list of used categories
                 /*dataRows7 = ko.computed(function() {

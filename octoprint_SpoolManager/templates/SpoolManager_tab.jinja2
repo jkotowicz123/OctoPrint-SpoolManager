@@ -447,8 +447,8 @@
         <ul data-bind="foreach: dataRows">
             <li>
                 <span data-bind="text: $index"> </span>
-                <span data-bind="text: $data()[0]"></span>
-                <ul data-bind="foreach: $data()[1]">
+                <span data-bind="text: $data"></span>
+                <ul data-bind="foreach: $data">
                     <li>
                     <span data-bind="text: displayName"></span>
                     </li>
