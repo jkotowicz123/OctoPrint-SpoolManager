@@ -816,7 +816,7 @@ $(function() {
                     return result;
                 }))
 
-                dataRows3 = ko.mapping.fromJS(flattenArrays);
+                dataRows3 = ko.mapping.fromJS(flattenArray);
 
                 flattenArray = Object.entries(groupedSpoolItems);
                 console.log(groupedSpoolItems);
