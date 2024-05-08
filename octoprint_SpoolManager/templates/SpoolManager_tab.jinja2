@@ -447,11 +447,11 @@
         <ul data-bind="foreach: dataRows">
             <li>
                 <span data-bind="text: $index"> </span>
-                <span data-bind="text: $data[0]"></span>
+                <span data-bind="text: $data()[0]"></span>
             </li>
-                <ul data-bind="foreach: $data[1]">
+                <ul data-bind="foreach: $data()[1]">
                     <li>
-                    <span data-bind="text: displayName"> </span>
+                    <span data-bind="text: displayName"></span>
                     </li>
                 </ul>
             </li>
