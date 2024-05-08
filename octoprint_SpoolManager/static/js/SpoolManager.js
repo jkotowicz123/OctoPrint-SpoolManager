@@ -709,7 +709,7 @@ $(function() {
             this.used = ko.observable(true);
             this.note = ko.observable(true);
             this.serialNumber = ko.observable(true);
-            this.project = ko.obserable(true);
+            this.project = ko.observable(true);
         }
         self.tableAttributeVisibility = new TableAttributeVisibility();
 
