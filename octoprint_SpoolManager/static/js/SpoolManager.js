@@ -780,7 +780,7 @@ $(function() {
 
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
-                    return x.displayName;
+                    return x;
                 }, {});
 
                 flattenArray = Object.entries(groupedSpoolItems);
