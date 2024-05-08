@@ -241,6 +241,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="span3" style="margin-bottom:-10px">
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="checkbox" style="margin-left:10px">
+                                        <input type="checkbox" data-bind="checked: tableAttributeVisibility.project"> Project
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -410,6 +421,7 @@
                     <th style="text-align: center; width: 15%;" data-bind="visible: tableAttributeVisibility.used"><a href="#" data-bind="click: function() { spoolItemTableHelper.changeSortOrder('usedPercentage'); }">Used</a><span data-bind="text: spoolItemTableHelper.sortOrderLabel('usedPercentage')"></span></th>
                     <th style="width: 15%;" data-bind="visible: tableAttributeVisibility.note">Note</th>
                     <th style="width: 20%;" data-bind="visible: tableAttributeVisibility.serialNumber">Serial No.</th>
+                    <th style="width: 20%;" data-bind="visible: tableAttributeVisibility.project">Project.</th>
     <!-- TODO remove action column                <th style="width: 9%"></th>
     -->
                 </tr>
