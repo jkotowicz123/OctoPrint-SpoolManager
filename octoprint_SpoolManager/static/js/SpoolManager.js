@@ -779,24 +779,19 @@ $(function() {
                 });
                 
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
-
                     (x[y.displayName] = x[y.displayName] || []).push(y);
-    
                     return x;
-    
                 }, {});
 
-                /*dataRows2 = ko.observableArray(ko.utils.arrayMap(allSpoolItems, function(spoolData) {
+                dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
                     var result = { 
                         name : spoolData.name, 
-                        code : spoolData.code, 
-                        type : spoolData.type, 
-                        fields: ko.observableArray(section.fields) 
+                        fields: ko.observableArray(spoolData.fields) 
                     };
                     return result;
-                }));*/
+                }))
 
-                dataRows2 = ko.mapping.fromJS(groupedSpoolItems);
+                dataRows3 = ko.mapping.fromJS(groupedSpoolItems);
 
 
                 
