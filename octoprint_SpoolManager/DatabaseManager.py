@@ -321,6 +321,7 @@ class DatabaseManager(object):
 		self._executeSQLQuietly(cursor, "CREATE INDEX spoolmodel_materialCharacteristic ON spo_spoolmodel (materialCharacteristic)")
 		self._executeSQLQuietly(cursor, "CREATE INDEX spoolmodel_material ON spo_spoolmodel (material)")
 		self._executeSQLQuietly(cursor, "CREATE INDEX spoolmodel_vendor ON spo_spoolmodel (vendor)")
+		self._executeSQLQuietly(cursor, "CREATE INDEX spoolmodel_project ON spo_spoolmodel (project)")
 
 		self._executeSQLQuietly(cursor, "UPDATE 'spo_pluginmetadatamodel' SET value=5 WHERE key='databaseSchemeVersion'")
 
@@ -337,6 +338,7 @@ class DatabaseManager(object):
 		# 	CREATE INDEX spoolmodel_materialCharacteristic ON spo_spoolmodel (materialCharacteristic);
 		# 	CREATE INDEX spoolmodel_material ON spo_spoolmodel (material);
 		# 	CREATE INDEX spoolmodel_vendor ON spo_spoolmodel (vendor);
+		# 	CREATE INDEX spoolmodel_project ON spo_spoolmodel (project);
 		#
 		# 	UPDATE 'spo_pluginmetadatamodel' SET value=5 WHERE key='databaseSchemeVersion';
 		# COMMIT;
@@ -423,6 +425,7 @@ class DatabaseManager(object):
 			CREATE INDEX spoolmodel_materialCharacteristic ON spo_spoolmodel (materialCharacteristic);
 			CREATE INDEX spoolmodel_material ON spo_spoolmodel (material);
 			CREATE INDEX spoolmodel_vendor ON spo_spoolmodel (vendor);
+			CREATE INDEX spoolmodel_project ON spo_spoolmodel (project);
 
 			ALTER TABLE 'spo_spoolmodel' RENAME TO 'spo_spoolmodel_old';
 			CREATE TABLE "spo_spoolmodel" (
