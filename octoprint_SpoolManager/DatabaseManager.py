@@ -1025,7 +1025,10 @@ class DatabaseManager(object):
 						myQuery = myQuery.where(SpoolModel.vendor.in_(allVendors))
 						# for vendor in allVendors:
 						# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
-	  			#project filter
+	  			# projectlFilter
+				# u'my filaments, Client XYZ'
+				# u''
+				# u'all'
 				projectFilter = StringUtils.to_native_str(projectFilter)
 				if (projectFilter != "all"):
 					if (StringUtils.isEmpty(projectFilter)):
