@@ -182,7 +182,6 @@ function SpoolManagerEditSpoolDialog(){
         // Fill Item with data
         this.update(spoolData);
     }
-    
 
     SpoolItem.prototype.update = function (data) {
         var updateData = data || {}
@@ -313,10 +312,6 @@ function SpoolManagerEditSpoolDialog(){
 
         self.autoUpdateEnabled = true;
     };
-
-    var filamentItem = function(filamentData, editable){
-        this.displayName = ko.observable();
-    }
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////// Instance Variables
@@ -772,11 +767,6 @@ function SpoolManagerEditSpoolDialog(){
     this.createSpoolItemForTable = function(spoolData){
         var newSpoolItem = new SpoolItem(spoolData, false);
         return newSpoolItem;
-    }
-
-    this.createFilamentItemForTable = function(filamentData){
-        var newFilamentItem = new filamentItem(filamentData, false);
-        return newFilamentItem;
     }
 
     this.updateCatalogs = function(allCatalogs){
