@@ -793,7 +793,7 @@ $(function() {
                 //get a list of used categories
                 dataRows = ko.computed(function() {
                     var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
-                        return item.displayName();
+                        return item.displayName;
                     });
                     return categories.sort();
                 });
