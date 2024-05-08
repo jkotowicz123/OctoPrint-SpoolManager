@@ -227,6 +227,7 @@ ALL_COLUMNS = {
 	COLUMN_VENDOR: CSVColumn("vendor", COLUMN_VENDOR, "", DefaultCSVFormattorParser()),
 	COLUMN_MATERIAL: CSVColumn("material", COLUMN_MATERIAL, "", DefaultCSVFormattorParser()),
 	COLUMN_SERIALNUMBER: CSVColumn("code", COLUMN_SERIALNUMBER, "", DefaultCSVFormattorParser()),
+	COLUMN_PROJECT: CSVColumn("code", COLUMN_PROJECT, "", DefaultCSVFormattorParser()),
 	COLUMN_DENSITY: CSVColumn("density", COLUMN_DENSITY, "", NumberCSVFormattorParser()),
 	COLUMN_DIAMETER: CSVColumn("diameter", COLUMN_DIAMETER, "", NumberCSVFormattorParser()),
 	COLUMN_DIAMETER_TOLERANCE: CSVColumn("diameterTolerance", COLUMN_DIAMETER_TOLERANCE, "", NumberCSVFormattorParser()),
@@ -384,6 +385,7 @@ def createSampleSpoolModel():
 	s1.colorName = "raw-red"
 	s1.color = "#FF0000"
 	s1.vendor = "The Spool Company"
+	s1.project = "Sample Project"
 	s1.material = "PETG"
 	s1.code = "X000SKGR05"
 	s1.diameter = 1.75
