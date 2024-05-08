@@ -1026,15 +1026,15 @@ class DatabaseManager(object):
 						# for vendor in allVendors:
 						# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
 	  			#project filter
-				projectFilter = StringUtils.to_native_str(projectFilter)
-				if (projectFilter != "all"):
-					if (StringUtils.isEmpty(projectFilter)):
-						myQuery = myQuery.where( (SpoolModel.project == '') )
-					else:
-						allProjects = projectFilter.split(",")
-						myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
-						# for vendor in allVendors:
-						# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
+				#projectFilter = StringUtils.to_native_str(projectFilter)
+				#if (projectFilter != "all"):
+				#	if (StringUtils.isEmpty(projectFilter)):
+				#		myQuery = myQuery.where( (SpoolModel.project == '') )
+				#	else:
+				#		allProjects = projectFilter.split(",")
+				#		myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
+				#		# for vendor in allVendors:
+				#		# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
 				# colorFilter
 				# u'#ff0000;red,#ff0000;keinRot,#ff0000;deinRot,#ff0000;meinRot,#ffff00;yellow'
 				# u''
