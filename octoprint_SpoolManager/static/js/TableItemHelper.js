@@ -363,6 +363,5 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         return pages;
     });
-
-
+    
 }
