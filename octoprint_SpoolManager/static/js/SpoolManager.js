@@ -795,7 +795,7 @@ $(function() {
                     var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
                         return item.displayName;
                     });
-                    return categories.sort();
+                    return categories;
                 });
                 
               
