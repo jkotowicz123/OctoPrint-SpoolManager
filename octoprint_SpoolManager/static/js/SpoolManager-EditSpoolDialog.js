@@ -127,6 +127,13 @@ function SpoolManagerEditSpoolDialog(){
         this.vendor = vendorViewModel.selectedOption;
         this.allVendors = vendorViewModel.allOptions;
 
+
+        var projectViewModel = self.componentFactory.createSelectWithFilter("spool-project-select", $('#spool-form'));
+        this.project = projectViewModel.selectedOption;
+        this.allProjects = projectViewModel.allOptions;
+
+        
+
         var materialViewModel = self.componentFactory.createSelectWithFilter("spool-material-select", $('#spool-form'));
         this.material = materialViewModel.selectedOption;
         // this.allMaterials = materialViewModel.allOptions;
@@ -201,6 +208,9 @@ function SpoolManagerEditSpoolDialog(){
 
             //vendors
             this.allVendors(self.catalogs.vendors);
+
+            //projects
+            this.allProjects(self.catalogs.projects);
         }
 
         this.selectedFromQRCode(updateData.selectedFromQRCode);
@@ -213,6 +223,7 @@ function SpoolManagerEditSpoolDialog(){
         this.isInActive(!updateData.isActive);
         this.displayName(updateData.displayName);
         this.vendor(updateData.vendor);
+        this.project(updateData.project);
 
         this.material(updateData.material);
         this.density(updateData.density);
