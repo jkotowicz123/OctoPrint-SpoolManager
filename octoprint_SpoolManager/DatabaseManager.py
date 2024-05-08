@@ -996,7 +996,7 @@ class DatabaseManager(object):
 			if ("materialFilter" in tableQuery):
 				materialFilter = tableQuery["materialFilter"]
 				vendorFilter = tableQuery["vendorFilter"]
-				#projectFilter = tableQuery["projectFilter"]
+				projectFilter = tableQuery["projectFilter"]
 				colorFilter = tableQuery["colorFilter"]
 
 				# materialFilter
