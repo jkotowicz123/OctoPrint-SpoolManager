@@ -784,29 +784,11 @@ $(function() {
                 }, {});
 
                 flattenArray = Object.entries(groupedSpoolItems);
-                
-                var JSONdataFromServer = '[{"name":"Peach","category":"Fruits","price":1},{"name":"Plum","category":"Fruits","price":0.75},{"name":"Donut","category":"Bread","price":1.5},{"name":"Milk","category":"Dairy","price":4.50}]';
-                var dataFromServer = ko.utils.parseJson(JSONdataFromServer);
 
-                function Item(name, category, price) {
-                    this.name = ko.observable(name);
-                    this.category = ko.observable(category);
-                    this.price = ko.observable(price);
-                    this.priceWithTax = ko.dependentObservable(function() {
-                        return (this.price() * 1.05).toFixed(2);
-                    }, this);
-                }
-
-                //do some basic mapping (without mapping plugin)
-                dataRows = ko.utils.arrayMap(dataFromServer, function(item) {
-                    return new Item(item.name, item.category, item.price);
-                });
-                
-                /*
                 dataRows = ko.utils.arrayMap(flattenArray[0][1], function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
-                });*/
+                });
             
 
                 //get a list of used categories
