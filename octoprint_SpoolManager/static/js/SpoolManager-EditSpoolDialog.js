@@ -182,6 +182,7 @@ function SpoolManagerEditSpoolDialog(){
         // Fill Item with data
         this.update(spoolData);
     }
+    
 
     SpoolItem.prototype.update = function (data) {
         var updateData = data || {}
@@ -312,6 +313,10 @@ function SpoolManagerEditSpoolDialog(){
 
         self.autoUpdateEnabled = true;
     };
+
+    var filamentItem = function(filamentData, editable){
+        this.name = ko.observable(false);
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////// Instance Variables
@@ -769,6 +774,11 @@ function SpoolManagerEditSpoolDialog(){
         return newSpoolItem;
     }
 
+    this.createFilamentItemForTable = function(filamentData){
+        var newFilamentItem = new filamentItem(filamentData, false);
+        return newFilamentItem;
+    }
+
     this.updateCatalogs = function(allCatalogs){
         self.catalogs = allCatalogs;
         if (self.catalogs != null){
@@ -1017,8 +1027,10 @@ function SpoolManagerEditSpoolDialog(){
     }
     
     self.printImg = function(){
-        pwin = window.open(document.getElementById("qr-label").src,"_blank");
-        pwin.onload = function () {window.print();}
+        $.ajax({
+            url: http://127.0.0.1:5000 + "plugin/"+PLUGIN_ID_string+"?action=isResetSettingsEnabled",
+            type: "GET"
+        }).done(function( data ){
     }
 
 
