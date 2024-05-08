@@ -444,11 +444,16 @@
         </table>
 
         <h4>People</h4>
-        <ul data-bind="foreach: dataRows3">
+        <ul data-bind="foreach: dataRows">
             <li>
-                <span data-bind="text: $data"> </span>
-                Name at position <span data-bind="text: $index"> </span>
-                <span data-bind="text: name"> </span>
+                <span data-bind="text: $index"> </span>
+                <span data-bind="text: $data[0]"></span>
+            </li>
+                <ul data-bind="foreach: $data[1]">
+                    <li>
+                    <span data-bind="text: displayName"> </span>
+                    </li>
+                </ul>
             </li>
         </ul>
 
