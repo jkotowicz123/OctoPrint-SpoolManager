@@ -17,6 +17,7 @@ File includes all Templates that are needed for custom Knockout.js components, s
 {#    <div>spoolsKOArray:<div data-bind="text: allSpoolsKOArray"></div></div>#}
 {#    <div>materialCatalog:<div data-bind="text: allMaterialsKOArray"></div></div>#}
 {#    <div>vendorCatalog:<div data-bind="text: allVendorsKOArray"></div></div>#}
+{#    <div>vendorCatalog:<div data-bind="text: allProjectsKOArray"></div></div>#}
 {#    <div>colorCatalog:<div data-bind="text: allColorsKOArray"></div></div>#}
 {#    <div>selectSpoolFunction<button data-bind="click:selectSpoolFunction">selectSpoolFunction</button></div>#}
     <div>
@@ -100,6 +101,29 @@ File includes all Templates that are needed for custom Knockout.js components, s
                         </div>
                     </li>
                     <span data-bind="foreach: allVendors">
+                        <li data-bind="visible: $data != ''">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checkedValue: $data, checked: $parent.selectedVendorsForFilter"><span data-bind="text: $data"></span>
+                                </label>
+                            </div>
+                        </li>
+                    </span>
+                </ul>
+            </span>
+            {# Project - Filter #}
+            <span class="dropdown  tabdrop">
+                |  <a href="#" data-toggle="dropdown" class="dropdown-toggle">Project (<span data-bind="text: buildFilterLabel('project')" ></span>)
+                    <b class="caret"></b></a>
+                <ul class="dropdown-menu keep-open pre-scrollable" style="padding-left:10px" >
+                    <li>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" data-bind="checked:showAllProjectsForFilter , click:doFilterSelectAll($data, 'project')"><i>select/deselect all</i>
+                            </label>
+                        </div>
+                    </li>
+                    <span data-bind="foreach: allProjects">
                         <li data-bind="visible: $data != ''">
                             <div class="checkbox">
                                 <label>

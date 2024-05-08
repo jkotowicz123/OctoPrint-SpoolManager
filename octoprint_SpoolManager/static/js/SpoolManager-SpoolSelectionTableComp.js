@@ -26,6 +26,7 @@ function SpoolSelectionTableComp() {
         });
         self.allMaterials = params.allMaterialsKOArray;
         self.allVendors = params.allVendorsKOArray;
+        self.allProjects = params.allProjectsKOArray;
         self.allColors = params.allColorsKOArray;
 
         self.selectSpoolFunction = params.selectSpoolFunction;
@@ -54,6 +55,9 @@ function SpoolSelectionTableComp() {
         // - Filtering - Vendor
         self.showAllVendorsForFilter = ko.observable(true);
         self.selectedVendorsForFilter = ko.observableArray();
+        // - Filtering - Projects
+        self.showAllProjectsForFilter = ko.observable(true);
+        self.selectedProjectsForFilter = ko.observableArray();
         // - Filtering - Color
         self.showAllColorsForFilter = ko.observable(true);
         self.selectedColorsForFilter = ko.observableArray();
@@ -165,6 +169,15 @@ function SpoolSelectionTableComp() {
                 self.showAllVendorsForFilter(true);
             } else{
                 self.showAllVendorsForFilter(false);
+            }
+            self._executeFilter();
+            self._storeFilterSelectionsToBrowserStorage();
+        });
+        self.selectedProjectsForFilter.subscribe(function(newValues) {
+            if (self.selectedProjectsForFilter().length > 0){
+                self.showAllProjectsForFilter(true);
+            } else{
+                self.showAllProjectsForFilter(false);
             }
             self._executeFilter();
             self._storeFilterSelectionsToBrowserStorage();
@@ -303,6 +316,9 @@ function SpoolSelectionTableComp() {
             if ("vendor" == filterLabelName){
                 return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
             }
+            if ("project" == filterLabelName){
+                return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
+            }
 
             return "not defined:" + filterLabelName;
         }
@@ -326,6 +342,15 @@ function SpoolSelectionTableComp() {
                         ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
                     } else {
                         self.selectedVendorsForFilter.removeAll();
+                    }
+                    break;
+                case "project":
+                    checked = self.showAllProjectsForFilter();
+                    if (checked == true) {
+                        self.selectedProjectsForFilter().length = 0;
+                        ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                    } else {
+                        self.selectedProjectsForFilter.removeAll();
                     }
                     break;
                 case "color":
@@ -398,6 +423,15 @@ function SpoolSelectionTableComp() {
                                 var spoolColorName = spool.colorName != null && spool.colorName() != null ? spool.colorName() : "";
                                 var colorId = spoolColorCode + ";" + spoolColorName;
                                 if (self.selectedColorsForFilter().includes(colorId) == false){
+                                    spool.isFilteredForSelection(true);
+                                }
+                            }
+                        }
+                        if (spool.isFilteredForSelection() == false){
+                            // Project
+                            if (self.Projects().length != self.selectedProjectsForFilter().length){
+                                var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                                if (self.selectedProjectsForFilter().includes(spoolProject) == false){
                                     spool.isFilteredForSelection(true);
                                 }
                             }

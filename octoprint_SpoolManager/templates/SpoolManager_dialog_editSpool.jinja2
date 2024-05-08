@@ -150,6 +150,14 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label class="control-label">Project</label>
+                            <div class="controls">
+                                <select id="spool-vendor-select" class="input-large" data-bind="options: spoolDialog.spoolItemForEditing.allProjects, value: spoolDialog.spoolItemForEditing.project">
+                                  <option></option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="control-group no-bottom-gap">
                             <label class="control-label">Material</label>
                             <div class="controls">
@@ -596,6 +604,7 @@
         <spm-select-spool-table params="allSpoolsKOArray: spoolDialog.templateSpools,
                                         allMaterialsKOArray: spoolDialog.allMaterials,
                                         allVendorsKOArray: spoolDialog.allVendors,
+                                        allProjectsKOArray: spoolDialog.allProjects,
                                         allColorsKOArray: spoolDialog.allColors,
                                         selectSpoolFunction: spoolDialog.copySpoolItemFromTemplate
                                         "></spm-select-spool-table>

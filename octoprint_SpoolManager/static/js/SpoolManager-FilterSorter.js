@@ -26,6 +26,10 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
     self.allVendors = ko.observableArray([]);
     self.showAllVendorsForFilter = ko.observable(true);
     self.selectedVendorsForFilter = ko.observableArray();
+    // - Filtering - Project
+    self.allProjects = ko.observableArray([]);
+    self.showAllProjectsForFilter = ko.observable(true);
+    self.selectedProjectsForFilter = ko.observableArray();
     // - Filtering - Color
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
@@ -177,10 +181,12 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         self.allCatalogs = catalogs;
         var materialsCatalog = self.allCatalogs["materials"];
         var vendorsCatalog = self.allCatalogs["vendors"];
+        var projectsCatalog = self.allCatalogs["projects"];
         var colorsCatalog = self.allCatalogs["colors"];
 
         self.allMaterials(materialsCatalog);
         self.allVendors(vendorsCatalog);
+        self.allProjects(projectsCatalog);
         self.allColors(colorsCatalog);
 
     }
@@ -209,6 +215,9 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         if ("vendor" == filterLabelName){
             return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
         }
+        if ("project" == filterLabelName){
+            return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
+        }
 
         return "not defined:" + filterLabelName;
     }
@@ -232,6 +241,15 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
                 } else {
                     self.selectedVendorsForFilter.removeAll();
+                }
+                break;
+            case "project":
+                checked = self.showAllProjectsForFilter();
+                if (checked == true) {
+                    self.selectedProjectsForFilter().length = 0;
+                    ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                } else {
+                    self.selectedProjectsForFilter.removeAll();
                 }
                 break;
             case "color":
@@ -306,6 +324,16 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                             }
                         }
                     }
+                    if (spool.isFilteredForSelection() == false){
+                         // Project
+                        if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                            var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                            if (self.selectedProjectsForFilter().includes(spoolProject) == false){
+                                spool.isFilteredForSelection(true);
+                            }
+                        }
+                    }
+
                 }
             }
             if (spool.isFilteredForSelection() == false){
