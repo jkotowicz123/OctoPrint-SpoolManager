@@ -178,6 +178,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 			spoolModel.displayName = nameUnicode
 			spoolModel.vendor = vendorUnicode
+			spoolModel.project = projectUnicode
 
 			spoolModel.material = materialUnicode
 			spoolModel.density = densityFloat

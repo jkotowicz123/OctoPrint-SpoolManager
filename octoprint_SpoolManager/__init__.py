@@ -622,6 +622,7 @@ class SpoolmanagerPlugin(
 					"databaseId": spoolModel.databaseId,
 					"spoolName": spoolModel.displayName,
 					"vendor": spoolModel.vendor,
+					"project":spoolModel.project,
 					"material": spoolModel.material,
 					"diameter": spoolModel.diameter,
 					"density": spoolModel.density,
