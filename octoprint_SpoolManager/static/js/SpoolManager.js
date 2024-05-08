@@ -783,6 +783,9 @@ $(function() {
                     return x;
                 }, {});
 
+
+                flattenArray = Object.entries(groupedSpoolItems);
+
                 dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
                     var result = { 
                         name : spoolData.name, 
@@ -799,7 +802,7 @@ $(function() {
                 displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
-                observableTableModel(dataRows);
+                observableTableModel(dataRows3);
             });
             },
             "all",
