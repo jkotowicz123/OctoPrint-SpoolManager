@@ -1194,6 +1194,19 @@ class DatabaseManager(object):
 			return result;
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogVendors", set())
+	
+	def loadCatalogProjects(self, withReusedConnection=False):
+		def databaseCallMethode():
+			result = set()
+			result.add("")
+			myQuery = SpoolModel.select(SpoolModel.project).distinct()
+			for spool in myQuery:
+				value = spool.project
+				if (value != None):
+					result.add(value)
+			return result;
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogProjects", set())
 
 	def loadCatalogMaterials(self, withReusedConnection=False):
 		def databaseCallMethode():

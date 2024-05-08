@@ -962,6 +962,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		# load all catalogs: vendors, materials, labels, [colors]
 		vendors = list(self._databaseManager.loadCatalogVendors(tableQuery))
+		projects = list(self._databaseManager.loadCatalogProjects(tableQuery))
 		materials = list(self._databaseManager.loadCatalogMaterials(tableQuery))
 		labels = list(self._databaseManager.loadCatalogLabels(tableQuery))
 		colors = list(self._databaseManager.loadCatalogColors(tableQuery))
@@ -979,6 +980,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		catalogs = {
 			"vendors": vendors,
+			"projects":projects,
 			"materials": materials,
 			"colors": colors,
 			"labels": labels
