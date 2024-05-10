@@ -989,7 +989,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# catalogs = {
 		# 	"materials": ["", "ABS", "PLA", "PETG"],
 		# 	"colors": ["", "#123", "#456"],
-		# 	"labels": ["", "good", "bad"]
+		# 	"labels": ["", "good", "bad"],
 		# }
 		selectedSpoolsAsDicts = [
 			(None if selectedSpool is None else Transformer.transformSpoolModelToDict(selectedSpool))
