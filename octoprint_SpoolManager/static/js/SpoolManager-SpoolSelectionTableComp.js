@@ -171,15 +171,7 @@ function SpoolSelectionTableComp() {
             self._executeFilter();
             self._storeFilterSelectionsToBrowserStorage();
         });
-        self.selectedProjectsForFilter.subscribe(function(newValues) {
-            if (self.selectedProjectsForFilter().length > 0){
-                self.showAllProjectsForFilter(true);
-            } else{
-                self.showAllProjectsForFilter(false);
-            }
-            self._executeFilter();
-            self._storeFilterSelectionsToBrowserStorage();
-        });
+
         self.selectedColorsForFilter.subscribe(function(newValues) {
             if (self.selectedColorsForFilter().length == 0){
                 self.showAllColorsForFilter(true);
