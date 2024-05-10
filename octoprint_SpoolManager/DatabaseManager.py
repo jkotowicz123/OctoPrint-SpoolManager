@@ -997,6 +997,7 @@ class DatabaseManager(object):
 				materialFilter = tableQuery["materialFilter"]
 				vendorFilter = tableQuery["vendorFilter"]
 				colorFilter = tableQuery["colorFilter"]
+				projectFilter = tableQuery["projectFilter"]
 				# materialFilter
 				# u'ABS,PLA'
 				# u''
