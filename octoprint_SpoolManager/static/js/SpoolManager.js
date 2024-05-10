@@ -762,6 +762,7 @@ $(function() {
                 totalItemCount = responseData["totalItemCount"];
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
+                console.log(allCatalogs);
         
 
                 // assign catalogs to sidebarFilterSorter
