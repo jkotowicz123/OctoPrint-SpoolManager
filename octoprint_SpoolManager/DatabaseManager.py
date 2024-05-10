@@ -1029,7 +1029,7 @@ class DatabaseManager(object):
 				# u''
 				# u'all'
 				projectFilter = StringUtils.to_native_str(projectFilter)
-				if (projectFilter != "all"):
+				if (projectFilter == "all"):
 					if (StringUtils.isEmpty(projectFilter)):
 						myQuery = myQuery.where( (SpoolModel.project == '') )
 					else:
