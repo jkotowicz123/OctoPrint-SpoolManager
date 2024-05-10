@@ -142,7 +142,6 @@ class TestDatabase(unittest.TestCase):
 			"filterName": "all",
 			"materialFilter": "ABS,PLA",
 			"vendorFilter": "all",
-			"projectFilter": "all",
 			"colorFilter": "#ff0000;red,#ff0000;keinRot"
 		}
 
