@@ -997,7 +997,7 @@ class DatabaseManager(object):
 				materialFilter = tableQuery["materialFilter"]
 				vendorFilter = tableQuery["vendorFilter"]
 				colorFilter = tableQuery["colorFilter"]
-				#projectFilter = tableQuery["projectFilter"]
+				projectFilter = tableQuery["projectFilter"]
 				# materialFilter
 				# u'ABS,PLA'
 				# u''
@@ -1028,13 +1028,13 @@ class DatabaseManager(object):
 				# u'my filaments, Client XYZ'
 				# u''
 				# u'all'
-				#projectFilter = StringUtils.to_native_str(projectFilter)
-				#if (projectFilter == "all"):
-				#	if (StringUtils.isEmpty(projectFilter)):
-				#		myQuery = myQuery.where( (SpoolModel.project == '') )
-				#	else:
-				#		allProjects = projectFilter.split(",")
-				#		myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
+				projectFilter = StringUtils.to_native_str(projectFilter)
+				if (projectFilter != "all"):
+					if (StringUtils.isEmpty(projectFilter)):
+						myQuery = myQuery.where( (SpoolModel.project == '') )
+					else:
+						allProjects = projectFilter.split(",")
+						myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
 				#		# for vendor in allVendors:
 				#		# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
 				# colorFilter
@@ -1101,6 +1101,11 @@ class DatabaseManager(object):
 					myQuery = myQuery.order_by(SpoolModel.databaseId.desc())
 				else:
 					myQuery = myQuery.order_by(SpoolModel.databaseId.asc())
+			if ("project" == sortColumn):
+				if ("desc" == sortOrder):
+					myQuery = myQuery.order_by(SpoolModel.project.desc())
+				else:
+					myQuery = myQuery.order_by(SpoolModel.project.asc())
 	
 			self._logger.info("Quering spools: %s" % myQuery)
 			return myQuery
