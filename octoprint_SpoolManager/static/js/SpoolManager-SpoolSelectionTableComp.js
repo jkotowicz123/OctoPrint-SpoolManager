@@ -55,9 +55,7 @@ function SpoolSelectionTableComp() {
         // - Filtering - Vendor
         self.showAllVendorsForFilter = ko.observable(true);
         self.selectedVendorsForFilter = ko.observableArray();
-        // - Filtering - Projects
-        self.showAllProjectsForFilter = ko.observable(true);
-        self.selectedProjectsForFilter = ko.observableArray();
+
         // - Filtering - Color
         self.showAllColorsForFilter = ko.observable(true);
         self.selectedColorsForFilter = ko.observableArray();
