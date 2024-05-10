@@ -335,18 +335,17 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                                 spool.isFilteredForSelection(true);
                             }
                         }
-                    }
-                    if (spool.isFilteredForSelection() == false){
-                         // Project
-                        if (self.allProjects().length != self.selectedProjectsForFilter().length){
-                            var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
-                            if (self.selectedProjectsForFilter().includes(spoolProject) == false){
-                                spool.isFilteredForSelection(true);
+                        if (spool.isFilteredForSelection() == false){
+                            // Project
+                            if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                                var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                                if (self.selectedProjectsForFilter().includes(spoolProject) == false){
+                                    spool.isFilteredForSelection(true);
+                                }
                             }
                         }
                     }
-
-                }
+                }   
             }
             if (spool.isFilteredForSelection() == false){
                 totalShownCount += 1;
