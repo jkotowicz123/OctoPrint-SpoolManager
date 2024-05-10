@@ -1101,11 +1101,11 @@ class DatabaseManager(object):
 					myQuery = myQuery.order_by(SpoolModel.databaseId.desc())
 				else:
 					myQuery = myQuery.order_by(SpoolModel.databaseId.asc())
-			if ("project" == sortColumn):
-				if ("desc" == sortOrder):
-					myQuery = myQuery.order_by(SpoolModel.project.desc())
-				else:
-					myQuery = myQuery.order_by(SpoolModel.project.asc())
+			#if ("project" == sortColumn):
+			#	if ("desc" == sortOrder):
+			#		myQuery = myQuery.order_by(SpoolModel.project.desc())
+			#	else:
+			#		myQuery = myQuery.order_by(SpoolModel.project.asc())
 	
 			self._logger.info("Quering spools: %s" % myQuery)
 			return myQuery
