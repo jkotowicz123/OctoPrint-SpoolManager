@@ -342,15 +342,6 @@ function SpoolSelectionTableComp() {
                         self.selectedVendorsForFilter.removeAll();
                     }
                     break;
-                case "project":
-                    checked = self.showAllProjectsForFilter();
-                    if (checked == true) {
-                        self.selectedProjectsForFilter().length = 0;
-                        ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
-                    } else {
-                        self.selectedProjectsForFilter.removeAll();
-                    }
-                    break;
                 case "color":
                     checked = self.showAllColorsForFilter();
                     if (checked == false) {
