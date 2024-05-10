@@ -996,7 +996,6 @@ class DatabaseManager(object):
 			if ("materialFilter" in tableQuery):
 				materialFilter = tableQuery["materialFilter"]
 				vendorFilter = tableQuery["vendorFilter"]
-				#projectFilter = tableQuery["projectFilter"]
 				colorFilter = tableQuery["colorFilter"]
 				# materialFilter
 				# u'ABS,PLA'
@@ -1028,7 +1027,6 @@ class DatabaseManager(object):
 				# u'my filaments, Client XYZ'
 				# u''
 				# u'all'
-				
 				#projectFilter = StringUtils.to_native_str(projectFilter)
 				#if (projectFilter != "all"):
 				#	if (StringUtils.isEmpty(projectFilter)):
