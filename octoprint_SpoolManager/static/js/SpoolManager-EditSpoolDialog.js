@@ -101,7 +101,7 @@ function SpoolManagerEditSpoolDialog(){
         this.usedPercentage = ko.observable();
         this.code = ko.observable();
         this.serialNumber = ko.observable();
-        this.project = ko.observable();
+      
 
 //        this.labels = ko.observable();
 //            this.allLabels = ko.observable();
@@ -127,10 +127,6 @@ function SpoolManagerEditSpoolDialog(){
         this.vendor = vendorViewModel.selectedOption;
         this.allVendors = vendorViewModel.allOptions;
 
-
-        var projectViewModel = self.componentFactory.createSelectWithFilter("spool-project-select", $('#spool-form'));
-        this.project = projectViewModel.selectedOption;
-        this.allProjects = projectViewModel.allOptions;
 
         
 
@@ -209,8 +205,7 @@ function SpoolManagerEditSpoolDialog(){
             //vendors
             this.allVendors(self.catalogs.vendors);
 
-            //projects
-            this.allProjects(self.catalogs.projects);
+
         }
 
         this.selectedFromQRCode(updateData.selectedFromQRCode);
@@ -223,7 +218,6 @@ function SpoolManagerEditSpoolDialog(){
         this.isInActive(!updateData.isActive);
         this.displayName(updateData.displayName);
         this.vendor(updateData.vendor);
-        this.project(updateData.project);
 
         this.material(updateData.material);
         this.density(updateData.density);
@@ -254,7 +248,6 @@ function SpoolManagerEditSpoolDialog(){
         this.remainingPercentage(updateData.remainingPercentage);
         this.code(updateData.code);
         this.serialNumber(updateData.serialNumber);
-        this.project(updateData.project);
         this.usedPercentage(updateData.usedPercentage);
 
         this.totalLength(updateData.totalLength);
