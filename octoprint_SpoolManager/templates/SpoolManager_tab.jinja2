@@ -102,8 +102,10 @@
 
                         {# Project - Filter #}
                         <span class="dropdown  tabdrop">
-                            |  <a href="#" data-toggle="dropdown" class="dropdown-toggle">Project (<span data-bind="text: spoolItemTableHelper.buildFilterLabel('project')" ></span>)
-                                <b class="caret"></b></a>
+{#                            <a href="#" data-toggle="dropdown" class="dropdown-toggle">Project (<span data-bind="text: spoolItemTableHelper.selectedProjectsForFilter().length == spoolItemTableHelper.allProjects().length#}
+{#                                                                                                                        ? 'all' : spoolItemTableHelper.selectedProjectsForFilter().length" ></span>)#}
+                            <a href="#" data-toggle="dropdown" class="dropdown-toggle">Project (<span data-bind="text: spoolItemTableHelper.buildFilterLabel('project')" ></span>)
+                            <b class="caret"></b></a>
                             <ul class="dropdown-menu keep-open pre-scrollable" style="padding-left:10px" >
                                 <li>
                                     <div class="checkbox">
