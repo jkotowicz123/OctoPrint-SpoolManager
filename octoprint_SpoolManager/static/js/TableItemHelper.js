@@ -47,9 +47,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.showAllVendorsForFilter = ko.observable(true);
     self.selectedVendorsForFilter = ko.observableArray();
     // Filtering - Color
-    self.allColors = ko.observableArray([]);
-    self.showAllColorsForFilter = ko.observable(true);
-    self.selectedColorsForFilter = ko.observableArray();
+    //self.allColors = ko.observableArray([]);
+    //self.showAllColorsForFilter = ko.observable(true);
+    //self.selectedColorsForFilter = ko.observableArray();
     // Filtering - Project
     self.allProjects = ko.observableArray([]);
     self.showAllProjectsForFilter = ko.observable(true);
