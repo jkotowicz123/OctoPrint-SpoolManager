@@ -927,6 +927,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# sp1 = SpoolModel()
 		# sp1.displayName = "Spool No.1"
 		# sp1.vendor = "Janbex"
+		# sp1.project ="Secret Project"
 		# sp1.material = "ABS"
 		# sp1.color = "#00dd00"
 		# sp1.density = 123.23
@@ -948,6 +949,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# sp2 = SpoolModel()
 		# sp2.displayName = "Spool No.2"
 		# sp2.vendor = "Plastic Joe"
+		# sp2.project = "test project"
 		# sp2.material = "PETG"
 		#
 		# allSpools = [sp1,sp2]
@@ -965,7 +967,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		materials = list(self._databaseManager.loadCatalogMaterials(tableQuery))
 		labels = list(self._databaseManager.loadCatalogLabels(tableQuery))
 		colors = list(self._databaseManager.loadCatalogColors(tableQuery))
-		projects = list(self._databaseManager.loadCatalogProjects(tableQuery))
+		#projects = list(self._databaseManager.loadCatalogProjects(tableQuery))
 
 		materials = self._addAdditionalMaterials(materials)
 
@@ -983,7 +985,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"materials": materials,
 			"colors": colors,
 			"labels": labels,
-			"projects": projects
 		}
 		# catalogs = {
 		# 	"materials": ["", "ABS", "PLA", "PETG"],
