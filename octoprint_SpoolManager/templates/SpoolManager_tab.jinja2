@@ -111,6 +111,7 @@
                                         </label>
                                     </div>
                                 <li>
+                                    
                                 </li>
 
                                 <span data-bind="foreach: spoolItemTableHelper.allColors">
@@ -124,32 +125,6 @@
                                 </span>
                             </ul>
                         </span>
-
-                        {# Project - Filter #}
-                        <span class="dropdown  tabdrop">
-                            |  <a href="#" data-toggle="dropdown" class="dropdown-toggle">Project (<span data-bind="text: spoolItemTableHelper.buildFilterLabel('project')" ></span>)
-                                <b class="caret"></b></a>
-                            <ul class="dropdown-menu keep-open pre-scrollable" style="padding-left:10px" >
-                                <li>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" data-bind="checked:spoolItemTableHelper.showAllProjectsForFilter , click:spoolItemTableHelper.doFilterSelectAll($data, 'project')"><i>select/deselect all</i>
-                                        </label>
-                                    </div>
-                                </li>
-                                <span data-bind="foreach: spoolItemTableHelper.allProjects">
-                                    <li data-bind="visible: $data != ''">
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox" data-bind="checkedValue: $data, checked: $parent.spoolItemTableHelper.selectedProjectsForFilter"><span data-bind="text: $data"></span>
-                                            </label>
-                                        </div>
-                                    </li>
-                                </span>
-                            </ul>
-                        </span>
-
-
                     </small>
                 </div>
                 <div class="pull-right" style="clear: both;">
