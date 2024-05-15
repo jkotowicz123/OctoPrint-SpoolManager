@@ -305,7 +305,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                     self.selectedProjectsForFilter.removeAll();
                 }
                 break;
-            }
         }
     }
     
