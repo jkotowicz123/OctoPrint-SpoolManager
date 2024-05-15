@@ -142,7 +142,8 @@ class TestDatabase(unittest.TestCase):
 			"filterName": "all",
 			"materialFilter": "ABS,PLA",
 			"vendorFilter": "all",
-			"colorFilter": "#ff0000;red,#ff0000;keinRot"
+			"colorFilter": "#ff0000;red,#ff0000;keinRot",
+			"projectFilter":"all"
 		}
 
 		allSpoolModels = self.databaseManager.loadAllSpoolsByQuery(tableQuery)
