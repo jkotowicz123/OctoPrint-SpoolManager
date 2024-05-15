@@ -97,7 +97,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "filterName": selectedFilterNamesString,
             "materialFilter": materialFilter,
             "vendorFilter": vendorFilter,
-            "colorFilter": colorFilter
+            "colorFilter": colorFilter,
+            "projectFilter": projectFilter
         };
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
@@ -303,7 +304,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 } else {
                     self.selectedProjectsForFilter.removeAll();
                 }
-                }
+                break;
+            }
         }
     }
 
