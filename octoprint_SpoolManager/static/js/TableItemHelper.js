@@ -97,8 +97,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "filterName": selectedFilterNamesString,
             "materialFilter": materialFilter,
             "vendorFilter": vendorFilter,
-            "colorFilter": colorFilter,
-            "projectFilter": projectFilter
+            "colorFilter": colorFilter
         };
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
