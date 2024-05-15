@@ -308,6 +308,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
         }
     }
+    
 
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
