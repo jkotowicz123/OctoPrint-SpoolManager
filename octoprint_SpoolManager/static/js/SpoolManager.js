@@ -1046,7 +1046,8 @@ $(function() {
                         "colorName": spoolItem.colorName(),
                         "color": spoolItem.color(),
                         "cost": spoolItem.cost(),
-                        "weight": spoolItem.totalWeight()
+                        "weight": spoolItem.totalWeight(),
+                        "project":spoolItem.project()
                     }
                 }
                 result.push(spoolData);
