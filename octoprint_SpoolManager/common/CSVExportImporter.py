@@ -399,6 +399,7 @@ def createSampleSpoolModel():
 	s1.totalLength = 1321
 	s1.usedLength = 234
 	s1.lastUse = datetime.datetime.now()
+	s1.project = "Project"
 
 	s1.firstUse = datetime.datetime.strptime("2020-03-02 10:33", '%Y-%m-%d %H:%M')
 	s1.purchasedOn = datetime.datetime.strptime("2020-02-01", '%Y-%m-%d')
