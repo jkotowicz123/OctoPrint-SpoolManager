@@ -50,6 +50,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.allColors = ko.observableArray([]);
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
+    // Filtering - Project
+    self.allProjects = ko.observableArray([]);
+    self.showAllProjectsForFilter = ko.observable(true);
+    self.selectedProjectsForFilter = ko.observableArray();
 
     self.isInitialLoadDone = false;
     // ############################################################################################### private functions
@@ -75,6 +79,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         var materialFilter = self._evalFilter(self.allMaterials(), self.selectedMaterialsForFilter());
         var vendorFilter = self._evalFilter(self.allVendors(), self.selectedVendorsForFilter());
         var colorFilter = self._evalFilter(self.allColors(), self.selectedColorsForFilter());
+        var projectFilter = self._evalFilter(self.allProjects(), self.selectedProjectsForFilter());
 
         var selectedFilterNamesString = "hideEmptySpools";
         var selectedFilterNames = self.selectedFilterNameArrayKO();
@@ -92,7 +97,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "filterName": selectedFilterNamesString,
             "materialFilter": materialFilter,
             "vendorFilter": vendorFilter,
-            "colorFilter": colorFilter
+            "colorFilter": colorFilter,
+            "projectFilter": projectFilter
         };
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
@@ -145,6 +151,17 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     });
 
+    self.selectedProjectsForFilter.subscribe(function(newValues) {
+        if (self.selectedProjectsForFilter().length > 0){
+            self.showAllProjectsForFilter(true);
+        } else{
+            self.showAllProjectsForFilter(false);
+        }
+        // TODO Optimize enable after the values where initialy changed
+        self.reloadItems();
+    });
+
+
     self._evalFilterLabel = function(allArray, selectionArray){
         // check if all selected
         var selectionCount = 0
@@ -167,10 +184,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         var materialsCatalog = self.allCatalogs["materials"];
         var vendorsCatalog = self.allCatalogs["vendors"];
         var colorsCatalog = self.allCatalogs["colors"];
+        var projectsCatalog = self.allProjects["projects"];
 
         self.allMaterials(materialsCatalog);
         self.allVendors(vendorsCatalog);
         self.allColors(colorsCatalog);
+        self.allProjects(projectsCatalog);
     }
 
     self.paginatedItems = ko.dependentObservable(function() {
@@ -277,6 +296,15 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                     self.selectedColorsForFilter.removeAll();
                 }
                 break;
+            case "project":
+                checked = self.showAllProjectsForFilter();
+                if(checked == true){
+                    self.selectedProjectsForFilter().length = 0;
+                    ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                } else {
+                    self.selectedProjectsForFilter.removeAll();
+                }
+                }
         }
     }
 
@@ -303,6 +331,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         if ("vendor" == filterLabelName){
             return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
+        }
+        if ("project" == filterLabelName){
+            return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
         }
 
         return "not defined:" + filterLabelName;
