@@ -47,9 +47,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.showAllVendorsForFilter = ko.observable(true);
     self.selectedVendorsForFilter = ko.observableArray();
     // Filtering - Color
-    //self.allColors = ko.observableArray([]);
-    //self.showAllColorsForFilter = ko.observable(true);
-    //self.selectedColorsForFilter = ko.observableArray();
+    self.allColors = ko.observableArray([]);
+    self.showAllColorsForFilter = ko.observable(true);
+    self.selectedColorsForFilter = ko.observableArray();
     // Filtering - Project
     self.allProjects = ko.observableArray([]);
     self.showAllProjectsForFilter = ko.observable(true);
@@ -97,8 +97,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "filterName": selectedFilterNamesString,
             "materialFilter": materialFilter,
             "vendorFilter": vendorFilter,
-            "colorFilter": colorFilter,
-            "projectFilter": projectFilter
+            "colorFilter": colorFilter
         };
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
