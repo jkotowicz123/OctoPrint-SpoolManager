@@ -1039,7 +1039,7 @@ class DatabaseManager(object):
 						allColorNames.append(colorName)
 					myQuery = myQuery.where(SpoolModel.color.in_(allColors))
 					myQuery = myQuery.where(SpoolModel.colorName.in_(allColorNames))
-
+				pass
 					#
 					# 	myQuery = myQuery.orwhere(  (SpoolModel.color == color) & (SpoolModel.colorName == colorName) )
 				#projectFilter = StringUtils.to_native_str(projectFilter)
@@ -1051,7 +1051,7 @@ class DatabaseManager(object):
 				#		myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
 				#		# for vendor in allVendors:
 				#		# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
-				pass
+				#pass
 
 			# mySqlText = myQuery.sql()
 
