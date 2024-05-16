@@ -51,9 +51,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
     // Filtering - Project
-    self.allProjects = ko.observableArray([]);
-    self.showAllProjectsForFilter = ko.observable(true);
-    self.selectedProjectsForFilter = ko.observableArray();
+    //self.allProjects = ko.observableArray([]);
+    //self.showAllProjectsForFilter = ko.observable(true);
+    //self.selectedProjectsForFilter = ko.observableArray();
 
     self.isInitialLoadDone = false;
     // ############################################################################################### private functions
