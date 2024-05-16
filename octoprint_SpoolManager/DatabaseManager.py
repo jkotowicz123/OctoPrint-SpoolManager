@@ -1051,7 +1051,7 @@ class DatabaseManager(object):
 				#		myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
 				#		# for vendor in allVendors:
 				#		# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
-				#pass
+				#git pass
 
 			# mySqlText = myQuery.sql()
 
