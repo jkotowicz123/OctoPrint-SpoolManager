@@ -27,7 +27,7 @@ function SpoolSelectionTableComp() {
         self.allMaterials = params.allMaterialsKOArray;
         self.allVendors = params.allVendorsKOArray;
         self.allColors = params.allColorsKOArray;
-        //self.allProjects = params.allProjectKOArray;
+        self.allProjects = params.allProjectKOArray;
 
         self.selectSpoolFunction = params.selectSpoolFunction;
 
@@ -58,6 +58,9 @@ function SpoolSelectionTableComp() {
         // - Filtering - Color
         self.showAllColorsForFilter = ko.observable(true);
         self.selectedColorsForFilter = ko.observableArray();
+        // - Filtering - Project
+        self.showAllProjectsForFilter = ko.observable(true);
+        self.selectedProjectsForFilter = ko.observableArray();
 
 
         //////////////////////////////////////////////////////////////////// browser storage
@@ -179,6 +182,15 @@ function SpoolSelectionTableComp() {
             self._executeFilter();
             self._storeFilterSelectionsToBrowserStorage();
         });
+        self.selectedProjectsForFilter.subscribe(function(newValues) {
+            if (self.selectedProjectsForFilter().length > 0){
+                self.showAllProjectsForFilter(true);
+            } else{
+                self.showAllProjectsForFilter(false);
+            }
+            self._executeFilter();
+            self._storeFilterSelectionsToBrowserStorage();
+        });
 
         //  - do sorting
         self.sortSpoolArray = function(sortField, requestedSortOrder){
@@ -275,6 +287,11 @@ function SpoolSelectionTableComp() {
                         sortResult = sortResult * sortOrientation;
                         return sortResult;
                     });
+                } else if (sortField === 'project') {
+                    sorted.sort(function (a, b) {
+                        var sortResult = b.project().toLowerCase().localeCompare(a.project().toLowerCase()) * sortOrientation;
+                        return sortResult;
+                    });
                 }
                 self.allSpools(sorted);
                 self.currentSortField(sortField);
@@ -304,9 +321,9 @@ function SpoolSelectionTableComp() {
             if ("vendor" == filterLabelName){
                 return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
             }
-            //if("project" == filterLabelName){
-            //    return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
-            //}
+            if("project" == filterLabelName){
+                return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
+            }
 
             return "not defined:" + filterLabelName;
         }
@@ -345,6 +362,15 @@ function SpoolSelectionTableComp() {
                         self.selectedColorsForFilter.valueHasMutated();
                     } else {
                         self.selectedColorsForFilter.removeAll();
+                    }
+                    break;
+                case "project":
+                    checked = self.showAllProjectsForFilter();
+                    if (checked == true) {
+                        self.selectedProjectsForFilter().length = 0;
+                        ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                    } else {
+                        self.selectedProjectsForFilter.removeAll();
                     }
                     break;
             }
@@ -403,6 +429,15 @@ function SpoolSelectionTableComp() {
                                 var colorId = spoolColorCode + ";" + spoolColorName;
                                 if (self.selectedColorsForFilter().includes(colorId) == false){
                                     spool.isFilteredForSelection(true);
+                                }
+                            }
+                            if (spool.isFilteredForSelection() == false){
+                                // Project
+                                if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                                    var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                                    if (self.selectedProjectsForFilter().includes(spoolProject) == false){
+                                        spool.isFilteredForSelection(true);
+                                    }
                                 }
                             }
                         }

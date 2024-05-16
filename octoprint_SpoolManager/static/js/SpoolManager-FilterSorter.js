@@ -464,12 +464,8 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     return sortResult;
                 });
             } else if (sortField === 'project') {
-                sorted.sort(function sortDesc(a, b) {
-                    var valueA = a.project() != null ? a.project() : 0;
-                    var valueB = b.project() != null ? b.project() : 0;
-                    var sortResult = valueB - valueA;
-
-                    sortResult = sortResult * sortOrientation;
+                sorted.sort(function (a, b) {
+                    var sortResult = b.project().toLowerCase().localeCompare(a.project().toLowerCase()) * sortOrientation;
                     return sortResult;
                 });
             }
