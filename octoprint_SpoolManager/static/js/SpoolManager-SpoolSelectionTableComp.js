@@ -27,7 +27,7 @@ function SpoolSelectionTableComp() {
         self.allMaterials = params.allMaterialsKOArray;
         self.allVendors = params.allVendorsKOArray;
         self.allColors = params.allColorsKOArray;
-        self.allProjects = paramas.allProjectKOArray;
+        //self.allProjects = params.allProjectKOArray;
 
         self.selectSpoolFunction = params.selectSpoolFunction;
 
@@ -304,9 +304,9 @@ function SpoolSelectionTableComp() {
             if ("vendor" == filterLabelName){
                 return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
             }
-            if("project" == filterLabelName){
-                return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
-            }
+            //if("project" == filterLabelName){
+            //    return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
+            //}
 
             return "not defined:" + filterLabelName;
         }
