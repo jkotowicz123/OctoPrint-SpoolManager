@@ -150,6 +150,15 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         self._executeFilter();
         self._storeFilterSelectionsToBrowserStorage();
     });
+    self.selectedProjectsForFilter.subscribe(function(newValues) {
+        if (self.selectedProjectsForFilter().length > 0){
+            self.showAllProjectsForFilter(true);
+        } else{
+            self.showAllProjectsForFilter(false);
+        }
+        self._executeFilter();
+        self._storeFilterSelectionsToBrowserStorage();
+    });
 
     ///////////////////////////////////////////////// functions
 
@@ -182,10 +191,12 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         var materialsCatalog = self.allCatalogs["materials"];
         var vendorsCatalog = self.allCatalogs["vendors"];
         var colorsCatalog = self.allCatalogs["colors"];
+        var projectsCatalog = self.allCatalogs["projects"];
 
         self.allMaterials(materialsCatalog);
         self.allVendors(vendorsCatalog);
         self.allColors(colorsCatalog);
+        self.allProject(projectsCatalog);
 
     }
 
@@ -212,6 +223,9 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
         }
         if ("vendor" == filterLabelName){
             return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
+        }
+        if ("project" == filterLabelName){
+            return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
         }
 
         return "not defined:" + filterLabelName;
@@ -253,6 +267,15 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     self.selectedColorsForFilter.removeAll();
                 }
                 break;
+            case "project":
+                    checked = self.showAllProjectsForFilter();
+                    if (checked == true) {
+                        self.selectedProjectsForFilter().length = 0;
+                        ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                    } else {
+                        self.selectedProjectsForFilter.removeAll();
+                    }
+                    break;
         }
     }
 
@@ -306,6 +329,15 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                             var spoolColorName = spool.colorName != null && spool.colorName() != null ? spool.colorName() : "";
                             var colorId = spoolColorCode + ";" + spoolColorName;
                             if (self.selectedColorsForFilter().includes(colorId) == false){
+                                spool.isFilteredForSelection(true);
+                            }
+                        }
+                    }
+                    if (spool.isFilteredForSelection() == false){
+                        //Project
+                        if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                            var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                            if (self.selectedProjectsForFilter().includes(spoolProject) == false){
                                 spool.isFilteredForSelection(true);
                             }
                         }
@@ -426,6 +458,15 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                 sorted.sort(function sortDesc(a, b) {
                     var valueA = a.remainingWeight() != null ? a.remainingWeight() : 0;
                     var valueB = b.remainingWeight() != null ? b.remainingWeight() : 0;
+                    var sortResult = valueB - valueA;
+
+                    sortResult = sortResult * sortOrientation;
+                    return sortResult;
+                });
+            } else if (sortField === 'project') {
+                sorted.sort(function sortDesc(a, b) {
+                    var valueA = a.project() != null ? a.project() : 0;
+                    var valueB = b.project() != null ? b.project() : 0;
                     var sortResult = valueB - valueA;
 
                     sortResult = sortResult * sortOrientation;
