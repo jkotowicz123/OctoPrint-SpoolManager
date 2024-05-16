@@ -1204,7 +1204,7 @@ class DatabaseManager(object):
 	#			if (value != None):
 	#				result.add(value)
 	#		return result;
-	#
+#
 	#	return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogProjects", set())
 	
 	def loadCatalogMaterials(self, withReusedConnection=False):
