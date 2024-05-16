@@ -151,15 +151,15 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     });
 
-    self.selectedProjectsForFilter.subscribe(function(newValues) {
-        if (self.selectedProjectsForFilter().length > 0){
-            self.showAllProjectsForFilter(true);
-        } else{
-            self.showAllProjectsForFilter(false);
-        }
-        // TODO Optimize enable after the values where initialy changed
-        self.reloadItems();
-    });
+    //self.selectedProjectsForFilter.subscribe(function(newValues) {
+    //    if (self.selectedProjectsForFilter().length > 0){
+    //        self.showAllProjectsForFilter(true);
+    //    } else{
+    //        self.showAllProjectsForFilter(false);
+    //    }
+    //    // TODO Optimize enable after the values where initialy changed
+    //    self.reloadItems();
+    //});
 
 
     self._evalFilterLabel = function(allArray, selectionArray){
