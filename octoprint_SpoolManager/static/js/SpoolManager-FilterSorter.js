@@ -30,6 +30,10 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
 
+    // - Filtering - Project
+    self.showAllProjectsForFilter = ko.observable(true);
+    self.selectedProjectsForFilter = ko.observableArray();
+
     //////////////////////////////////////////////////////////////////// browser storage
     var storageKeyPrefix = "spoolmanager.filtersorter." + filterSorterId + ".";
 
