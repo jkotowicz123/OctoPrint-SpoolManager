@@ -101,7 +101,7 @@ function SpoolManagerEditSpoolDialog(){
         this.usedPercentage = ko.observable();
         this.code = ko.observable();
         this.serialNumber = ko.observable();
-        this.project = ko.observable();
+        //this.project = ko.observable();
         this.printerNumber = ko.observable();
 
 //        this.labels = ko.observable();
@@ -127,6 +127,10 @@ function SpoolManagerEditSpoolDialog(){
         var vendorViewModel = self.componentFactory.createSelectWithFilter("spool-vendor-select", $('#spool-form'));
         this.vendor = vendorViewModel.selectedOption;
         this.allVendors = vendorViewModel.allOptions;
+
+        var projectViewModel = self.componentFactory.createSelectWithFilter("spool-project-select", $('#spool-form'));
+        this.project = projectViewModel.selectedOption;
+        this.allProjects = projectViewModel.allOptions;
 
         var materialViewModel = self.componentFactory.createSelectWithFilter("spool-material-select", $('#spool-form'));
         this.material = materialViewModel.selectedOption;
@@ -202,6 +206,9 @@ function SpoolManagerEditSpoolDialog(){
 
             //vendors
             this.allVendors(self.catalogs.vendors);
+
+            //projects
+            this.allProjects(self.catalogs.projects);
         }
 
         this.selectedFromQRCode(updateData.selectedFromQRCode);
@@ -214,6 +221,7 @@ function SpoolManagerEditSpoolDialog(){
         this.isInActive(!updateData.isActive);
         this.displayName(updateData.displayName);
         this.vendor(updateData.vendor);
+        this.project(updateData.project);
 
         this.material(updateData.material);
         this.density(updateData.density);
@@ -336,10 +344,12 @@ function SpoolManagerEditSpoolDialog(){
     self.labelsViewModel = null;
     self.filamentColorViewModel = null;
     self.materialViewModel = null;
+    self.projectViewModel = null;
 
     self.catalogs = null;
     self.allMaterials = ko.observableArray([]);
     self.allVendors = ko.observableArray([]);
+    self.allProjects = ko.observableArray([]);
     self.allColors = ko.observableArray([]);
 
     self.allToolIndices = ko.observableArray([]);
@@ -779,10 +789,12 @@ function SpoolManagerEditSpoolDialog(){
         if (self.catalogs != null){
             self.allMaterials(self.catalogs["materials"]);
             self.allVendors(self.catalogs["vendors"]);
+            self.allProjects(self.catalogs["projects"]);
             self.allColors(self.catalogs["colors"]);
         } else {
             self.allMaterials([]);
             self.allVendors([]);
+            self.allProjects([]);
             self.allColors([]);
         }
 
