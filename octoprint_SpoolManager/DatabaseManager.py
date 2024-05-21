@@ -444,6 +444,7 @@ class DatabaseManager(object):
 				"code" VARCHAR(255),
 				"serialNumber" VARCHAR(255),
 				"project" VARCHAR(255),
+				"printerNumber" VARCHAR(255),
 				"firstUse" DATETIME,
 				"lastUse" DATETIME,
 				"purchasedFrom" VARCHAR(255),

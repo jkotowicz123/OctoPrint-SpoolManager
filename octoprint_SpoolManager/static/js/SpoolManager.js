@@ -1048,7 +1048,8 @@ $(function() {
                         "color": spoolItem.color(),
                         "cost": spoolItem.cost(),
                         "weight": spoolItem.totalWeight(),
-                        "project":spoolItem.project()
+                        "project":spoolItem.project(),
+                        "printerNumber":spoolItem.printerNumber()
                     }
                 }
                 result.push(spoolData);

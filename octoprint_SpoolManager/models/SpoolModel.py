@@ -38,6 +38,7 @@ class SpoolModel(BaseModel):
 	serialNumber = CharField(null=True)
 	# added "Project" column for filtering groups of filaments
 	project = CharField(null=True, index=True)
+	printerNumber = CharField(null=True)
 	
 
 	firstUse = DateTimeField(null=True)
