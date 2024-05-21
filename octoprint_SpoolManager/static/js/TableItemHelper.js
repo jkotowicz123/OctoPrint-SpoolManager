@@ -60,6 +60,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
 
     self._evalFilter = function(allItems, selectedItems){
+        console.log(allItems);
+        console.log(selectedItems);
         var filterResult = ["all"];
         if (allItems.length != selectedItems.length){
             filterResult = selectedItems;
@@ -163,6 +165,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
 
     self._evalFilterLabel = function(allArray, selectionArray){
+        console.log(allArray);
+        console.log(selectionArray);
         // check if all selected
         var selectionCount = 0
         for (let item of allArray) {
