@@ -995,7 +995,7 @@ class DatabaseManager(object):
 				materialFilter = tableQuery["materialFilter"]
 				vendorFilter = tableQuery["vendorFilter"]
 				colorFilter = tableQuery["colorFilter"]
-				#projectFilter = tableQuery["projectFilter"]
+				projectFilter = tableQuery["projectFilter"]
 
 				# materialFilter
 				# u'ABS,PLA'
@@ -1040,19 +1040,19 @@ class DatabaseManager(object):
 						allColorNames.append(colorName)
 					myQuery = myQuery.where(SpoolModel.color.in_(allColors))
 					myQuery = myQuery.where(SpoolModel.colorName.in_(allColorNames))
-				pass
+				#pass
 					#
 					# 	myQuery = myQuery.orwhere(  (SpoolModel.color == color) & (SpoolModel.colorName == colorName) )
-				#projectFilter = StringUtils.to_native_str(projectFilter)
-				#if (projectFilter != "all"):
-				#	if (StringUtils.isEmpty(projectFilter)):
-				#		myQuery = myQuery.where( (SpoolModel.project == '') )
-				#	else:
-				#		allProjects = projectFilter.split(",")
-				#		myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
-				#		# for vendor in allVendors:
-				#		# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
-				#git pass
+				projectFilter = StringUtils.to_native_str(projectFilter)
+				if (projectFilter != "all"):
+					if (StringUtils.isEmpty(projectFilter)):
+						myQuery = myQuery.where( (SpoolModel.project == '') )
+					else:
+						allProjects = projectFilter.split(",")
+						myQuery = myQuery.where(SpoolModel.project.in_(allProjects))
+						# for vendor in allVendors:
+						# 	myQuery = myQuery.orwhere((SpoolModel.vendor == vendor))
+				pass
 
 			# mySqlText = myQuery.sql()
 
@@ -1195,18 +1195,18 @@ class DatabaseManager(object):
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogVendors", set())
 
-	#def loadCatalogProjects(self, withReusedConnection=False):
-	#	def databaseCallMethode():
-	#		result = set()
-	#		result.add("")
-	#		myQuery = SpoolModel.select(SpoolModel.project).distinct()
-	#		for spool in myQuery:
-	#			value = spool.project
-	#			if (value != None):
-	#				result.add(value)
-	#		return result;
-#
-	#	return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogProjects", set())
+	def loadCatalogProjects(self, withReusedConnection=False):
+		def databaseCallMethode():
+			result = set()
+			result.add("")
+			myQuery = SpoolModel.select(SpoolModel.project).distinct()
+			for spool in myQuery:
+				value = spool.project
+				if (value != None):
+					result.add(value)
+			return result;
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogProjects", set())
 	
 	def loadCatalogMaterials(self, withReusedConnection=False):
 		def databaseCallMethode():
