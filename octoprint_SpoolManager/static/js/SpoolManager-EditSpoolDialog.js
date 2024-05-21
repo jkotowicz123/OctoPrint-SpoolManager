@@ -998,7 +998,7 @@ function SpoolManagerEditSpoolDialog(){
     }
     
     self.assignSpoolToPrinter5 = function(){
-        url = "http://192.168.215.25/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId();
+        url = "http://192.168.215.25/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"&printerID=5";
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
