@@ -26,11 +26,13 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
     self.allVendors = ko.observableArray([]);
     self.showAllVendorsForFilter = ko.observable(true);
     self.selectedVendorsForFilter = ko.observableArray();
+    
     // - Filtering - Color
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
 
     // - Filtering - Project
+    self.allProjects = ko.observableArray([]);
     self.showAllProjectsForFilter = ko.observable(true);
     self.selectedProjectsForFilter = ko.observableArray();
 
