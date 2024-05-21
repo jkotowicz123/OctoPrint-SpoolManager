@@ -278,6 +278,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="span3" style="margin-bottom:-10px">
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="checkbox" style="margin-left:10px">
+                                        <input type="checkbox" data-bind="checked: tableAttributeVisibility.printerNumber"> Printer
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -472,6 +483,7 @@
                     <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.project"><span data-bind="text: project, attr: { title: project }"></span></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></td>
                 </tr>
             </tbody>
             <tfoot>

@@ -710,6 +710,7 @@ $(function() {
             this.note = ko.observable(true);
             this.serialNumber = ko.observable(true);
             this.project = ko.observable(true);
+            this.printerNumber = ko.observable(true);
         }
         self.tableAttributeVisibility = new TableAttributeVisibility();
 
