@@ -986,7 +986,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"materials": materials,
 			"colors": colors,
 			"labels": labels,
-			#"projects": projects
+			"projects": projects
 		}
 		# catalogs = {
 		# 	"materials": ["", "ABS", "PLA", "PETG"],
