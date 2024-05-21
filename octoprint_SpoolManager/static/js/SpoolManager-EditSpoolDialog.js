@@ -245,6 +245,7 @@ function SpoolManagerEditSpoolDialog(){
         this.code(updateData.code);
         this.serialNumber(updateData.serialNumber);
         this.project(updateData.project);
+        this.printerNumber(updateData.printerNumber);
         this.usedPercentage(updateData.usedPercentage);
 
         this.totalLength(updateData.totalLength);
