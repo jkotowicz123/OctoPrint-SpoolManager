@@ -1203,6 +1203,7 @@ class DatabaseManager(object):
 			myQuery = SpoolModel.select(SpoolModel.project).distinct()
 			for spool in myQuery:
 				value = spool.project
+				self._logger.debug(value)
 				if (value != None):
 					result.add(value)
 			return result;
