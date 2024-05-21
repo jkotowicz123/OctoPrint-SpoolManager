@@ -1201,8 +1201,9 @@ class DatabaseManager(object):
 			result = set()
 			result.add("")
 			myQuery = SpoolModel.select(SpoolModel.project).distinct()
+			self._logger.debug(myQuery)
 			for spool in myQuery:
-				value = spool
+				value = spool.project
 				self._logger.debug(value)
 				if (value != None):
 					result.add(value)
