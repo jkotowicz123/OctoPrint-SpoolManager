@@ -17,7 +17,7 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
     self.hideEmptySpools = ko.observable();
     self.hideInActiveSpools = ko.observable();
     // FILTERING - Catalogs
-    self.allColors = ko.observableArray([]);
+  
     // - Filtering - Material
     self.allMaterials = ko.observableArray([]);
     self.showAllMaterialsForFilter = ko.observable(true);
@@ -28,6 +28,7 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
     self.selectedVendorsForFilter = ko.observableArray();
     
     // - Filtering - Color
+    self.allColors = ko.observableArray([]);
     self.showAllColorsForFilter = ko.observable(true);
     self.selectedColorsForFilter = ko.observableArray();
 
@@ -317,6 +318,13 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     }
                 }
                 if (spool.isFilteredForSelection() == false){
+                    //Project
+                    if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                        var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                        if (self.selectedProjectsForFilter().includes(spoolProject) == false){
+                            spool.isFilteredForSelection(true);
+                        }
+                    }
                     // Vendor
                     if (self.allVendors().length != self.selectedVendorsForFilter().length){
                         var spoolVendor = spool.vendor != null && spool.vendor() != null ? spool.vendor() : "";
@@ -335,15 +343,9 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                             }
                         }
                     }
-                    if (spool.isFilteredForSelection() == false){
-                        //Project
-                        if (self.allProjects().length != self.selectedProjectsForFilter().length){
-                            var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
-                            if (self.selectedProjectsForFilter().includes(spoolProject) == false){
-                                spool.isFilteredForSelection(true);
-                            }
-                        }
-                    }
+                    //if (spool.isFilteredForSelection() == false){
+                    
+                    //}
                 }
             }
             if (spool.isFilteredForSelection() == false){
