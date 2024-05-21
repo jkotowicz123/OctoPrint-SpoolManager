@@ -1200,9 +1200,9 @@ class DatabaseManager(object):
 		def databaseCallMethode():
 			result = set()
 			result.add("")
-			myQuery = SpoolModel.select(SpoolModel.project).distinct()
+			myQuery = SpoolModel.select(SpoolModel.vendor).distinct()
 			for spool in myQuery:
-				value = spool.project
+				value = spool.vendor
 				self._logger.debug(value)
 				if (value != None):
 					result.add(value)
