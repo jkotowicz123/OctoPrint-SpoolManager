@@ -190,7 +190,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         var materialsCatalog = self.allCatalogs["materials"];
         var vendorsCatalog = self.allCatalogs["vendors"];
         var colorsCatalog = self.allCatalogs["colors"];
-        var projectsCatalog = self.allProjects["projects"];
+        var projectsCatalog = self.allCatalogs["projects"];
 
         self.allMaterials(materialsCatalog);
         self.allVendors(vendorsCatalog);
