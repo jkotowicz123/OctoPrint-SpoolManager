@@ -1196,6 +1196,7 @@ class DatabaseManager(object):
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogVendors", set())
 
 	def loadCatalogProjects(self, withReusedConnection=False):
+		self._logger.debug("Load Projects catalog")
 		def databaseCallMethode():
 			result = set()
 			result.add("")
