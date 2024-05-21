@@ -27,7 +27,7 @@ function SpoolSelectionTableComp() {
         self.allMaterials = params.allMaterialsKOArray;
         self.allVendors = params.allVendorsKOArray;
         self.allColors = params.allColorsKOArray;
-        self.allProjects = params.allProjectKOArray;
+        self.allProjects = params.allProjectsKOArray;
 
         self.selectSpoolFunction = params.selectSpoolFunction;
 
