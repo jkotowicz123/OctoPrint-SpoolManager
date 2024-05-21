@@ -1207,6 +1207,7 @@ class DatabaseManager(object):
 				self._logger.debug(value)
 				if (value != None):
 					result.add(value)
+			self._logger.debug(result)
 			return result;
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadCatalogProjects", set())
