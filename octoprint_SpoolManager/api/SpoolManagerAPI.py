@@ -942,7 +942,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# sp1.usedLength = 32
 		# sp1.code = "XS-28787-HKH-234"
 		# sp1.serialNumber = "2021/21/21 12:12:12"
-		# sp1.project = "Project for Client XYZ"
 		# sp1.printerNumber = "Prusa MK4 #2"
 		# sp1.purchasedOn = datetime.datetime(2018, 4, 3)
 		# sp1.purchasedFrom = "http://www.amazon.de/eorjoeiirjfoiejfoijeroffjeroeoidj"
