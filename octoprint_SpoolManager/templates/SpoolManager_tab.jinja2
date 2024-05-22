@@ -320,9 +320,10 @@
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b></td>
                 </tr>
                 <tr>
-                    <td>
+                    <td colspan="10">
                         <ul data-bind="foreach: $data[1]">
                             <li>
+                                <span data-bind="text: databaseId"></span>
                                 <span data-bind="text: displayName"></span>
                             </li>
                         </ul>
