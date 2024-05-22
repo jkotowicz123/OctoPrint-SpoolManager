@@ -308,6 +308,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
     }
     
+    self.calculateSumOfFilaments(arrayOfSpools){
+        console.log("arrayOfSpools");
+        console.log(arrayOfSpools);
+    }
 
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
