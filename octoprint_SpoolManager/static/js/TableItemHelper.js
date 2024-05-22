@@ -60,10 +60,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
 
     self._evalFilter = function(allItems, selectedItems){
-        console.log("allItems:");
-        console.log(allItems);
-        console.log("selectedItems");
-        console.log(selectedItems);
         var filterResult = ["all"];
         if (allItems.length != selectedItems.length){
             filterResult = selectedItems;
