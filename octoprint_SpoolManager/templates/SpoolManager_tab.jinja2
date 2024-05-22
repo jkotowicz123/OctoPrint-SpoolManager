@@ -318,6 +318,18 @@
                 <tr>
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b></td>
                 </tr>
+                <!-- ko foreach: $data[1] -->
+                <tr>
+                    <td colspan="10">
+                        <ul>
+                            <li>
+                                <span data-bind="text: databaseId"></span>
+                                <span data-bind="text: displayName"></span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+                <!-- /ko -->
             </tbody>
             <tfoot>
             <tr>
