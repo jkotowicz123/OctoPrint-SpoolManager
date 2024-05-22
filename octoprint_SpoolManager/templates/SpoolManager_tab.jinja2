@@ -318,7 +318,6 @@
                 <tr>
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b></td>
                 </tr>
-                <tr>
                     <!-- ko foreach: $data[1] -->
                         <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                                 <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><b><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></b></td>
@@ -341,7 +340,6 @@
                                 <td data-bind="visible: $root.tableAttributeVisibility.project"><span data-bind="text: project, attr: { title: project }"></span></td>
                             </tr>
                     <!-- /ko -->
-                </tr>
             </tbody>
             <tfoot>
             <tr>
