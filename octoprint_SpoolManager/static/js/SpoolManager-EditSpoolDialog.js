@@ -52,8 +52,7 @@ function SpoolManagerEditSpoolDialog(){
         // if we just use this Item in readonly-mode we need simple ko.observer
 
         // FormatHelperFunction
-        formatOnlyDate = function (data, dateBindingName) {
-            var dateValue = data[dateBindingName];
+        formatOnlyDate = function (dateValue) {
             if (dateValue != null && dateValue() != null && dateValue() != ""){
                 dateValue = dateValue();
                 var result = dateValue.split(" ")[0];
