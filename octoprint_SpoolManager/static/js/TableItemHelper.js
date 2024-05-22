@@ -308,7 +308,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
     }
     
-    self.calculateSumOfFilaments(arrayOfSpools){
+    self.calculateSumOfFilaments = function(arrayOfSpools){
         console.log("arrayOfSpools");
         console.log(arrayOfSpools);
     }
