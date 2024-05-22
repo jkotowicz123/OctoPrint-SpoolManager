@@ -309,8 +309,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
     
     self.calculateSumOfFilaments = function(arrayOfSpools){
-        console.log("arrayOfSpools");
-        console.log(arrayOfSpools);
+        return "test123";
     }
 
     self.buildFilterLabel = function(filterLabelName){
