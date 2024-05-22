@@ -318,12 +318,14 @@
                 <tr>
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b></td>
                 </tr>
-                <tr data-bind="foreach: $data[1]">
+                <tr>
                     <td colspan="10">
-                    <table>
-                            <tr>
-                            <td data-bind="text: displayName"></td>
-                            </tr>
+                        <table>
+                            <tbody data-bind="foreach: $data[1]">
+                                <tr>
+                                <td data-bind="text: displayName"></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </td>
                 </tr>
