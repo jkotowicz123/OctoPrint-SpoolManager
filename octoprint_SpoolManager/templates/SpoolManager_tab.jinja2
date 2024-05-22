@@ -350,28 +350,16 @@
         <h4>Filaments</h4>
         <ul data-bind="foreach: flattenArray">
             <li>
-                <span data-bind="text: $index"> </span>
-                <span data-bind="text: $data"></span>
-                <ul data-bind="foreach: $data">
+                <span data-bind="text: $data[0]"></span>
+                <ul data-bind="foreach: $data[1]">
                     <li>
+                    <span data-bind="text: $data"></span>
                     <span data-bind="text: displayName"></span>
                     </li>
                 </ul>
             </li>
         </ul>
 
-        <h4>Filaments</h4>
-        <ul data-bind="foreach: groupedSpoolItems">
-            <li>
-                <span data-bind="text: $index"> </span>
-                <span data-bind="text: $data"></span>
-                <ul data-bind="foreach: $data">
-                    <li>
-                    <span data-bind="text: displayName"></span>
-                    </li>
-                </ul>
-            </li>
-        </ul>
         {{ forms.tablePagination() }}
     </div> <!-- visible -->
 </div>
