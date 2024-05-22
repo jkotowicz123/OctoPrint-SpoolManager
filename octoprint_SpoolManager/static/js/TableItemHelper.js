@@ -309,13 +309,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
     
     self.calculateSumOfFilaments = function(arrayOfSpools){
-
+        
         console.log(arrayOfSpools);
         var totalFilamentWeight = 0;
         for (let filamentSpool of arrayOfSpools){
-            filamentFloat = parseFloat(filamentSpool.remainingWeight).toFixed(2);
+            filamentFloat = parseFloat(filamentSpool.remainingWeight);
             totalFilamentWeight = totalFilamentWeight + filamentFloat;
         }
+        totalFilamentWeight = totalFilamentWeight.toFixed(2);
         return totalFilamentWeight;
     }
 
