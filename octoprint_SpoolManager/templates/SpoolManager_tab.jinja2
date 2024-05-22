@@ -320,6 +320,9 @@
                 </tr>
                 <!-- ko foreach: $data[1] -->
                 <tr>
+                    <td colspan="10"><span data-bind="text: $data"></span></td>
+                </tr>
+                <tr>
                             <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><b><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></b></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
