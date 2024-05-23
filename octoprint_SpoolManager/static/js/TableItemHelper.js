@@ -348,7 +348,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 }
             }
         }
-        if rowsToggleFlag == 0 {
+        if (rowsToggleFlag == 0) {
             rowsToggleFlag = 1;
         }
         else{
