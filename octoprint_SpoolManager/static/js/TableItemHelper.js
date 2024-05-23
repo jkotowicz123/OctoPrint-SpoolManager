@@ -335,6 +335,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.toggleAllFilamentRows = function(filamentsArray){
+        console.log(filamentsArray)
         for (let filamentType of filamentsArray){
             let filamentName = filamentType[0];
             let rows = document.getElementsByClassName(filamentName);
