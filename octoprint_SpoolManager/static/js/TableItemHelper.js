@@ -321,7 +321,16 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.toggleFilamentSection = function(filamentName){
-        console.log(filamentName);
+        rows = document.getElementsByClassName(filamentName);
+        for(var i = 0; i < rows.length; i++){
+            state = rows[i].style.visibility;
+            if (state == "hidden"){
+                rows[i].style.visibility = "visible"; // or
+            }
+            else{
+                rows[i].style.visibility = "hidden"; // or
+            }
+        }
     }
 
     self.buildFilterLabel = function(filterLabelName){
