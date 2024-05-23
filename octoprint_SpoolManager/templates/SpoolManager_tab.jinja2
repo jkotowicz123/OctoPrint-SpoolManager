@@ -319,7 +319,7 @@
                     <td colspan="10">&#9660; <b><span data-bind="text: $data[0]"></span></b><b>   -  <span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g </td>
                 </tr>
                 <!-- ko foreach: $data[1] -->
-                <tr class="filamentSection" attr: { class: displayName }>
+                <tr data-bind="attr: { class: displayName }">
                             <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><b><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></b></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
