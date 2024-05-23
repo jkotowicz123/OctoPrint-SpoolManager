@@ -340,7 +340,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             for(var i = 0; i < rows.length; i++){
                 let state = rows[i].style.display;
                 if (state == "none"){
-                    rows[i].style.display = "block"; // or
+                    rows[i].style.display = ""; // or
                 }
                 else{
                     rows[i].style.display = "none"; // or
