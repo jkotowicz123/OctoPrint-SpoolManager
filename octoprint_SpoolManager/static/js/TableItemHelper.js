@@ -335,10 +335,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     self.toggleAllFilamentRows = function(filamentsArray){
         for (let filamentType of filamentsArray){
-            filamentName = filamentType[0];
-            rows = document.getElementsByClassName(filamentName);
+            let filamentName = filamentType[0];
+            let rows = document.getElementsByClassName(filamentName);
             for(var i = 0; i < rows.length; i++){
-                state = rows[i].style.display;
+                let state = rows[i].style.display;
                 if (state == "none"){
                     rows[i].style.display = "block"; // or
                 }
