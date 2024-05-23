@@ -339,7 +339,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             let filamentName = filamentType[0];
             let rows = document.getElementsByClassName(filamentName);
             for(var i = 0; i < rows.length; i++){
-                let state = rows[i].style.display;
                 if (rowsToggleFlag == 0){
                     rows[i].style.display = "none"; // or
                 }
