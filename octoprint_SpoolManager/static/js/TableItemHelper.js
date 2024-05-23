@@ -102,7 +102,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "projectFilter": projectFilter
         };
         console.log("--------items------");
-        console.log(self.items);
+        console.log(self.items());
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
 
