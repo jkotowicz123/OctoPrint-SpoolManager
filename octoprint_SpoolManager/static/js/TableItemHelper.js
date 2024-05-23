@@ -8,6 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
+rowsToggleFlag = 0
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -339,13 +340,19 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             let rows = document.getElementsByClassName(filamentName);
             for(var i = 0; i < rows.length; i++){
                 let state = rows[i].style.display;
-                if (state == "none"){
-                    rows[i].style.display = ""; // or
+                if (rowsToggleFlag == 0){
+                    rows[i].style.display = "none"; // or
                 }
                 else{
                     rows[i].style.display = "none"; // or
                 }
             }
+        }
+        if rowsToggleFlag == 0 {
+            rowsToggleFlag = 1;
+        }
+        else{
+            rowsToggleFlag = 0;
         }
     }
 
