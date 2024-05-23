@@ -771,6 +771,9 @@ $(function() {
 
                 flattenArray = Object.entries(groupedSpoolItems);
 
+                console.log("---------flattenArray---------:");
+                console.log(flattenArray);
+
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
                 // assign catalogs to tablehelper
