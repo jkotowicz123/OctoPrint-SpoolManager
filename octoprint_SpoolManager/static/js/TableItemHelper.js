@@ -333,6 +333,22 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
     }
 
+    self.toggleAllFilamentRows = function(filamentsArray){
+        for (let filamentType of filamentsArray){
+            filamentName = filamentType[0];
+            rows = document.getElementsByClassName(filamentName);
+            for(var i = 0; i < rows.length; i++){
+                state = rows[i].style.display;
+                if (state == "none"){
+                    rows[i].style.display = "block"; // or
+                }
+                else{
+                    rows[i].style.display = "none"; // or
+                }
+            }
+        }
+    }
+
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
         // to detecting all, we can't use the length, because if just the color is changed then length is still true
