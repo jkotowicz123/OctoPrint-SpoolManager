@@ -779,6 +779,9 @@ $(function() {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
+                
+                console.log("-----------dataRows------");
+                console.log(dataRows);
 
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
@@ -826,7 +829,7 @@ $(function() {
                 displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
-                observableTableModel(dataRows3);
+                observableTableModel(dataRows);
             });
             },
             "all",
