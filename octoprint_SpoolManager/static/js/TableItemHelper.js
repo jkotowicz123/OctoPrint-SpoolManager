@@ -8,7 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-var rowsToggleFlag = 0
+rowsToggleFlag = 0
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -16,7 +16,7 @@ $(document).ready(function() {
 	});
 });
 
-function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
+function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName,rowsToggleFlag){
 
     var self = this;
     var totalFilamentsWeight;
