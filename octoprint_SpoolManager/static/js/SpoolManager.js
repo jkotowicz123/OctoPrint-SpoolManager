@@ -774,6 +774,11 @@ $(function() {
 
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
+
+                console.log("spoolData:");
+                console.log(spoolData);
+                console.log("allSpoolItems:");
+                console.log(allSpoolItems);
                 
                 dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
