@@ -826,7 +826,7 @@ $(function() {
                 displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
-                observableTableModel(dataRows);
+                observableTableModel(dataRows3);
             });
             },
             "all",
