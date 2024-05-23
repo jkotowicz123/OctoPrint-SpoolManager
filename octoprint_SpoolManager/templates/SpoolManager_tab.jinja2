@@ -315,7 +315,7 @@
                 </tr>
             </thead>
             <tbody data-bind="foreach: flattenArray" >
-                <tr class = "labels" data-bind="click: function() { console.log('click on header'}">
+                <tr class = "labels" data-bind="click: function() { spoolItemTableHelper.toggleFilamentSection('nazwaSekcji'); }">
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b><b>   -  <span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g </td>
                 </tr>
                 <!-- ko foreach: $data[1] -->

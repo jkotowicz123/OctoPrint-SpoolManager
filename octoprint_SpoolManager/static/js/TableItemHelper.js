@@ -320,6 +320,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         return totalFilamentWeight;
     }
 
+    self.toggleFilamentSection = function(filamentName){
+        console.log(filamentName);
+    }
+
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
         // to detecting all, we can't use the length, because if just the color is changed then length is still true
