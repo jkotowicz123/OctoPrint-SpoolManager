@@ -17,7 +17,7 @@ $(document).ready(function() {
 });
 
 function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
-    var rowsToggleFlag = 0
+    var rowsToggleFlag = 0;
     var self = this;
     var totalFilamentsWeight;
 
