@@ -323,12 +323,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.toggleFilamentSection = function(filamentName){
         rows = document.getElementsByClassName(filamentName);
         for(var i = 0; i < rows.length; i++){
-            state = rows[i].style.visibility;
-            if (state == "hidden"){
-                rows[i].style.visibility = "visible"; // or
+            state = rows[i].style.display;
+            if (state == "none"){
+                rows[i].style.display = "block"; // or
             }
             else{
-                rows[i].style.visibility = "hidden"; // or
+                rows[i].style.display = "none"; // or
             }
         }
     }
