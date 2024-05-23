@@ -315,11 +315,11 @@
                 </tr>
             </thead>
             <tbody data-bind="foreach: flattenArray" >
-                <tr>
+                <tr class = "labels" data-bind="click: function() { console.log('click on header'}">
                     <td colspan="10"><b><span data-bind="text: $data[0]"></span></b><b>   -  <span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g </td>
                 </tr>
                 <!-- ko foreach: $data[1] -->
-                <tr>
+                <tr class="hide">
                             <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><b><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></b></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
