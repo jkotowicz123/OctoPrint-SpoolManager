@@ -764,6 +764,12 @@ $(function() {
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
         
+                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
+                    (x[y.displayName] = x[y.displayName] || []).push(y);
+                    return x;
+                }, {});
+
+                flattenArray = Object.entries(groupedSpoolItems);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
@@ -778,7 +784,7 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 
-                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
+                dataRows = ko.utils.arrayMap(flattenArray, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
