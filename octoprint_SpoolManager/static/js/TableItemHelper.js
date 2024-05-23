@@ -8,7 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-rowsToggleFlag = 0
+var rowsToggleFlag = 0
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -344,7 +344,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                     rows[i].style.display = "none"; // or
                 }
                 else{
-                    rows[i].style.display = "none"; // or
+                    rows[i].style.display = ""; // or
                 }
             }
         }
