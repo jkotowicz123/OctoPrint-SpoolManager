@@ -787,7 +787,7 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 
-                dataRows = ko.utils.arrayMap(flattenArray, function (spoolData) {
+                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
