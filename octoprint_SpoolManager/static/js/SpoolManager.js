@@ -791,7 +791,6 @@ $(function() {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
-                
                 console.log("-----------dataRows------");
                 console.log(dataRows);
 
