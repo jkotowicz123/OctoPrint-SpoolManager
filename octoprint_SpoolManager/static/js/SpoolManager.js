@@ -790,7 +790,8 @@ $(function() {
                     //var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+
+                    var result = self.spoolDialog.createSpoolItemForTable(filamentType);
                     return result;
                 });
                 
@@ -802,7 +803,7 @@ $(function() {
                     return x;
                 }, {});
 
-                //flattenArray = Object.entries(groupedSpoolItems);
+                flattenArray = Object.entries(groupedSpoolItems);
                 /*
                 dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
@@ -835,15 +836,15 @@ $(function() {
                     return result;
                 }))
 
-                //dataRows3 = ko.mapping.fromJS(flattenArray);
+                dataRows3 = ko.mapping.fromJS(flattenArray);
 
                 flattenArray = Object.entries(groupedSpoolItems);
 
-                //console.log("-------groupedSpoolItems---------");
-                //console.log(groupedSpoolItems);
+                console.log("-------groupedSpoolItems---------");
+                console.log(groupedSpoolItems);
                 //console.log(flattenArray);
-               
-                displayNames = Object.keys(groupedSpoolItems); 
+                displayNames = Object.keys(groupedSpoolItems);
+
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
             });
