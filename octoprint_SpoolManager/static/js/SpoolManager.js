@@ -772,13 +772,10 @@ $(function() {
                 }, {});
 
                 console.log(groupedSpoolItems);
-                
-                for (let filamentGroup in groupedSpoolItems)
-                    console.log(filamentGroup);
-                    console.log(filamentGroup[1]);
-                    console.log(typeof(filamentGroup));
-                    for (spool in filamentGroup)
-                        console.log(spool.remainingWeight);
+
+              Object.keys(groupedSpoolItems).forEach(key => {
+                console.log(key, obj[key]);
+                });
                 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
