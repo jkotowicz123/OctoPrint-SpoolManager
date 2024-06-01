@@ -861,7 +861,7 @@ function SpoolManagerEditSpoolDialog(){
             keyboard: false,
             clickClose: true,
             showClose: false,
-            backdrop: "static"
+            backdrop: "dynamic"
         })
         .css({
             width: 'auto',
