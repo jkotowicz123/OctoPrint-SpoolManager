@@ -776,7 +776,7 @@ $(function() {
                 for (var filamentGroup of groupedSpoolItems)
                     console.log(filamentGroup);
                     //console.log(typeof(filamentGroup));
-                    //filamentGroup = filamentGroup.sort((a,b) => {return a.remainingWeight - b.remainingWeight});
+                    //filamentGroup.sort((a,b) => {return a.remainingWeight - b.remainingWeight});
                 
                 flattenArray = Object.entries(groupedSpoolItems);
 
