@@ -787,7 +787,7 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    //var result = filamentType;
+                    var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
                     for (filamentItem of filamentType[1]){
@@ -796,7 +796,7 @@ $(function() {
                         var result = self.spoolDialog.createSpoolItemForTable(filamentItem);
                         return result;
                     }
-                    //return result;
+                    return result;
                 });
                 
                 console.log("-----------dataRows------");
