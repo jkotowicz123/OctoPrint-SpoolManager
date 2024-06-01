@@ -763,6 +763,12 @@ $(function() {
                 totalItemCount = responseData["totalItemCount"];
                 allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
+                console.log ("----allCatalogs------");
+                console.log (allCatalogs);
+
+                
+                
+                
         
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
