@@ -970,7 +970,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		colors = list(self._databaseManager.loadCatalogColors(tableQuery))
 		projects = list(self._databaseManager.loadCatalogProjects(tableQuery))
 
-		materials = self._addAdditionalMaterials(materials)
+		#materials = self._addAdditionalMaterials(materials)
 
 		tempateSpoolAsDict = None
 		allTemplateSpools = self._databaseManager.loadSpoolTemplates()
