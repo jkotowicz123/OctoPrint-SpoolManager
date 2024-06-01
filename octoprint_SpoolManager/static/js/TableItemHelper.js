@@ -320,7 +320,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             filamentFloat = filamentSpool.remainingWeight();
             totalFilamentWeight = totalFilamentWeight + filamentFloat;
         }
-        totalFilamentWeight = totalFilamentWeight.toFixed(2);
+        totalFilamentWeight = totalFilamentWeight.toFixed(1);
         return totalFilamentWeight;
     }
 
