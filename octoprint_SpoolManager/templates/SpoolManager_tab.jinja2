@@ -318,7 +318,7 @@
             <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
                 <tr class = "labels" data-bind="click: function() { $root.spoolItemTableHelper.toggleFilamentSection($data[0]); }">
                     <td colspan="5">&#9660; <b><span data-bind="text: $data[0]"></span></b></td>
-                    <td colspan="5"><b><span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g</b> / <span data-bind="text: $data[0].length"></span> szpul</td>
+                    <td colspan="5"><b><span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g</b> / <span data-bind="text: $data[1].length"></span> szpul</td>
                 </tr>
                 <!-- ko foreach: $data[1] -->
                 <tr data-bind="click: function () {$root.showSpoolDialogAction($data);}, attr: { class: displayName }">
