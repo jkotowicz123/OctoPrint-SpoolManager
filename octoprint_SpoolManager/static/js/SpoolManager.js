@@ -811,48 +811,6 @@ $(function() {
                     return x;
                 }, {});
 
-                flattenArray = Object.entries(groupedSpoolItems);
-                /*
-                dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
-                    return result;
-                });
-                */
-
-                //get a list of used categories
-                /*dataRows7 = ko.computed(function() {
-                    var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
-                        return item.displayName();
-                    });
-                    return categories.sort();
-                });
-                
-              
-                
-                dataRows4 = ko.utils.arrayMap(groupedSpoolItems, function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
-                    return result;
-                });
-
-
-
-                dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
-                    var result = { 
-                        name : spoolData.name, 
-                        fields: ko.observableArray(spoolData.fields) 
-                    };
-                    return result;
-                }))
-
-                dataRows3 = ko.mapping.fromJS(flattenArray);
-
-                flattenArray = Object.entries(groupedSpoolItems);
-
-                console.log("-------groupedSpoolItems---------");
-                console.log(groupedSpoolItems);
-                //console.log(flattenArray);
-                displayNames = Object.keys(groupedSpoolItems);
-                */
 
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
