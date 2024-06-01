@@ -774,7 +774,11 @@ $(function() {
                 console.log(groupedSpoolItems);
 
                 Object.keys(groupedSpoolItems).forEach(key => {
-                    console.log(groupedSpoolItems[key][0]);
+                    console.log(groupedSpoolItems[key]);
+                    filamentGroup = groupedSpoolItems[key];
+                    for (var i = 0; i < filamentGroup.length; i++)
+                        console.log(filamentGroup[i]);
+                        filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 });
                 
                 
