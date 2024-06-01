@@ -774,7 +774,7 @@ $(function() {
                 console.log(groupedSpoolItems);
 
                 Object.keys(groupedSpoolItems).forEach(key => {
-                    console.log(key, obj[key]);
+                    console.log(key, groupedSpoolItems[key]);
                 });
                 
                 
