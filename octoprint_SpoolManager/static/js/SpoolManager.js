@@ -790,13 +790,13 @@ $(function() {
                     var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
-                    for (filamentItem of filamentType[1]){
+                    /*for (filamentItem of filamentType[1]){
                         //console.log("filamentItem:");
                         //console.log(filamentItem);
                         var spool = self.spoolDialog.createSpoolItemForTable(filamentItem);
                         console.log(spool);
                         //return result;
-                    }
+                    }*/
                     return result;
                 });
                 
