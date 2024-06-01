@@ -791,16 +791,17 @@ $(function() {
                     //    name : filamentType, 
                     //    spools: ko.observableArray(filamentType[1])
                     //};
-                    var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
-                    /*for (filamentItem of filamentType[1]){
+                    for (filamentItem of filamentType[1]){
                         //console.log("filamentItem:");
                         //console.log(filamentItem);
-                        var spool = self.spoolDialog.createSpoolItemForTable(filamentItem);
-                        console.log(spool);
-                        //return result;
-                    }*/
+                        filamentItem = self.spoolDialog.createSpoolItemForTable(filamentItem);
+                        return filamentItem;
+                    }
+                    console.log("----- aftert createing SpoolItems");
+                    console.log(filamentType);
+                    var result = filamentType;
                     return result;
                 });
                 
