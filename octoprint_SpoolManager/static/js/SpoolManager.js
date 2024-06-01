@@ -802,7 +802,7 @@ $(function() {
                     return x;
                 }, {});
 
-                flattenArray = Object.entries(groupedSpoolItems);
+                //flattenArray = Object.entries(groupedSpoolItems);
                 /*
                 dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
@@ -816,7 +816,7 @@ $(function() {
                         return item.displayName();
                     });
                     return categories.sort();
-                });
+                });*/
                 
               
                 
@@ -835,15 +835,15 @@ $(function() {
                     return result;
                 }))
 
-                dataRows3 = ko.mapping.fromJS(flattenArray);
+                //dataRows3 = ko.mapping.fromJS(flattenArray);
 
                 flattenArray = Object.entries(groupedSpoolItems);
 
-                console.log("-------groupedSpoolItems---------");
-                console.log(groupedSpoolItems);
+                //console.log("-------groupedSpoolItems---------");
+                //console.log(groupedSpoolItems);
                 //console.log(flattenArray);
-                displayNames = Object.keys(groupedSpoolItems);
-                */
+               
+                displayNames = Object.keys(groupedSpoolItems); 
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
             });
