@@ -771,10 +771,12 @@ $(function() {
                     return x;
                 }, {});
 
+                for (let filamentGroup in groupedSpoolItems)
+                    filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
+
                 flattenArray = Object.entries(groupedSpoolItems);
 
-                //console.log("---------flattenArray---------:");
-                //console.log(flattenArray);
+                
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
@@ -789,18 +791,8 @@ $(function() {
                 //console.log("--------allSpoolItems----------:");
                 //console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    //console.log("----filamentType before-----:");
-                    //console.log(filamentType);
                     for (var i = 0; i < filamentType[1].length; i++)
                         filamentType[1][i] = self.spoolDialog.createSpoolItemForTable(filamentType[1][i]);
-                    //for (filamentItem of filamentType[1]){
-                    //    //console.log("filamentItem:");
-                    //    //console.log(filamentItem);
-                    //    filamentItem = self.spoolDialog.createSpoolItemForTable(filamentItem);
-                    //    return filamentItem;
-                    //}
-                    //console.log("----- aftert createing SpoolItems");
-                    //console.log(filamentType);
                     var result = filamentType;
                     return result;
                 });

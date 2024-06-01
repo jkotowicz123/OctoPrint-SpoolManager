@@ -101,8 +101,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             "colorFilter": colorFilter,
             "projectFilter": projectFilter
         };
-        console.log("--------items------");
-        console.log(self.items());
+
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
     }
 
