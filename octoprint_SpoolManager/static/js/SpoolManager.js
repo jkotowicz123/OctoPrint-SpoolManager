@@ -773,8 +773,9 @@ $(function() {
 
                 console.log(groupedSpoolItems);
                
-                for (const filamentGroup in groupedSpoolItems)
+                for (filamentGroup in groupedSpoolItems)
                     console.log(filamentGroup);
+                    console.log(filamentGroup[1]);
                 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
