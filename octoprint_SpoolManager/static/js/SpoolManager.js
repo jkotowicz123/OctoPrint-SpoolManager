@@ -775,7 +775,7 @@ $(function() {
                
                 for (var i = 0; i < groupedSpoolItems[1].length; i++)
                     console.log(groupedSpoolItems[i])
-                groupedSpoolItems[i] = groupedSpoolItems[i].sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
+                    groupedSpoolItems[i] = groupedSpoolItems[i].sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 
 
                 flattenArray = Object.entries(groupedSpoolItems);
