@@ -787,13 +787,13 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    var result = { 
-                        name : filamentType, 
-                        spools: ko.observableArray(filamentType[1])
-                    };
-                    //var result = filamentType;
-                    //console.log("filamentType:");
-                    //console.log(filamentType);
+                    //var result = { 
+                    //    name : filamentType, 
+                    //    spools: ko.observableArray(filamentType[1])
+                    //};
+                    var result = filamentType;
+                    console.log("filamentType:");
+                    console.log(filamentType);
                     /*for (filamentItem of filamentType[1]){
                         //console.log("filamentItem:");
                         //console.log(filamentItem);
