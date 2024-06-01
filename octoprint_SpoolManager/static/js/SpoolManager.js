@@ -198,7 +198,7 @@ $(function() {
 
         self.handleDatabaseMetaDataResponse = function(metaDataResponse){
             var metadata = metaDataResponse["metadata"];
-            console.log(metadata);
+            //console.log(metadata);
 
             if (metadata != null){
                 var errorMessage = metadata["errorMessage"];
@@ -771,13 +771,10 @@ $(function() {
                     return x;
                 }, {});
 
-                console.log(groupedSpoolItems);
 
                 Object.keys(groupedSpoolItems).forEach(key => {
-                    console.log(groupedSpoolItems[key]);
                     filamentGroup = groupedSpoolItems[key];
                     for (var i = 0; i < filamentGroup.length; i++)
-                        console.log(filamentGroup[i]);
                         filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 });
                 
