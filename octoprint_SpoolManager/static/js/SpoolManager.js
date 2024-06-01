@@ -772,14 +772,15 @@ $(function() {
                 }, {});
 
                 console.log(groupedSpoolItems);
-
+               
+                for (var i = 0; i < groupedSpoolItems[1].length; i++)
+                    console.log(groupedSpoolItems[i])
+                groupedSpoolItems[i] = groupedSpoolItems[i].sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 
 
                 flattenArray = Object.entries(groupedSpoolItems);
                 
-                for (let filamentGroup in flattenArray)
-                    console.log(filamentGroup)
-                    filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
+               
                 
 
                 // assign catalogs to sidebarFilterSorter
