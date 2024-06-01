@@ -787,10 +787,11 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    var result = filamentType;
+                    //var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
-                    //var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                    
+                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
                 
