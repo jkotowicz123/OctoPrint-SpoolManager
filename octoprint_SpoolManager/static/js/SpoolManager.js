@@ -766,8 +766,10 @@ $(function() {
                 console.log ("----allCatalogs------");
                 console.log (allCatalogs);
 
+                allCatalogs.colors = allCatalogs.colors.sort((a, b) => a.coorName.localeCompare(b.colorName));
                 
-                
+                console.log ("----allCatalogs after sorting colornames------");
+                console.log (allCatalogs);
                 
         
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
