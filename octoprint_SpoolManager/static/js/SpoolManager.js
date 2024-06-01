@@ -786,9 +786,9 @@ $(function() {
 
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
-                
-                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
+                    var result = filamentType[0];
+                    //var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
                 
