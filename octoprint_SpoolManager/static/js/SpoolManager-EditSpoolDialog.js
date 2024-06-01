@@ -858,7 +858,7 @@ function SpoolManagerEditSpoolDialog(){
 
         self.spoolDialog.modal({
             minHeight: function() { return Math.max($.fn.modal.defaults.maxHeight() - 180, 250); },
-            keyboard: false,
+            keyboard: true,
             clickClose: true,
             showClose: false,
             backdrop: "dynamic"
