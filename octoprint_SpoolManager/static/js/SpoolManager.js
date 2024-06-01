@@ -802,16 +802,7 @@ $(function() {
                     var result = filamentType;
                     return result;
                 });
-                
-                //console.log("-----------dataRows------");
-                //console.log(dataRows);
-
-                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
-                    (x[y.displayName] = x[y.displayName] || []).push(y);
-                    return x;
-                }, {});
-
-
+  
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
             });
