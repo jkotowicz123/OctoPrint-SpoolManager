@@ -771,8 +771,8 @@ $(function() {
 
                 flattenArray = Object.entries(groupedSpoolItems);
 
-                console.log("---------flattenArray---------:");
-                console.log(flattenArray);
+                //console.log("---------flattenArray---------:");
+                //console.log(flattenArray);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
@@ -797,8 +797,8 @@ $(function() {
                     //    filamentItem = self.spoolDialog.createSpoolItemForTable(filamentItem);
                     //    return filamentItem;
                     //}
-                    //console.log("----- aftert createing SpoolItems");
-                    //console.log(filamentType);
+                    console.log("----- aftert createing SpoolItems");
+                    console.log(filamentType);
                     var result = filamentType;
                     return result;
                 });
