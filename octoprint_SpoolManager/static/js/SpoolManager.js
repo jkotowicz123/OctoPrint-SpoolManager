@@ -784,13 +784,13 @@ $(function() {
                 templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
 
-                console.log("--------allSpoolItems----------:");
-                console.log(allSpoolItems);
+                //console.log("--------allSpoolItems----------:");
+                //console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    console.log("----filamentType before-----:");
-                    console.log(filamentType);
-                    //for (var i = 0; i < filamentType[1].length; i++)
-                    //    filamentType[1][i] = self.spoolDialog.createSpoolItemForTable(filamentType[1][i]);
+                    //console.log("----filamentType before-----:");
+                    //console.log(filamentType);
+                    for (var i = 0; i < filamentType[1].length; i++)
+                        filamentType[1][i] = self.spoolDialog.createSpoolItemForTable(filamentType[1][i]);
                     //for (filamentItem of filamentType[1]){
                     //    //console.log("filamentItem:");
                     //    //console.log(filamentItem);
@@ -803,8 +803,8 @@ $(function() {
                     return result;
                 });
                 
-                console.log("-----------dataRows------");
-                console.log(dataRows);
+                //console.log("-----------dataRows------");
+                //console.log(dataRows);
 
                 groupedSpoolItems = allSpoolItems.reduce((x, y) => {
                     (x[y.displayName] = x[y.displayName] || []).push(y);
