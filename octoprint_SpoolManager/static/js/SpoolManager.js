@@ -773,7 +773,7 @@ $(function() {
 
                 console.log(groupedSpoolItems);
                
-                for (filamentGroup in groupedSpoolItems)
+                for (var filamentGroup in groupedSpoolItems)
                     console.log(filamentGroup);
                     console.log(filamentGroup[1]);
                     console.log(typeof(filamentGroup));
