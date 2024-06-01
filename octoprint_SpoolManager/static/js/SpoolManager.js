@@ -793,8 +793,9 @@ $(function() {
                     for (filamentItem of filamentType[1]){
                         console.log("filamentItem:");
                         console.log(filamentItem);
-                        var result = self.spoolDialog.createSpoolItemForTable(filamentItem);
-                        return result;
+                        var spool = self.spoolDialog.createSpoolItemForTable(filamentItem);
+                        console.log(spool);
+                        return spool;
                     }
                     return result;
                 });
