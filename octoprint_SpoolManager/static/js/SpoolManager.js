@@ -777,6 +777,8 @@ $(function() {
                     for (var i = 0; i < filamentGroup.length; i++)
                         filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 });
+
+                groupedSpoolItems = groupedSpoolItems.sort((a,b)) => {return self.spoolItemTAbleHelper.calculateSumOfFilaments(a) - self.spoolItemTAbleHelper.calculateSumOfFilaments(b) }
                 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
