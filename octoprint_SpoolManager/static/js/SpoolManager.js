@@ -790,6 +790,13 @@ $(function() {
                     var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
+                    for (filamentItem of filamentType[1]){
+                        console.log("filamentItem:");
+                        console.log(filamentItem);
+                        //if (filamentItem.requiredLength > 0){
+                        //    filteredFilamentList.push(filamentItem)
+                        //}
+                    }
                     //var result = self.spoolDialog.createSpoolItemForTable(filamentType);
                     return result;
                 });
