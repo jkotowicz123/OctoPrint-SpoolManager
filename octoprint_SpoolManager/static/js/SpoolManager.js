@@ -790,7 +790,6 @@ $(function() {
                     //var result = filamentType;
                     console.log("filamentType:");
                     console.log(filamentType);
-                    
                     var result = self.spoolDialog.createSpoolItemForTable(spoolData);
                     return result;
                 });
@@ -817,7 +816,7 @@ $(function() {
                         return item.displayName();
                     });
                     return categories.sort();
-                });*/
+                });
                 
               
                 
@@ -844,7 +843,7 @@ $(function() {
                 console.log(groupedSpoolItems);
                 //console.log(flattenArray);
                 displayNames = Object.keys(groupedSpoolItems);
-
+                */
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);
             });
