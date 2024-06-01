@@ -312,11 +312,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
     
     self.calculateSumOfFilaments = function(arrayOfSpools){
-        console.log(arrayOfSpools);
         var totalFilamentWeight = 0.0;
         for (let filamentSpool of arrayOfSpools){
-            console.log("filament Spool inside function calculating sum:");
-            console.log(filamentSpool.remainingWeight());
             filamentFloat = filamentSpool.remainingWeight();
             totalFilamentWeight = totalFilamentWeight + filamentFloat;
         }
