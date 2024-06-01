@@ -787,18 +787,17 @@ $(function() {
                 console.log("--------allSpoolItems----------:");
                 console.log(allSpoolItems);
                 dataRows = ko.utils.arrayMap(flattenArray, function (filamentType) {
-                    //var result = { 
-                    //    name : filamentType, 
-                    //    spools: ko.observableArray(filamentType[1])
-                    //};
-                    console.log("filamentType:");
+                    console.log("----filamentType before-----:");
                     console.log(filamentType);
-                    for (filamentItem of filamentType[1]){
-                        //console.log("filamentItem:");
-                        //console.log(filamentItem);
-                        filamentItem = self.spoolDialog.createSpoolItemForTable(filamentItem);
-                        return filamentItem;
-                    }
+                    for (var i = 0; i < filamentType[1].length; i++)
+                        filamentType[1][i] = self.spoolDialog.createSpoolItemForTable(filamentType[1][i]);
+                    
+                    //for (filamentItem of filamentType[1]){
+                    //    //console.log("filamentItem:");
+                    //    //console.log(filamentItem);
+                    //    filamentItem = self.spoolDialog.createSpoolItemForTable(filamentItem);
+                    //    return filamentItem;
+                    //}
                     console.log("----- aftert createing SpoolItems");
                     console.log(filamentType);
                     var result = filamentType;
