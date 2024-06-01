@@ -773,8 +773,8 @@ $(function() {
 
                 console.log(groupedSpoolItems);
 
-              Object.keys(groupedSpoolItems).forEach(key => {
-                console.log(key, obj[key]);
+                Object.keys(groupedSpoolItems).forEach(key => {
+                    console.log(key, obj[key]);
                 });
                 
                 
