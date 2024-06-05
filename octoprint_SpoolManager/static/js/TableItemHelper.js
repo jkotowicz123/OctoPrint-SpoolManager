@@ -375,18 +375,30 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
 self.toggleAllSpoolRows = function(){
-    allRows = document.getElementsByClassName("spoolRowExpanded");
-    console.log(allRows);
-    for(var i = 0; i < allRows.length; i++){
+    expandedRows = document.getElementsByClassName("spoolRowExpanded");
+    for(var i = 0; i < expandedRows.length; i++){
         if (spoolRowsExpanded == true){
-            allRows[i].classList.remove("spoolRowExpanded");
-            allRows[i].classList.add("spoolRowCollapsed");
+            expandedRows[i].classList.remove("spoolRowExpanded");
+            expandedRows[i].classList.add("spoolRowCollapsed");
             spoolRowsExpanded = false;
         }
         else{
-            allRows[i].classList.add("spoolRowExpanded");
-            allRows[i].classList.remove("spoolRowCollapsed");
+            expandedRows[i].classList.add("spoolRowExpanded");
+            expandedRows[i].classList.remove("spoolRowCollapsed");
             spoolRowsExpanded = true;
+        }
+    }
+    collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
+    for(var i = 0; i < collapsedRows.length; i++){
+        if (spoolRowsExpanded == true){
+            collapsedRows[i].classList.remove("spoolRowExpanded");
+            collapsedRows[i].classList.add("spoolRowCollapsed");
+            collapsedRows = false;
+        }
+        else{
+            collapsedRows[i].classList.add("spoolRowExpanded");
+            collapsedRows[i].classList.remove("spoolRowCollapsed");
+            collapsedRows = true;
         }
     }
 }
