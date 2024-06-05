@@ -181,8 +181,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         self._loadItems();
         console.log("rowsToggleFlag");
         console.log(rowsToggleFlag);
-        console.log(this.items);
+
         let rows = document.getElementsByClassName("spoolRow");
+        
         for(var i = 0; i < rows.length; i++){
             if (rowsToggleFlag == 0){
                 rows[i].style.display = "none"; // or
