@@ -375,29 +375,16 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
 self.toggleAllSpoolRows = function(){
-    let expandedRows = document.getElementsByClassName("spoolRowExpanded");
-    for(var i = 0; i < expandedRows.length; i++){
+    allRows = document.getElementsByClassName("spoolRow");
+    for(var i = 0; i < allRows.length; i++){
         if (spoolRowsExpanded == true){
-            expandedRows[i].classList.remove("spoolRowExpanded");
-            expandedRows[i].classList.add("spoolRowCollapsed");
+            allRows[i].classList.remove("spoolRowExpanded");
+            allRows[i].classList.add("spoolRowCollapsed");
             spoolRowsExpanded = false;
         }
         else{
-            expandedRows[i].classList.add("spoolRowExpanded");
-            expandedRows[i].classList.remove("spoolRowCollapsed");
-            spoolRowsExpanded = true;
-        }
-    }
-    let collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
-    for(var i = 0; i < collapsedRows.length; i++){
-        if (spoolRowsExpanded == true){
-            collapsedRows[i].classList.remove("spoolRowExpanded");
-            collapsedRows[i].classList.add("spoolRowCollapsed");
-            spoolRowsExpanded = false;
-        }
-        else{
-            collapsedRows[i].classList.add("spoolRowExpanded");
-            collapsedRows[i].classList.remove("spoolRowCollapsed");
+            allRows[i].classList.add("spoolRowExpanded");
+            allRows[i].classList.remove("spoolRowCollapsed");
             spoolRowsExpanded = true;
         }
     }
