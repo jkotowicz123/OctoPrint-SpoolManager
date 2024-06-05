@@ -191,7 +191,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 rows[i].style.display = ""; // or
             }
         }
-        }
     }
 
     self.updateCatalogs = function(catalogs){
