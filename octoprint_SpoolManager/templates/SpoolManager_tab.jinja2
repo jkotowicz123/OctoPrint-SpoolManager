@@ -321,7 +321,7 @@
                     <td colspan="5"><b><span data-bind="text: $root.spoolItemTableHelper.calculateSumOfFilaments($data[1])"></span>g</b> / <span data-bind="text: $data[1].length"></span> szpul</td>
                 </tr>
                 <!-- ko foreach: $data[1] -->
-                <tr  data-bind="click: function () {$root.showSpoolDialogAction($data);}, attr: { class: displayName }, css:{spoolRowExpanded: spoolRowsExpanded == 1, spoolRowCollapsed: spoolRowsExpanded == 0}">
+                <tr  data-bind="click: function () {$root.showSpoolDialogAction($data);}, attr: { class: displayName }, css:{spoolRowExpanded: spoolRowsExpanded == 1, spoolRowCollapsed: spoolRowsExpanded == 0,spoolRow}">
                             <td data-bind="visible: $root.tableAttributeVisibility.printerNumber"><b><span data-bind="text: printerNumber, attr: { title: printerNumber }"></span></b></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                             <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
