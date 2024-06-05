@@ -103,6 +103,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         };
 
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
+        self.checkSpoolRowState();
     }
 
     self.currentPage.subscribe(function(newPageIndex) {
@@ -128,7 +129,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
-        self.checkSpoolRowState();
     });
     self.selectedVendorsForFilter.subscribe(function(newValues) {
         if (self.selectedVendorsForFilter().length > 0){
@@ -138,13 +138,11 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
-        self.checkSpoolRowState();
     });
     self.selectedColorsForFilter.subscribe(function(newValues) {
         if (self.selectedColorsForFilter().length == 0){
             self.showAllColorsForFilter(true);
             self.reloadItems();
-            self.checkSpoolRowState();
         } else{
             self.showAllColorsForFilter(false);
         }
@@ -152,7 +150,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         if (self.selectedColorsForFilter().length != 0){
             // TODO Optimize enable after the values where initialy changed
             self.reloadItems();
-            self.checkSpoolRowState();
         }
 
     });
@@ -165,7 +162,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
-        self.checkSpoolRowState();
     });
 
 
