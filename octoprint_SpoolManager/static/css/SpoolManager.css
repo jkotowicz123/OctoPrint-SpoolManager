@@ -74,6 +74,14 @@
     white-space: nowrap;
 }
 
+.spoolRowExpanded{
+    display:"";
+}
+
+.spoolRowCollapsed{
+    display:"none";
+}
+
 .debug-blue {
     outline: 1px solid blue;
 }
