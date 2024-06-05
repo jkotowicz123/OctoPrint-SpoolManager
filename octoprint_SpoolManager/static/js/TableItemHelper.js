@@ -181,6 +181,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         self._loadItems();
         console.log("rowsToggleFlag");
         console.log(rowsToggleFlag);
+        console.log(this.items);
+        }
     }
 
     self.updateCatalogs = function(catalogs){
