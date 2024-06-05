@@ -340,7 +340,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         for(var i = 0; i < sectionRows.length; i++){
             expanded = sectionRows[i].classList.contains("spoolRowExpanded");
             console.log(expanded);
-            if (expanded == "true"){
+            if (expanded == true){
                 sectionRows[i].classList.remove("spoolRowExpanded");
                 sectionRows[i].classList.add("spoolRowCollapsed");
             }
