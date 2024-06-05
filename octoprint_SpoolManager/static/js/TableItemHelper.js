@@ -179,6 +179,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     // ################################################################################################ public functions
     self.reloadItems = function(){
         self._loadItems();
+        console.log("rowsToggleFlag");
+        console.log(rowsToggleFlag);
     }
 
     self.updateCatalogs = function(catalogs){
