@@ -128,6 +128,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
+        self.checkSpoolRowState();
     });
     self.selectedVendorsForFilter.subscribe(function(newValues) {
         if (self.selectedVendorsForFilter().length > 0){
@@ -137,11 +138,13 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
+        self.checkSpoolRowState();
     });
     self.selectedColorsForFilter.subscribe(function(newValues) {
         if (self.selectedColorsForFilter().length == 0){
             self.showAllColorsForFilter(true);
             self.reloadItems();
+            self.checkSpoolRowState();
         } else{
             self.showAllColorsForFilter(false);
         }
@@ -149,6 +152,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         if (self.selectedColorsForFilter().length != 0){
             // TODO Optimize enable after the values where initialy changed
             self.reloadItems();
+            self.checkSpoolRowState();
         }
 
     });
@@ -161,6 +165,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
+        self.checkSpoolRowState();
     });
 
 
@@ -179,7 +184,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     // ################################################################################################ public functions
     self.reloadItems = function(){
         self._loadItems();
-        console.log("spoolRowsExpanded");
+    }
+
+    self.checkSpoolRowState = function(){
+        console.log("spoolRowsExpanded on reload");
         console.log(spoolRowsExpanded);
         let rows = document.getElementsByClassName("spoolRow");
         for(var i = 0; i < rows.length; i++){
