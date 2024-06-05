@@ -345,8 +345,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 sectionRows[i].classList.add("spoolRowCollapsed");
             }
             else{
-                sectionRows[i].classList.remove("spoolRowExpanded");
-                sectionRows[i].classList.add("spoolRowCollapsed");
+                sectionRows[i].classList.add("spoolRowExpanded");
+                sectionRows[i].classList.remove("spoolRowCollapsed");
             }
         }
     }
