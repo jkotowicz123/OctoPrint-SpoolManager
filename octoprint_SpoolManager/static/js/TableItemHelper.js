@@ -380,17 +380,13 @@ self.toggleAllSpoolRows = function(){
         if (spoolRowsExpanded == true){
             allRows[i].classList.remove("spoolRowExpanded");
             allRows[i].classList.add("spoolRowCollapsed");
+            spoolRowsExpanded = false;
         }
         else{
             allRows[i].classList.add("spoolRowExpanded");
             allRows[i].classList.remove("spoolRowCollapsed");
+            spoolRowsExpanded = true;
         }
-    }
-    if (spoolRowsExpanded == true) {
-        spoolRowsExpanded = false;
-    }
-    else{
-        spoolRowsExpanded = true;
     }
 }
 
