@@ -349,6 +349,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
         }
     }
+    
 /* old, worse approach
     self.toggleAllFilamentRows = function(filamentsArray){
         console.log(filamentsArray)
