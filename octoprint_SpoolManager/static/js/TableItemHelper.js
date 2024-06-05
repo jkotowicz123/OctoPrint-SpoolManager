@@ -188,7 +188,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log (allRows);
         for(var i = 0; i < allRows.length; i++){
             if (spoolRowsExpanded == false){
-                allRows[i].style.display = "none"; // or
+                allRows[i].classList.remove = ""; // or
             }
             else{
                 allRows[i].style.display = ""; // or
@@ -338,12 +338,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.toggleFilamentSection = function(filamentName){
         rows = document.getElementsByClassName(filamentName);
         for(var i = 0; i < rows.length; i++){
-            state = rows[i].style.display;
-            if (state == "none"){
-                rows[i].style.display = ""; // or
+            expanded = rows[i].classList.contains("spoolRowExpanded");
+            if (expanded == "false"){
+                allRows[i].classList.add("spoolRowExpanded");
+                allRows[i].classList.remove("spoolRowCollapsed");
             }
             else{
-                rows[i].style.display = "none"; // or
+                allRows[i].classList.remove("spoolRowExpanded");
+                allRows[i].classList.add("spoolRowCollapsed");
             }
         }
     }
