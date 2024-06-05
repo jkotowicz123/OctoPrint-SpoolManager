@@ -336,9 +336,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.toggleFilamentSection = function(filamentName){
-        rows = document.getElementsByClassName(filamentName);
-        for(var i = 0; i < rows.length; i++){
-            expanded = rows[i].classList.contains("spoolRowExpanded");
+        sectionRows = document.getElementsByClassName(filamentName);
+        for(var i = 0; i < sectionRows.length; i++){
+            expanded = sectionRows[i].classList.contains("spoolRowExpanded");
+            console.log(expanded);
             if (expanded == "false"){
                 rows[i].classList.add("spoolRowExpanded");
                 rows[i].classList.remove("spoolRowCollapsed");
@@ -349,7 +350,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
         }
     }
-    
+
 /* old, worse approach
     self.toggleAllFilamentRows = function(filamentsArray){
         console.log(filamentsArray)
