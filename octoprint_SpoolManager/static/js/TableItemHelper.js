@@ -103,7 +103,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         };
 
         self.loadItemsFunction( tableQuery, self.items, self.totalItemCount );
-        self.checkSpoolRowState();
     }
 
     self.currentPage.subscribe(function(newPageIndex) {
@@ -186,6 +185,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log("spoolRowsExpanded on reload");
         console.log(spoolRowsExpanded);
         let rows = document.getElementsByClassName("spoolRow");
+        console.log (rows);
         for(var i = 0; i < rows.length; i++){
             if (spoolRowsExpanded == false){
                 rows[i].style.display = "none"; // or
