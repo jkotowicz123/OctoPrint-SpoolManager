@@ -7,6 +7,7 @@
  // START: TESTZONE
 
  var expanded = false;
+ var rowsToggleFlag = 0;
 
 function showCheckboxes() {
 

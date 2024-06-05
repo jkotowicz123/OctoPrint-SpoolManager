@@ -8,7 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-var rowsToggleFlag = 0
+rowsToggleFlag = 0
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
