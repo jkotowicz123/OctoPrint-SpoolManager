@@ -375,10 +375,12 @@ self.toggleAllSpoolRows = function(){
     let allRows = document.getElementsByClassName("spoolRow");
     for(var i = 0; i < allRows.length; i++){
         if (spoolRowsExpanded == true){
-            allRows[i].style.display = "none"; // or
+            allRows[i].classList.remove("spoolRowExpanded");
+            allRows[i].classList.add("spoolRowCollapsed");
         }
         else{
-            allRows[i].style.display = ""; // or
+            allRows[i].classList.add("spoolRowExpanded");
+            allRows[i].classList.remove("spoolRowCollapsed");
         }
     }
     if (spoolRowsExpanded == true) {
