@@ -375,7 +375,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
 self.toggleAllSpoolRows = function(){
-    let allRows = document.getElementsByClassName("spoolRow");
+    let allRows = document.getElementsByClassName("spoolRowExpanded");
+    allRows = allRows.concat(document.getElementsByClassName("spoolRowCollapsed"))
     for(var i = 0; i < allRows.length; i++){
         if (spoolRowsExpanded == true){
             allRows[i].classList.remove("spoolRowExpanded");
