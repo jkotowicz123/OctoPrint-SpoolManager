@@ -8,7 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-rowsToggleFlag = 0
+spoolRowsExpanded = true
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -16,7 +16,7 @@ $(document).ready(function() {
 	});
 });
 
-function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName,rowsToggleFlag){
+function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName,spoolRowsExpanded){
 
     var self = this;
     var totalFilamentsWeight;
@@ -179,12 +179,11 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     // ################################################################################################ public functions
     self.reloadItems = function(){
         self._loadItems();
-        console.log("rowsToggleFlag");
-        console.log(rowsToggleFlag);
-
+        console.log("spoolRowsExpanded");
+        console.log(spoolRowsExpanded);
         let rows = document.getElementsByClassName("spoolRow");
         for(var i = 0; i < rows.length; i++){
-            if (rowsToggleFlag == 0){
+            if (spoolRowsExpanded == false){
                 rows[i].style.display = "none"; // or
             }
             else{
@@ -351,7 +350,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             let filamentName = filamentType[0];
             let rows = document.getElementsByClassName(filamentName);
             for(var i = 0; i < rows.length; i++){
-                if (rowsToggleFlag == 0){
+                if (spoolRowsExpanded == 0){
                     rows[i].style.display = "none"; // or
                 }
                 else{
@@ -359,30 +358,30 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 }
             }
         }
-        if (rowsToggleFlag == 0) {
-            rowsToggleFlag = 1;
+        if (spoolRowsExpanded == 0) {
+            spoolRowsExpanded = 1;
         }
         else{
-            rowsToggleFlag = 0;
+            spoolRowsExpanded = 0;
         }
     }
 */
 
-self.toggleAllFilamentRows = function(){
+self.toggleAllSpoolRows = function(){
     let rows = document.getElementsByClassName("spoolRow");
     for(var i = 0; i < rows.length; i++){
-        if (rowsToggleFlag == 0){
+        if (spoolRowsExpanded == true){
             rows[i].style.display = "none"; // or
         }
         else{
             rows[i].style.display = ""; // or
         }
     }
-    if (rowsToggleFlag == 0) {
-        rowsToggleFlag = 1;
+    if (spoolRowsExpanded == true) {
+        spoolRowsExpanded = false;
     }
     else{
-        rowsToggleFlag = 0;
+        spoolRowsExpanded = true;
     }
 }
 
