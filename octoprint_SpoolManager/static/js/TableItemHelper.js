@@ -393,12 +393,12 @@ self.toggleAllSpoolRows = function(){
         if (spoolRowsExpanded == true){
             collapsedRows[i].classList.remove("spoolRowExpanded");
             collapsedRows[i].classList.add("spoolRowCollapsed");
-            collapsedRows = false;
+            spoolRowsExpanded = false;
         }
         else{
             collapsedRows[i].classList.add("spoolRowExpanded");
             collapsedRows[i].classList.remove("spoolRowCollapsed");
-            collapsedRows = true;
+            spoolRowsExpanded = true;
         }
     }
 }
