@@ -184,14 +184,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.checkSpoolRowState = function(){
         console.log("spoolRowsExpanded on reload");
         console.log(spoolRowsExpanded);
-        let rows = document.getElementsByClassName("spoolRow");
-        console.log (rows);
-        for(var i = 0; i < rows.length; i++){
+        let allRows = document.getElementsByClassName("spoolRow");
+        console.log (allRows);
+        for(var i = 0; i < allRows.length; i++){
             if (spoolRowsExpanded == false){
-                rows[i].style.display = "none"; // or
+                allRows[i].style.display = "none"; // or
             }
             else{
-                rows[i].style.display = ""; // or
+                allRows[i].style.display = ""; // or
             }
         }
     }
@@ -372,13 +372,13 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
 self.toggleAllSpoolRows = function(){
-    let rows = document.getElementsByClassName("spoolRow");
-    for(var i = 0; i < rows.length; i++){
+    let allRows = document.getElementsByClassName("spoolRow");
+    for(var i = 0; i < allRows.length; i++){
         if (spoolRowsExpanded == true){
-            rows[i].style.display = "none"; // or
+            allRows[i].style.display = "none"; // or
         }
         else{
-            rows[i].style.display = ""; // or
+            allRows[i].style.display = ""; // or
         }
     }
     if (spoolRowsExpanded == true) {
