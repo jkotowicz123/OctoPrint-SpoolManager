@@ -183,7 +183,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log(rowsToggleFlag);
 
         let rows = document.getElementsByClassName("spoolRow");
-        
         for(var i = 0; i < rows.length; i++){
             if (rowsToggleFlag == 0){
                 rows[i].style.display = "none"; // or
@@ -345,7 +344,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
         }
     }
-
+/* old, worse approach
     self.toggleAllFilamentRows = function(filamentsArray){
         console.log(filamentsArray)
         for (let filamentType of filamentsArray){
@@ -367,6 +366,25 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             rowsToggleFlag = 0;
         }
     }
+*/
+
+self.toggleAllFilamentRows = function(){
+    let rows = document.getElementsByClassName("spoolRow");
+    for(var i = 0; i < rows.length; i++){
+        if (rowsToggleFlag == 0){
+            rows[i].style.display = "none"; // or
+        }
+        else{
+            rows[i].style.display = ""; // or
+        }
+    }
+    if (rowsToggleFlag == 0) {
+        rowsToggleFlag = 1;
+    }
+    else{
+        rowsToggleFlag = 0;
+    }
+}
 
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
