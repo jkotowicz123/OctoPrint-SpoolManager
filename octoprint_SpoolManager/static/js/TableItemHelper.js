@@ -341,12 +341,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             expanded = sectionRows[i].classList.contains("spoolRowExpanded");
             console.log(expanded);
             if (expanded == "false"){
-                rows[i].classList.add("spoolRowExpanded");
-                rows[i].classList.remove("spoolRowCollapsed");
+                sectionRows[i].classList.add("spoolRowExpanded");
+                sectionRows[i].classList.remove("spoolRowCollapsed");
             }
             else{
-                rows[i].classList.remove("spoolRowExpanded");
-                rows[i].classList.add("spoolRowCollapsed");
+                sectionRows[i].classList.remove("spoolRowExpanded");
+                sectionRows[i].classList.add("spoolRowCollapsed");
             }
         }
     }
