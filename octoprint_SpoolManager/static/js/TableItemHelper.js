@@ -17,7 +17,7 @@ $(document).ready(function() {
 	});
 });
 
-function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
+function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName,spoolRowsExpanded){
 
     var self = this;
     var totalFilamentsWeight;
