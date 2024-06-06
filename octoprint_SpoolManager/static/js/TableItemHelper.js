@@ -8,7 +8,6 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-spoolRowsExpanded = true
 
 
 $(document).ready(function() {
@@ -17,10 +16,11 @@ $(document).ready(function() {
 	});
 });
 
-function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName,spoolRowsExpanded){
+function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, defaultFilterName){
 
     var self = this;
     var totalFilamentsWeight;
+    var spoolRowsExpanded = true;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
