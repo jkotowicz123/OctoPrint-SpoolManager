@@ -375,14 +375,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 */
 
-self.toggleAllSpoolRows = function(spoolRowsExpanded){
+self.toggleAllSpoolRows = function(spoolsState){
     console.log("spoolRowsExpanded:");
-    console.log(spoolRowsExpanded);
-    
+    console.log(spoolsState);
+
     collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
     expandedRows = document.getElementsByClassName("spoolRowsExpanded");
     
-    if (spoolRowsExpanded == true || spoolRowsExpanded == null){
+    if (spoolsState == true || spoolsState == null){
         for(var i = 0; i < expandedRows.length; i++){
             expandedRows[i].classList.remove("spoolRowExpanded");
             expandedRows[i].classList.add("spoolRowCollapsed");
