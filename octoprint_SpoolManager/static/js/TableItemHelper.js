@@ -8,7 +8,7 @@
 defaultSortColumn = "displayName"
 defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
-spoolRowsExpanded = true
+
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -20,6 +20,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     var self = this;
     var totalFilamentsWeight;
+    var spoolRowsExpanded = true;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -374,7 +375,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 */
 
-self.toggleAllSpoolRows = function(spoolRowsExpanded){
+self.toggleAllSpoolRows = function(){
     console.log("spoolRowsExpanded:");
     console.log(spoolRowsExpanded);
     collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
