@@ -10,6 +10,7 @@ defaultPageSize = "all"
 defaultFilterName = "hideEmptySpools"
 
 
+spoolRowsExpanded = 1;
 
 $(document).ready(function() {
 	$('[data-toggle="toggle"]').change(function(){
@@ -21,7 +22,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     var self = this;
     var totalFilamentsWeight;
-    var spoolRowsExpanded = 1;
+
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -388,8 +389,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             for(var i = 0; i < expandedRows.length; i++){
                 expandedRows[i].classList.remove("spoolRowExpanded");
                 expandedRows[i].classList.add("spoolRowCollapsed");
-                spoolRowsExpanded = 0;
             }
+            spoolRowsExpanded = 0;
         }
         //spoolRowsCollapsed, should expand all collapsed rows
         else{ 
@@ -397,8 +398,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             for(var i = 0; i < collapsedRows.length; i++){
                 collapsedRows[i].classList.remove("spoolRowCollapsed");
                 collapsedRows[i].classList.add("spoolRowExpanded");
-                spoolRowsExpanded = 1;
             }
+            spoolRowsExpanded = 1;
         }
     }
 
