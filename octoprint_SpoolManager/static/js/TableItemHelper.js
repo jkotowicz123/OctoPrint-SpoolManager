@@ -374,7 +374,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 */
 
-self.toggleAllSpoolRows = function(){
+self.toggleAllSpoolRows = function(spoolRowsExpanded){
     console.log("spoolRowsExpanded:");
     console.log(spoolRowsExpanded);
     collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
@@ -387,7 +387,8 @@ self.toggleAllSpoolRows = function(){
             spoolRowsExpanded = false;
         }
     }
-    else{ //spoolRowsCollapsed, should expand all collapsed
+    //spoolRowsCollapsed, should expand all collapsed
+    else{ 
         for(var i = 0; i < collapsedRows.length; i++){
             collapsedRows[i].classList.remove("spoolRowCollapsed");
             collapsedRows[i].classList.add("spoolRowExpanded");
