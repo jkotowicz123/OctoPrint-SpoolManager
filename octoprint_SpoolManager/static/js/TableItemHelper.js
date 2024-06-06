@@ -374,31 +374,31 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 */
 
-self.toggleAllSpoolRows = function(){
-    console.log("totalFilamentsWeight");
-    console.log(totalFilamentsWeight);
-    console.log("spoolRowsExpanded:");
-    console.log(spoolRowsExpanded);
+    self.toggleAllSpoolRows = function(spoolRowsExpanded){
+        console.log("totalFilamentsWeight");
+        console.log(totalFilamentsWeight);
+        console.log("spoolRowsExpanded:");
+        console.log(spoolRowsExpanded);
 
-    collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
-    expandedRows = document.getElementsByClassName("spoolRowsExpanded");
-    
-    if (spoolRowsExpanded == true || spoolRowsExpanded == null){
-        for(var i = 0; i < expandedRows.length; i++){
-            expandedRows[i].classList.remove("spoolRowExpanded");
-            expandedRows[i].classList.add("spoolRowCollapsed");
-            spoolRowsExpanded = false;
+        collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
+        expandedRows = document.getElementsByClassName("spoolRowsExpanded");
+        
+        if (spoolRowsExpanded == true || spoolRowsExpanded == null){
+            for(var i = 0; i < expandedRows.length; i++){
+                expandedRows[i].classList.remove("spoolRowExpanded");
+                expandedRows[i].classList.add("spoolRowCollapsed");
+                spoolRowsExpanded = false;
+            }
+        }
+        //spoolRowsCollapsed, should expand all collapsed
+        else{ 
+            for(var i = 0; i < collapsedRows.length; i++){
+                collapsedRows[i].classList.remove("spoolRowCollapsed");
+                collapsedRows[i].classList.add("spoolRowExpanded");
+                spoolRowsExpanded = false;
+            }
         }
     }
-    //spoolRowsCollapsed, should expand all collapsed
-    else{ 
-        for(var i = 0; i < collapsedRows.length; i++){
-            collapsedRows[i].classList.remove("spoolRowCollapsed");
-            collapsedRows[i].classList.add("spoolRowExpanded");
-            spoolRowsExpanded = false;
-        }
-    }
-}
 
     self.buildFilterLabel = function(filterLabelName){
         // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
