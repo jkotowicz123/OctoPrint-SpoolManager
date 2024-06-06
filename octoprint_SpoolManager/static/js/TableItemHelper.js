@@ -391,16 +391,17 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < allRows.length; i++){
                 if ( allRows[i].classList.contains("spoolRowExpanded")){
-                    expandedRows[i].classList.add("spoolRowCollapsed");
-                    expandedRows[i].classList.remove("spoolRowExpanded");
+                    allRows[i].classList.add("spoolRowCollapsed");
+                    allRows[i].classList.remove("spoolRowExpanded");
                 }
             }
+        }
         else{ 
             console.log("spoolRows collapsed, expanding");
             for(var i = 0; i < allRows.length; i++){
                 if ( allRows[i].classList.contains("spoolRowCollapsed")){
-                    expandedRows[i].classList.add("spoolRowExpanded");
-                    expandedRows[i].classList.remove("spoolRowCollapsed");
+                    allRows[i].classList.add("spoolRowExpanded");
+                    allRows[i].classList.remove("spoolRowCollapsed");
                 }
             }
         }
