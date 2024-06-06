@@ -375,7 +375,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 */
 
-self.toggleAllSpoolRows = function(){
+self.toggleAllSpoolRows = function(spoolRowsExpanded){
     console.log("spoolRowsExpanded:");
     console.log(spoolRowsExpanded);
     collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
