@@ -7,7 +7,7 @@
  // START: TESTZONE
 
  var expanded = false;
- var spoolRowsExpanded = true;
+spoolRowsExpanded = true;
 
 function showCheckboxes() {
 
