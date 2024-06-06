@@ -21,7 +21,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     var self = this;
     var totalFilamentsWeight;
-    var spoolRowsExpanded = true;
+    var spoolRowsExpanded = 1;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -383,21 +383,21 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
         expandedRows = document.getElementsByClassName("spoolRowExpanded");
         
-        if (spoolRowsExpanded == true){
+        if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < expandedRows.length; i++){
                 expandedRows[i].classList.remove("spoolRowExpanded");
                 expandedRows[i].classList.add("spoolRowCollapsed");
-                spoolRowsExpanded = false;
+                spoolRowsExpanded = 0;
             }
         }
-        //spoolRowsCollapsed, should expand all collapsed
+        //spoolRowsCollapsed, should expand all collapsed rows
         else{ 
             console.log("spoolRows collapsed, expanding");
             for(var i = 0; i < collapsedRows.length; i++){
                 collapsedRows[i].classList.remove("spoolRowCollapsed");
                 collapsedRows[i].classList.add("spoolRowExpanded");
-                spoolRowsExpanded = false;
+                spoolRowsExpanded = 1;
             }
         }
     }
