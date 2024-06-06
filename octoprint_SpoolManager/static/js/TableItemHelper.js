@@ -20,7 +20,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     var self = this;
     var totalFilamentsWeight;
-    var spoolRowsExpanded;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -376,6 +375,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
 self.toggleAllSpoolRows = function(){
+    console.log("totalFilamentsWeight");
+    console.log(totalFilamentsWeight);
     console.log("spoolRowsExpanded:");
     console.log(spoolRowsExpanded);
 
