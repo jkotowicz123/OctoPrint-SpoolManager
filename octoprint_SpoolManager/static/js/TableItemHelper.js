@@ -387,8 +387,9 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < expandedRows.length; i++){
-                expandedRows[i].classList.remove("spoolRowExpanded");
                 expandedRows[i].classList.add("spoolRowCollapsed");
+                expandedRows[i].classList.remove("spoolRowExpanded");
+
             }
             spoolRowsExpanded = 0;
         }
@@ -396,8 +397,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         else{ 
             console.log("spoolRows collapsed, expanding");
             for(var i = 0; i < collapsedRows.length; i++){
-                collapsedRows[i].classList.remove("spoolRowCollapsed");
                 collapsedRows[i].classList.add("spoolRowExpanded");
+                collapsedRows[i].classList.remove("spoolRowCollapsed");
             }
             spoolRowsExpanded = 1;
         }
