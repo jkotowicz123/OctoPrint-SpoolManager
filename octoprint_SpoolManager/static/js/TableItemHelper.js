@@ -391,7 +391,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 expandedRows[i].classList.remove("spoolRowExpanded");
 
             }
-            spoolRowsExpanded = 0;
         }
         //spoolRowsCollapsed, should expand all collapsed rows
         else{ 
@@ -400,7 +399,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 collapsedRows[i].classList.add("spoolRowExpanded");
                 collapsedRows[i].classList.remove("spoolRowCollapsed");
             }
+        }
+        if (spoolRowsExpanded == 0){
             spoolRowsExpanded = 1;
+        }
+        else{
+            spoolRowsExpanded = 0;
         }
     }
 
