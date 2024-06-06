@@ -383,7 +383,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
         collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
         expandedRows = document.getElementsByClassName("spoolRowExpanded");
-        
+        console.log(collapsedRows);
+        console.log(expandedRows);
         if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < expandedRows.length; i++){
