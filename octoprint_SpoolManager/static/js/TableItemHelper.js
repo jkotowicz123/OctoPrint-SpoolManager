@@ -187,7 +187,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.checkSpoolRowState = function(){
         console.log("spoolRowsExpanded on reload");
         console.log(spoolRowsExpanded);
-        let allRows = document.getElementsByClassName("spoolRow");
+        allRows = document.getElementsByClassName("spoolRow");
         console.log (allRows);
         for(var i = 0; i < allRows.length; i++){
             if (spoolRowsExpanded == false){
@@ -381,12 +381,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log("spoolRowsExpanded value:");
         console.log(spoolRowsExpanded);
 
-        collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
-        expandedRows = document.getElementsByClassName("spoolRowExpanded");
-        console.log(collapsedRows);
-        console.log(expandedRows);
-
         allRows = document.getElementsByClassName("spoolRow");
+        
         if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < allRows.length; i++){
