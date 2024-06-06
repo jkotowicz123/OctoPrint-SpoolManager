@@ -375,8 +375,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
     self.toggleAllSpoolRows = function(spoolRowsExpanded){
-        console.log("totalFilamentsWeight");
-        console.log(totalFilamentsWeight);
         console.log("spoolRowsExpanded:");
         console.log(spoolRowsExpanded);
 
@@ -384,6 +382,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         expandedRows = document.getElementsByClassName("spoolRowsExpanded");
         
         if (spoolRowsExpanded == true || spoolRowsExpanded == null){
+            console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < expandedRows.length; i++){
                 expandedRows[i].classList.remove("spoolRowExpanded");
                 expandedRows[i].classList.add("spoolRowCollapsed");
@@ -392,6 +391,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         //spoolRowsCollapsed, should expand all collapsed
         else{ 
+            console.log("spoolRows collapsed, expanding");
             for(var i = 0; i < collapsedRows.length; i++){
                 collapsedRows[i].classList.remove("spoolRowCollapsed");
                 collapsedRows[i].classList.add("spoolRowExpanded");
