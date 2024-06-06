@@ -20,7 +20,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     var self = this;
     var totalFilamentsWeight;
-    var spoolRowsExpanded = true;
+    var spoolRowsExpanded;
 
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
@@ -381,7 +381,7 @@ self.toggleAllSpoolRows = function(){
     collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
     expandedRows = document.getElementsByClassName("spoolRowsExpanded");
     
-    if (spoolRowsExpanded == true){
+    if (spoolRowsExpanded == true || spoolRowsExpanded == null){
         for(var i = 0; i < expandedRows.length; i++){
             expandedRows[i].classList.remove("spoolRowExpanded");
             expandedRows[i].classList.add("spoolRowCollapsed");
