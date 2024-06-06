@@ -390,15 +390,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             for(var i = 0; i < expandedRows.length; i++){
                 expandedRows[i].classList.add("spoolRowCollapsed");
                 expandedRows[i].classList.remove("spoolRowExpanded");
-
             }
         }
         //spoolRowsCollapsed, should expand all collapsed rows
         else{ 
             console.log("spoolRows collapsed, expanding");
-            for(var i = 0; i < collapsedRows.length; i++){
-                collapsedRows[i].classList.add("spoolRowExpanded");
-                collapsedRows[i].classList.remove("spoolRowCollapsed");
+            for(var l = 0; l < collapsedRows.length; l++){
+                collapsedRows[l].classList.add("spoolRowExpanded");
+                collapsedRows[l].classList.remove("spoolRowCollapsed");
             }
         }
         if (spoolRowsExpanded == 0){
