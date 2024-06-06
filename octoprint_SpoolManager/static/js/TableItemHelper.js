@@ -375,13 +375,13 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 */
 
     self.toggleAllSpoolRows = function(spoolRowsExpanded){
-        console.log("spoolRowsExpanded:");
+        console.log("spoolRowsExpanded value:");
         console.log(spoolRowsExpanded);
 
         collapsedRows = document.getElementsByClassName("spoolRowCollapsed");
         expandedRows = document.getElementsByClassName("spoolRowExpanded");
         
-        if (spoolRowsExpanded == True){
+        if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < expandedRows.length; i++){
                 expandedRows[i].classList.remove("spoolRowExpanded");
