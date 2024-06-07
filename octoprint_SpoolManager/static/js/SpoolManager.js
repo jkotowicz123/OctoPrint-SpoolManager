@@ -847,8 +847,11 @@ $(function() {
             }
         }
 
-        self.sortFilamentGroupsBySum = function (flattenArray){
-            console.log("testing");
+        self.sortFilamentGroupsBySum = function (passedVar){
+            console.log("passedVar");
+            console.log(passedVar);
+            console.log("flattenArray");
+            console.log(flattenArray);
             flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
             self.spoolItemTableHelper.reloadItems();
         }
