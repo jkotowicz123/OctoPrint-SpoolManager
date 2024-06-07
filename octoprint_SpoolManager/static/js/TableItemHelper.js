@@ -382,11 +382,11 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log(spoolRowsExpanded);
 
         allRows = document.getElementsByClassName("spoolRow");
-        
+
         if (spoolRowsExpanded == 1){
             console.log("spoolRows expanded, collapsing");
             for(var i = 0; i < allRows.length; i++){
-                if ( allRows[i].classList.contains("spoolRowExpanded")){
+                if (allRows[i].classList.contains("spoolRowExpanded")){
                     allRows[i].classList.add("spoolRowCollapsed");
                     allRows[i].classList.remove("spoolRowExpanded");
                 }
@@ -395,7 +395,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         else{ 
             console.log("spoolRows collapsed, expanding");
             for(var i = 0; i < allRows.length; i++){
-                if ( allRows[i].classList.contains("spoolRowCollapsed")){
+                if (allRows[i].classList.contains("spoolRowCollapsed")){
                     allRows[i].classList.add("spoolRowExpanded");
                     allRows[i].classList.remove("spoolRowCollapsed");
                 }
