@@ -853,7 +853,7 @@ $(function() {
             console.log("flattenArray");
             console.log(flattenArray);
             flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
-            self.spoolItemTableHelper.reloadItems();
+            //self.spoolItemTableHelper.reloadItems();
         }
 
         self.calculateSumOfFilaments = function(arrayOfSpools){
