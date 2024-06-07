@@ -7,7 +7,7 @@
  // START: TESTZONE
 
  var expanded = false;
-spoolRowsExpanded = true;
+
 
 function showCheckboxes() {
 
@@ -779,14 +779,12 @@ $(function() {
                         filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 });
 
-                //groupedSpoolItems = groupedSpoolItems.sort((a,b) => {return self.spoolItemTableHelper.calculateSumOfFilaments(a) - self.spoolItemTableHelper.calculateSumOfFilaments(b)});
-                
-                
                 flattenArray = Object.entries(groupedSpoolItems);
-
-                
-               
-                
+                console.log("flattenArray before sorting groups with material");
+                console.log(flattenArray);
+                flattenArray = flattenArray.sort((a,b)) => {return calculateSumOfFilaments(a) - calculateSumOfFilaments(b)});
+                console.log("flattenArray after sorting groups with material");
+                console.log(flattenArray);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
