@@ -781,7 +781,7 @@ $(function() {
                 console.log(groupedSpoolItems);
                 */
 
-                console.log(calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
+                console.log(self.spoolItemTableHelper.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
 
 
                 Object.keys(groupedSpoolItems).forEach(key => {
