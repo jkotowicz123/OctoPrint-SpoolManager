@@ -772,6 +772,9 @@ $(function() {
                     return x;
                 }, {});
 
+              
+                
+
                 /*console.log("groupedSpoolItems before sorting groups with material");
                 console.log(groupedSpoolItems);
 
@@ -795,6 +798,7 @@ $(function() {
                 
                 flattenArray = Object.entries(groupedSpoolItems);
                 
+                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a) - self.calculateSumOfFilaments(b)});
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
