@@ -772,11 +772,16 @@ $(function() {
                     return x;
                 }, {});
 
-                console.log("groupedSpoolItems before sorting groups with material");
+                /*console.log("groupedSpoolItems before sorting groups with material");
                 console.log(groupedSpoolItems);
+
                 groupedSpoolItems = groupedSpoolItems.sort((a,b) => {return calculateSumOfFilaments(a) - calculateSumOfFilaments(b)});
+                
                 console.log("groupedSpoolItems after sorting groups with material");
                 console.log(groupedSpoolItems);
+                */
+
+                console.log(calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
 
 
                 Object.keys(groupedSpoolItems).forEach(key => {
