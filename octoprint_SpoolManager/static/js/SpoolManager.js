@@ -772,20 +772,7 @@ $(function() {
                     return x;
                 }, {});
 
-                /*console.log("groupedSpoolItems before sorting groups with material");
-                console.log(groupedSpoolItems);
-
-                groupedSpoolItems = groupedSpoolItems.sort((a,b) => {return calculateSumOfFilaments(a) - calculateSumOfFilaments(b)});
-                
-                console.log("groupedSpoolItems after sorting groups with material");
-                console.log(groupedSpoolItems);
-                */
-
-                //console.log(self.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
-
-               
-
-
+            
                 Object.keys(groupedSpoolItems).forEach(key => {
                     filamentGroup = groupedSpoolItems[key];
                     for (var i = 0; i < filamentGroup.length; i++)
@@ -794,10 +781,9 @@ $(function() {
 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
-
-                console.log("------flattenArray before converting spools to SpoolItems?");
-                console.log(flattenArray);
-                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
+                
+                // sorting by group sum
+                //flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
@@ -859,6 +845,11 @@ $(function() {
                 // TODO auto reload of sidebar spools without loosing selection
                 self.loadSpoolsForSidebar();
             }
+        }
+
+        self.sortFilamentGroupsBySum = function (){
+            flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
+            self.spoolItemTableHelper.reloadItems();
         }
 
         self.calculateSumOfFilaments = function(arrayOfSpools){
