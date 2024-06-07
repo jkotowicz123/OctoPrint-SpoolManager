@@ -337,7 +337,6 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         totalFilamentWeight = totalFilamentWeight.toFixed(1);
         return totalFilamentWeight;
     }
-    
 
     self.toggleFilamentSection = function(filamentName){
         sectionRows = document.getElementsByClassName(filamentName);
@@ -438,6 +437,22 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
         }
 
+        return "not defined:" + filterLabelName;
+    }
+
+    self.buildButton = function(buttonName){
+        // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
+        // to detecting all, we can't use the length, because if just the color is changed then length is still true
+        // so we need to compare each value
+        if (buttonName == "expandCollapse"){
+            if (spoolRowsExpanded){
+                button = "Collapse";
+            }
+            else{
+                button = "Expand";
+            }
+            return button;
+        }
         return "not defined:" + filterLabelName;
     }
 
