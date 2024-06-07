@@ -464,6 +464,7 @@ function SpoolsFilterSorter(filterSorterId, spoolsArrayKO) {
                     var sortResult = valueB - valueA;
 
                     sortResult = sortResult * sortOrientation;
+                    console.log("-----------sortingResult-----------");
                     console.log(sortResult);
                     return sortResult;
                 });
