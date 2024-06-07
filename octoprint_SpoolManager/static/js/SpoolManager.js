@@ -863,9 +863,10 @@ $(function() {
             var totalFilamentWeight = 0.0;
             for (let filamentSpool of arrayOfSpools){
                 filamentFloat = filamentSpool.remainingWeight;
+                console.log(filamentFloat);
                 totalFilamentWeight = totalFilamentWeight + filamentFloat;
             }
-            totalFilamentWeight = totalFilamentWeight.toFixed(1);
+            //totalFilamentWeight = totalFilamentWeight.toFixed(1);
             return totalFilamentWeight;
         }
 
