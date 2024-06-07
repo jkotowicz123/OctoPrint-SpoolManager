@@ -337,6 +337,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         totalFilamentWeight = totalFilamentWeight.toFixed(1);
         return totalFilamentWeight;
     }
+    
 
     self.toggleFilamentSection = function(filamentName){
         sectionRows = document.getElementsByClassName(filamentName);
