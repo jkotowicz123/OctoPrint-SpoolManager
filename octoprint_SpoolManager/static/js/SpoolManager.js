@@ -867,6 +867,7 @@ $(function() {
                 filamentFloat = parseFloat(filamentSpool.remainingWeight);
                 totalFilamentWeight = totalFilamentWeight + filamentFloat;
             }
+            totalFilamentWeight = parseFloat(totalFilamentWeight);
             totalFilamentWeight = totalFilamentWeight.toFixed(1);
             return totalFilamentWeight;
         }
