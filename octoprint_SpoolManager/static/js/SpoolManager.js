@@ -796,7 +796,7 @@ $(function() {
                 flattenArray = Object.entries(groupedSpoolItems);
                 console.log("------flattenArray before converting spools to SpoolItems?");
                 console.log(flattenArray);
-                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
+                flattenArray = flattenArray.sort((a,b) => {return console.log(a)});
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
