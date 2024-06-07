@@ -794,9 +794,10 @@ $(function() {
 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
+
                 console.log("------flattenArray before converting spools to SpoolItems?");
                 console.log(flattenArray);
-                flattenArray = flattenArray.sort((a,b) => {return console.log(a)});
+                flattenArray = flattenArray.sort((a,b) => {return console.log(a[1])});
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
