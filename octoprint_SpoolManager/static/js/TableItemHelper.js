@@ -441,15 +441,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.buildButton = function(buttonName){
-        // spoolItemTableHelper.selectedColorsForFilter().length == spoolItemTableHelper.allColors().length ? 'all' : spoolItemTableHelper.selectedColorsForFilter().length
-        // to detecting all, we can't use the length, because if just the color is changed then length is still true
-        // so we need to compare each value
         if (buttonName == "expandCollapse"){
             if (spoolRowsExpanded){
                 button = "Collapse";
             }
             else{
-                button = "Expand";
+                button = " &#9660 Expand";
             }
             return button;
         }
