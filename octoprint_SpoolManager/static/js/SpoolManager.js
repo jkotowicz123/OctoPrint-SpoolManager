@@ -779,12 +779,14 @@ $(function() {
                         filamentGroup = filamentGroup.sort((a, b) => {return a.remainingWeight - b.remainingWeight}); 
                 });
 
+                console.log("groupedSpoolItems before sorting groups with material");
+                console.log(groupedSpoolItems);
+                groupedSpoolItems = groupedSpoolItems.sort((a,b) => {return calculateSumOfFilaments(a) - calculateSumOfFilaments(b)});
+                console.log("groupedSpoolItems after sorting groups with material");
+                console.log(groupedSpoolItems);
+
                 flattenArray = Object.entries(groupedSpoolItems);
-                console.log("flattenArray before sorting groups with material");
-                console.log(flattenArray);
-                flattenArray = flattenArray.sort((a,b)) => {return calculateSumOfFilaments(a) - calculateSumOfFilaments(b)});
-                console.log("flattenArray after sorting groups with material");
-                console.log(flattenArray);
+                
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
