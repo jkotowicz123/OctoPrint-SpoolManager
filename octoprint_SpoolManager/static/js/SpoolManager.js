@@ -772,9 +772,6 @@ $(function() {
                     return x;
                 }, {});
 
-              
-                
-
                 /*console.log("groupedSpoolItems before sorting groups with material");
                 console.log(groupedSpoolItems);
 
@@ -784,7 +781,7 @@ $(function() {
                 console.log(groupedSpoolItems);
                 */
 
-                console.log(self.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
+                //console.log(self.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
 
                
 
@@ -797,8 +794,9 @@ $(function() {
 
                 
                 flattenArray = Object.entries(groupedSpoolItems);
-                
-                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a) - self.calculateSumOfFilaments(b)});
+                console.log("------flattenArray before converting spools to SpoolItems?");
+                console.log(flattenArray);
+                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
