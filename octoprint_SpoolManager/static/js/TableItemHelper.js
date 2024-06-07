@@ -452,7 +452,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
             return button;
         }
-        return "not defined:" + filterLabelName;
+        return "not defined:" + buttonName;
     }
 
     // ############################################## PAGING
