@@ -781,7 +781,6 @@ $(function() {
                 console.log(groupedSpoolItems);
                 */
 
-                console.log(groupedSpoolItems["Easy PETG Black"]);
                 console.log(self.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
 
                
@@ -862,11 +861,9 @@ $(function() {
         self.calculateSumOfFilaments = function(arrayOfSpools){
             var totalFilamentWeight = 0.0;
             for (let filamentSpool of arrayOfSpools){
-                filamentFloat = filamentSpool.remainingWeight;
-                console.log(filamentFloat);
+                filamentFloat = parseFloat(filamentSpool.remainingWeight);
                 totalFilamentWeight = totalFilamentWeight + filamentFloat;
             }
-            totalFilamentWeight = parseFloat(totalFilamentWeight);
             totalFilamentWeight = totalFilamentWeight.toFixed(1);
             return totalFilamentWeight;
         }
