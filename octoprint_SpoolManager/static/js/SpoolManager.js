@@ -864,7 +864,7 @@ $(function() {
         self.calculateSumOfFilaments = function(arrayOfSpools){
             var totalFilamentWeight = 0.0;
             for (let filamentSpool of arrayOfSpools){
-                filamentFloat = filamentSpool.remainingWeight;
+                filamentFloat = parseFloat(filamentSpool.remainingWeight);
                 totalFilamentWeight = totalFilamentWeight + filamentFloat;
             }
             totalFilamentWeight = totalFilamentWeight.toFixed(1);
