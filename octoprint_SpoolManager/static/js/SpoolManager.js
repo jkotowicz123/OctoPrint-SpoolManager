@@ -780,8 +780,11 @@ $(function() {
                 console.log("groupedSpoolItems after sorting groups with material");
                 console.log(groupedSpoolItems);
                 */
-                testValue = self.spoolItemTableHelper.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]);
-                console.log(testValue);
+
+                console.log(groupedSpoolItems["Easy PETG Black"]);
+                console.log(calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
+
+               
 
 
                 Object.keys(groupedSpoolItems).forEach(key => {
@@ -854,6 +857,16 @@ $(function() {
                 // TODO auto reload of sidebar spools without loosing selection
                 self.loadSpoolsForSidebar();
             }
+        }
+
+        self.calculateSumOfFilaments = function(arrayOfSpools){
+            var totalFilamentWeight = 0.0;
+            for (let filamentSpool of arrayOfSpools){
+                filamentFloat = filamentSpool.remainingWeight;
+                totalFilamentWeight = totalFilamentWeight + filamentFloat;
+            }
+            totalFilamentWeight = totalFilamentWeight.toFixed(1);
+            return totalFilamentWeight;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////// OCTOPRINT PRINT-BUTTON
