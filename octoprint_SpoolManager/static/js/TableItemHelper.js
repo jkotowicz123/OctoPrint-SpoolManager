@@ -441,6 +441,8 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.buildButton = function(buttonName){
+        console.log("------spoolRowsExpanded:");
+        console.log(spoolRowsExpanded);
         if (buttonName == "expandCollapse"){
             if (spoolRowsExpanded){
                 button = "Collapse";
