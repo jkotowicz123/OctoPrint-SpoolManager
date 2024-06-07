@@ -780,8 +780,8 @@ $(function() {
                 console.log("groupedSpoolItems after sorting groups with material");
                 console.log(groupedSpoolItems);
                 */
-
-                console.log(self.spoolItemTableHelper.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
+                testValue = self.spoolItemTableHelper.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]);
+                console.log(testValue);
 
 
                 Object.keys(groupedSpoolItems).forEach(key => {
