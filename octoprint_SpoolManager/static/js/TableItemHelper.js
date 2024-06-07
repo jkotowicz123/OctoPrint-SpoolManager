@@ -445,7 +445,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         console.log(spoolRowsExpanded);
         if (buttonName == "expandCollapse"){
             if (spoolRowsExpanded){
-                button = "Expand/Collapse filament groups";
+                button = "Expand/Collapse";
             }
             else{
                 button = "Expand";
