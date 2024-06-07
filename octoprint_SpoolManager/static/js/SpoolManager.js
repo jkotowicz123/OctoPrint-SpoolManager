@@ -866,7 +866,8 @@ $(function() {
                 console.log(filamentFloat);
                 totalFilamentWeight = totalFilamentWeight + filamentFloat;
             }
-            //totalFilamentWeight = totalFilamentWeight.toFixed(1);
+            totalFilamentWeight = parseFloat(totalFilamentWeight);
+            totalFilamentWeight = totalFilamentWeight.toFixed(1);
             return totalFilamentWeight;
         }
 
