@@ -782,7 +782,7 @@ $(function() {
                 */
 
                 console.log(groupedSpoolItems["Easy PETG Black"]);
-                console.log(calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
+                console.log(self.calculateSumOfFilaments(groupedSpoolItems["Easy PETG Black"]));
 
                
 
