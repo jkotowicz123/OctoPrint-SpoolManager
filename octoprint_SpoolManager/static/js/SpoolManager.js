@@ -7,6 +7,7 @@
  // START: TESTZONE
 
  var expanded = false;
+ var sortBySum = false;
 
 
 function showCheckboxes() {
@@ -783,8 +784,10 @@ $(function() {
                 flattenArray = Object.entries(groupedSpoolItems);
                 
                 // sorting by group sum
-                //flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
-
+                if (sortBySum == true){
+                flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
+                }
+                
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
                 // assign catalogs to tablehelper
@@ -848,12 +851,21 @@ $(function() {
         }
 
         self.sortFilamentGroupsBySum = function (passedVar){
+            if (sortBySum == false){
+                sortBySum = true;
+            }
+            else{
+                sortBySum = false;
+            }
+            self.spoolItemTableHelper.reloadItems();
+            /*
             console.log("passedVar");
             console.log(passedVar);
             console.log("flattenArray");
             console.log(flattenArray);
             flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
             //self.spoolItemTableHelper.reloadItems();
+            */
         }
 
         self.calculateSumOfFilaments = function(arrayOfSpools){
