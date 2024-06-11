@@ -208,7 +208,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], [])
 		self._settings.save()
 
-	def _selectSpool(self, toolIndex, databaseId):
+	def _selectSpool(self, toolIndex, databaseId,printerNumber):
 		# three cases
 		#  1. databaseId != -1 toolIndex != -1	select spool for toool 	||
 		#  2. databaseId == -1 toolIndex !=	-1	remove spool from tool	|
@@ -250,7 +250,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						"spoolName": spoolModel.displayName,
 						"material": spoolModel.material,
 						"colorName": spoolModel.colorName,
-						"remainingWeight": spoolModel.remainingWeight
+						"remainingWeight": spoolModel.remainingWeight,
+						"printerNumber":spoolModel.printerNumber
 					}
 					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_SELECTED, eventPayload)
 
@@ -469,7 +470,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._logger.info("commitCurrentSpoolValues == True")
 				self.commitOdometerData()
 
-		spoolModel = self._selectSpool(toolIndex, databaseId)
+		spoolModel = self._selectSpool(toolIndex, databaseId,None)
 
 		spoolModelAsDict = None
 		if (spoolModel != None):
@@ -489,9 +490,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	#####################################################################################################   SELECT SPOOL BY QR
 
 	from octoprint.server.util.flask import no_firstrun_access, restricted_access
-	@octoprint.plugin.BlueprintPlugin.route("/selectSpoolByQRCode/<string:databaseId>", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/selectSpoolByQRCode/<string:databaseId>&<string:printerNumber>", methods=["GET"])
 	@no_firstrun_access
-	def selectSpoolByQRCode(self, databaseId):
+	def selectSpoolByQRCode(self, databaseId,printerNumber):
+		self.logger.info("PrinterID:"+ str(printerNumber))
 		self._logger.info("API select spool by QR code" + str(databaseId))
 
 		#if self._printer.is_printing():
@@ -507,7 +509,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			databaseId = spoolModel.databaseId
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
-		spoolModel = self._selectSpool(0, databaseId)
+		spoolModel = self._selectSpool(0, databaseId,printerNumber)
 		json_object = json.dumps(spoolModel, indent = 4)
 		return flask.Response(json_object, status=200, mimetype='application/json')
 	
