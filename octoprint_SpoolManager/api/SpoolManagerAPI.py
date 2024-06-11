@@ -582,8 +582,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 				spoolSelectionUrl = qrCodeUrlPrefix + "/plugin/SpoolManager/selectSpoolByQRCode/"+databaseId
 			else:
-				self._logger.info("-----------2--------")
-				spoolSelectionUrl = flask.url_for("plugin.SpoolManager.selectSpoolByQRCode", _external=True, databaseId=databaseId,printerNumber=None)
+				self._logger.info("-----------2")
+				spoolSelectionUrl = flask.url_for("plugin.SpoolManager.selectSpoolByQRCode", _external=True, databaseId=databaseId,printerNumber=0)
 				#spoolSelectionUrl = flask.url_for(databaseId)
 			
 			#qrMaker.add_data(spoolSelectionUrl)
