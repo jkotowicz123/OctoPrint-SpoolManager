@@ -208,7 +208,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], [])
 		self._settings.save()
 
-	def _selectSpool(self, toolIndex, databaseId,printerNumber):
+	def _selectSpool(self, toolIndex, databaseId):
 		# three cases
 		#  1. databaseId != -1 toolIndex != -1	select spool for toool 	||
 		#  2. databaseId == -1 toolIndex !=	-1	remove spool from tool	|
