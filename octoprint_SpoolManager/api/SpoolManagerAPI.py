@@ -490,7 +490,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	#####################################################################################################   SELECT SPOOL BY QR
 
 	from octoprint.server.util.flask import no_firstrun_access, restricted_access
-	@octoprint.plugin.BlueprintPlugin.route("/selectSpoolByQRCode/<string:databaseId>", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/selectSpoolByQRCode/<string:databaseId>&<string:printerNumber>", methods=["GET"])
 	@no_firstrun_access
 	def selectSpoolByQRCode(self, databaseId,printerNumber):
 		self.logger.info("PrinterID:"+ str(printerNumber))
@@ -583,7 +583,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				spoolSelectionUrl = qrCodeUrlPrefix + "/plugin/SpoolManager/selectSpoolByQRCode/"+databaseId
 			else:
 				self._logger.info("-----------2")
-				printerNumber=0
+				printerNumber="0"
 				spoolSelectionUrl = flask.url_for("plugin.SpoolManager.selectSpoolByQRCode", _external=True, databaseId=databaseId,printerNumber=printerNumber)
 				#spoolSelectionUrl = flask.url_for(databaseId)
 			
