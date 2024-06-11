@@ -155,6 +155,8 @@ $(function() {
             } else {
                 source = PLUGIN_BASEURL + "SpoolManager/generateQRCode/" + databaseId+ "" + requestParameters;
             }
+            console.log("source for something:");
+            console.log(source);
             var title = "QR-Code for " + spoolDisplayName;
             return {
                 src: source,
