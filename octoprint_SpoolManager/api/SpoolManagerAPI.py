@@ -470,7 +470,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._logger.info("commitCurrentSpoolValues == True")
 				self.commitOdometerData()
 
-		spoolModel = self._selectSpool(toolIndex, databaseId,None)
+		spoolModel = self._selectSpool(toolIndex, databaseId,"0")
 
 		spoolModelAsDict = None
 		if (spoolModel != None):
