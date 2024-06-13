@@ -251,7 +251,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						"material": spoolModel.material,
 						"colorName": spoolModel.colorName,
 						"remainingWeight": spoolModel.remainingWeight,
-						"printerNumber":spoolModel.printerNumber
+						"printerNumber":printerNumber
 					}
 					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_SELECTED, eventPayload)
 
