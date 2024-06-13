@@ -215,6 +215,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		#  3. databaseId != -1 toolIndex == -1	remove tool from spool 	||
 
 		databaseIds = self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS])
+
+		self._logger.info("databaseIds"+ databaseIds)
 		self._logger.info("Assigning spool to printer:"+ str(printerNumber))
 		spoolModel = None
 		if (databaseId != -1):
@@ -274,7 +276,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 								"material": spoolModel.material,
 								"colorName": spoolModel.colorName,
 								"remainingWeight": spoolModel.remainingWeight,
-								"printerNumber":None
 							}
 							self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_DESELECTED, eventPayload)
 							break
