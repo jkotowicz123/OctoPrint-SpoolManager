@@ -314,7 +314,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		if spoolModel is not None and toolIndex != -1:
 			self.checkRemainingFilament(toolIndex)
 		self._logger.info("returned Spool Model:"+ str(spoolModel))
-		return spoolModel
+		return str(spoolModel)
 
 
 	################################################### APIs
