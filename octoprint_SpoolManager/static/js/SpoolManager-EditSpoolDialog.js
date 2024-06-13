@@ -977,7 +977,7 @@ function SpoolManagerEditSpoolDialog(){
     }
 
     self.assignSpoolToPrinter1 = function(){
-        url = "http://192.168.215.13/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(#1);
+        url = "http://192.168.215.13/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(1);
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
@@ -985,7 +985,7 @@ function SpoolManagerEditSpoolDialog(){
     }
 
     self.assignSpoolToPrinter2 = function(){
-        url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(#2);
+        url = "http://192.168.215.21/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(2);
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
@@ -993,7 +993,7 @@ function SpoolManagerEditSpoolDialog(){
     }
 
     self.assignSpoolToPrinter3 = function(){
-        url = "http://192.168.215.47/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(#3);
+        url = "http://192.168.215.47/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(3);
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
@@ -1001,7 +1001,7 @@ function SpoolManagerEditSpoolDialog(){
     }
 
     self.assignSpoolToPrinter4 = function(){
-        url = "http://192.168.215.23/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(#4);
+        url = "http://192.168.215.23/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(4);
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
@@ -1009,7 +1009,7 @@ function SpoolManagerEditSpoolDialog(){
     }
     
     self.assignSpoolToPrinter5 = function(){
-        url = "http://192.168.215.25/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(#5);
+        url = "http://192.168.215.25/plugin/SpoolManager/selectSpoolByQRCode/"+self.spoolItemForEditing.databaseId()+"?printerNumber="+encodeURIComponent(5);
         httpGet(url);
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
