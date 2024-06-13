@@ -314,7 +314,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		if spoolModel is not None and toolIndex != -1:
 			self.checkRemainingFilament(toolIndex)
 		self._logger.info("returned Spool Model:"+ str(spoolModel))
-		return str(spoolModel)
+		return spoolModel.databaseId
 
 
 	################################################### APIs
@@ -525,6 +525,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			#Just pick a single spool
 			spoolModel = self._databaseManager.loadFirstSingleSpool();
 			databaseId = spoolModel.databaseId
+
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
 		response = self._selectSpool(0, databaseId,printerNumber)
