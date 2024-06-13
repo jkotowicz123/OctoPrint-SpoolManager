@@ -153,7 +153,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					"spoolName": spoolModel.displayName,
 					"material": spoolModel.material,
 					"colorName": spoolModel.colorName,
-					"remainingWeight": spoolModel.remainingWeight
+					"remainingWeight": spoolModel.remainingWeight,
+					"printerNumber": spoolModel.printerNumber
 				}
 				self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_SELECTED, eventPayload)
 
@@ -220,7 +221,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		if (databaseId != -1):
 			spoolModel = self._databaseManager.loadSpool(databaseId)
 			if (spoolModel != None):
-				spoolModel.printerNumber = printerNumber
 				self._logger.info(
 					"Store selected spool %s for tool %d in settings." %
 					(spoolModel.displayName, toolIndex)
