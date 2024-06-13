@@ -244,7 +244,22 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						idx = idx + 1
 					# assign new spool selection to the tool
 					databaseIds[toolIndex] = databaseId
-					spoolModel.printerNumber = printerNumber
+					#spoolModel.printerNumber = printerNumber
+					
+					self._databaseManager.saveSpool(spoolModel)
+
+					eventPayload = {
+						"toolId": toolIndex,
+						"databaseId": spoolModel.databaseId,
+						"spoolName": spoolModel.displayName,
+						"material": spoolModel.material,
+						"colorName": spoolModel.colorName,
+						"remainingWeight": spoolModel.remainingWeight,
+						"printerNumber": printerNumber
+					}
+					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_WEIGHT_UPDATED_AFTER_PRINT, eventPayload)
+					
+					
 					eventPayload = {
 						"toolId": toolIndex,
 						"databaseId": spoolModel.databaseId,
