@@ -982,7 +982,6 @@ function SpoolManagerEditSpoolDialog(){
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.spoolItemTableHelper.reloadItems();
     }
 
     self.assignSpoolToPrinter2 = function(){
@@ -991,7 +990,6 @@ function SpoolManagerEditSpoolDialog(){
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.spoolItemTableHelper.reloadItems();
     }
 
     self.assignSpoolToPrinter3 = function(){
@@ -1000,7 +998,7 @@ function SpoolManagerEditSpoolDialog(){
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.spoolItemTableHelper.reloadItems();
+        
     }
 
     self.assignSpoolToPrinter4 = function(){
@@ -1009,7 +1007,7 @@ function SpoolManagerEditSpoolDialog(){
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.spoolItemTableHelper.reloadItems();
+        
         
     }
     
@@ -1019,7 +1017,7 @@ function SpoolManagerEditSpoolDialog(){
         self.closeDialogHandler(false, "selectSpoolForPrinting", self.spoolItemForEditing);      
         self.spoolItemForEditing.isSpoolVisible(false);
         self.spoolDialog.modal('hide');
-        self.spoolItemTableHelper.reloadItems();
+        
     }
 
 
