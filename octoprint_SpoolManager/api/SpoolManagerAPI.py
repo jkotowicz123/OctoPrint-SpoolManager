@@ -244,24 +244,25 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						else:
 							databaseIds[idx] = selectedSpoolDBId
 						idx = idx + 1
+					
+					self._logger.info("databaseIds inside function"+ str(databaseIds))
+					#deleting printerNumber from previous spool
+					i = 0
+					while i < len(databaseIds):
+						previousSpool = self._databaseManager.loadSpool(databaseIds[i])
+						previousSpool.printerNumber = None
+						self._databaseManager.saveSpool(previousSpool)
+						
 					# assign new spool selection to the tool
 					databaseIds[toolIndex] = databaseId
 					
-					#spoolModel.printerNumber = printerNumber
+					
+					#assign printerNumber to selected spool
 					spool = spoolModel
 					spool.printerNumber = printerNumber
 					self._databaseManager.saveSpool(spool)
 
-					eventPayload = {
-						"toolId": toolIndex,
-						"databaseId": spoolModel.databaseId,
-						"spoolName": spoolModel.displayName,
-						"material": spoolModel.material,
-						"colorName": spoolModel.colorName,
-						"remainingWeight": spoolModel.remainingWeight,
-						"printerNumber":spoolModel.printerNumber
-					}
-					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_SELECTED, eventPayload)
+		
 
 				else:
 					# spool present, but no toolId -> remove spool from current toolIndex
