@@ -247,9 +247,9 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					
 					self._logger.info("databaseIds inside function"+ str(databaseIds))
 					#deleting printerNumber from previous spool
-					i = len(databaseIds)
-					if i > 0:
-						for previousSpoolID in databaseIds:
+
+					for previousSpoolID in databaseIds:
+						if previousSpool.printerNumber != None:
 							previousSpool = self._databaseManager.loadSpool(previousSpoolID)
 							previousSpool.printerNumber = None
 							self._databaseManager.saveSpool(previousSpool)
