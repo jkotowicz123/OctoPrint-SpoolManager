@@ -528,8 +528,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
 		spoolModel = self._selectSpool(0, databaseId,printerNumber)
-		#json_object = json.dumps(spoolModel, indent = 4)
-		return flask.Response(spoolModel, status=200, mimetype='application/json')
+		self._logger.info("spoolModel returned:"+ str(spoolModel))
+		self._logger.info("spoolModel type:"+ type(spoolModel))
+		json_object = json.dump(spoolModel, indent = 4)
+		return flask.Response(json_object, status=200, mimetype='application/json')
 	
 	
 		#spoolModelAsDict = None
