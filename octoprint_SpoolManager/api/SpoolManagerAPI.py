@@ -312,7 +312,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# only check filament for the spool that was changed, as to not spam the user with warnings (for a specific toolIndex)
 		if spoolModel is not None and toolIndex != -1:
 			self.checkRemainingFilament(toolIndex)
-
+		self._logger.info("returned Spool Model:"+ str(spoolModel))
 		return spoolModel
 
 
