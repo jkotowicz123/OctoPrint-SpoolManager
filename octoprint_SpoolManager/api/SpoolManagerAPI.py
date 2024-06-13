@@ -216,7 +216,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		databaseIds = self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS])
 
-		self._logger.info("databaseIds"+ databaseIds)
+		self._logger.info("databaseIds"+ str(databaseIds))
 		self._logger.info("Assigning spool to printer:"+ str(printerNumber))
 		spoolModel = None
 		if (databaseId != -1):
