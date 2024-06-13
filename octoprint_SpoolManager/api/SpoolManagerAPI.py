@@ -247,7 +247,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					
 					#spoolModel.printerNumber = printerNumber
 					spool = spoolModel
-					spool.printerNumber = True
+					spool.printerNumber = printerNumber
 					self._databaseManager.saveSpool(spool)
 
 					eventPayload = {
