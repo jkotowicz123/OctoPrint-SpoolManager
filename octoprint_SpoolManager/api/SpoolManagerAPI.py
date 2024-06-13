@@ -8,6 +8,7 @@ import datetime
 import flask
 from flask import jsonify, request, make_response, Response, send_file, abort
 import json
+from dataclasses import dataclass, asdict
 import shutil
 import tempfile
 import threading
@@ -530,7 +531,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
 		spoolModel = self._selectSpool(0, databaseId,printerNumber)
 		self._logger.info("spoolModel returned:"+ str(spoolModel))
-		json_object = json.dumps(spoolModel)
+		spool_dict = asdict(spoolModel)
+		json_object = json.dumps(spool_dict)
 		return flask.Response(json_object, status=200, mimetype='application/json')
 	
 		#spoolModelAsDict = None
