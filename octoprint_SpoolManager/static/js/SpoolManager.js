@@ -793,11 +793,7 @@ $(function() {
 
                 if (filteringOnlyAssignedSpools == true){
                     console.log("------filteringOnlyAssignedSpools------");
-
-                    flattenArray = flattenArray.filter((filamentGroup) => {
-                        for (var i = 0; i < filamentGroup[1].length; i++)
-                            return filamentGroup[1] = filamentGroup[1].filter((a) => {return a.printerNumber != null});
-                    });
+                    flattenArray = flattenArray.filter((filamentGroup) => {filamentGroup[1].filter((spool) => spool.printerNumber != null)});
                 }
 
                 // assign catalogs to sidebarFilterSorter
