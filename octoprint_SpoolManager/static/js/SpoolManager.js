@@ -794,7 +794,7 @@ $(function() {
                 if (filteringOnlyAssignedSpools == true){
                     console.log("------filteringOnlyAssignedSpools------");
                     flattenArray = flattenArray.filter((filamentGroup) => {
-                        return filamentGroup[1] = filamentGroup[1].filter((spool) => {spool.printerNumber != null})
+                        return filamentGroup[1].filter((spool) => {spool.printerNumber != null})
                     });
                 }
 
@@ -871,14 +871,6 @@ $(function() {
                 sortBySum = false;
             }
             self.spoolItemTableHelper.reloadItems();
-            /*
-            console.log("passedVar");
-            console.log(passedVar);
-            console.log("flattenArray");
-            console.log(flattenArray);
-            flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
-            //self.spoolItemTableHelper.reloadItems();
-            */
         }
 
         self.filterAssignedSpools = function (passedVar){
@@ -889,14 +881,6 @@ $(function() {
                 filteringOnlyAssignedSpools = false;
             }
             self.spoolItemTableHelper.reloadItems();
-            /*
-            console.log("passedVar");
-            console.log(passedVar);
-            console.log("flattenArray");
-            console.log(flattenArray);
-            flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
-            //self.spoolItemTableHelper.reloadItems();
-            */
         }
 
         self.calculateSumOfFilaments = function(arrayOfSpools){
