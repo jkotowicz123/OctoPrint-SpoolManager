@@ -792,12 +792,13 @@ $(function() {
                 }
 
                 if (filteringOnlyAssignedSpools == true){
-                    Object.keys(groupedSpoolItems).forEach(key => {
-                        filamentGroup = groupedSpoolItems[key];
+                    console.log("------filteringOnlyAssignedSpools------");
+
+                    flattenArray = flattenArray.filter((filamentGroup) => {
+                        console.log(filamentGroup);
                         for (var i = 0; i < filamentGroup.length; i++)
                             filamentGroup = filamentGroup.filter((a) => a.printerNumber != null); 
                     });
-                    flattenArray = Object.entries(groupedSpoolItems);
                 }
 
                 // assign catalogs to sidebarFilterSorter
