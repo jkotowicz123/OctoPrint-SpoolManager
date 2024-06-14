@@ -792,10 +792,9 @@ $(function() {
                 }
 
                 if (filteringOnlyAssignedSpools == true){
-                    //for (var i = 0; i < flattenArray.length; i++){
-                    //    filamentGroup = flattenArray[i][1];
-//
-                    //}
+                    flattenArray.forEach((filamentGroup) => {
+                        console.log(filament[1]);
+                    });
                 }
 
                 console.log("----- flattenArray after filtering------");
