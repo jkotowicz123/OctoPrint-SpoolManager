@@ -793,7 +793,10 @@ $(function() {
 
                 if (filteringOnlyAssignedSpools == true){
                     flattenArray.forEach((filamentGroup) => {
-                        console.log(filament[1]);
+                        console.log(filamentGroup[1]);
+                        spools = filamentGroup[1];
+                        spools = spools.filter((spool) => spool.printerNumber != null)
+                        console.log(spools);
                     });
                 }
 
