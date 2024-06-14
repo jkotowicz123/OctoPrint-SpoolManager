@@ -795,6 +795,7 @@ $(function() {
                     flattenArray.forEach((filamentGroup) => {
                         filamentGroup[1] = filamentGroup[1].filter((spool) => spool.printerNumber != null);
                     });
+                    console.log(flattenArray);
                     flattenArray = flattenArray.filter((filamentGroup) => filamentGroup[1].length > 0);
                 }
 
