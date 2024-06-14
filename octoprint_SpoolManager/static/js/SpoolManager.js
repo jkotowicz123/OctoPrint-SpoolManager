@@ -792,7 +792,7 @@ $(function() {
                 }
 
                 if (filteringOnlyAssignedSpools == true){
-                    flattenArray.filter((filamentGroup) => {
+                    flattenArray = flattenArray.filter((filamentGroup) => {
                         return filamentGroup[1].filter((spool) => spool.printerNumber != null);
                     });
                 }
