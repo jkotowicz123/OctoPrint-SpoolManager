@@ -8,6 +8,7 @@
 
  var expanded = false;
  var sortBySum = false;
+ var filteringOnlyAssignedSpools = false;
 
 
 function showCheckboxes() {
@@ -790,6 +791,10 @@ $(function() {
                     flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
                 }
 
+                if (filteringOnlyAssignedSpools == true){
+                    flattenArray = flattenArray.filter((a) => a.printerNumber != "");
+                }
+
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
                 // assign catalogs to tablehelper
@@ -858,6 +863,24 @@ $(function() {
             }
             else{
                 sortBySum = false;
+            }
+            self.spoolItemTableHelper.reloadItems();
+            /*
+            console.log("passedVar");
+            console.log(passedVar);
+            console.log("flattenArray");
+            console.log(flattenArray);
+            flattenArray = flattenArray.sort((a,b) => {return self.calculateSumOfFilaments(a[1]) - self.calculateSumOfFilaments(b[1])});
+            //self.spoolItemTableHelper.reloadItems();
+            */
+        }
+
+        self.filterAssignedSpools = function (passedVar){
+            if (filteringOnlyAssignedSpools == false){
+                filteringOnlyAssignedSpools = true;
+            }
+            else{
+                filteringOnlyAssignedSpools = false;
             }
             self.spoolItemTableHelper.reloadItems();
             /*

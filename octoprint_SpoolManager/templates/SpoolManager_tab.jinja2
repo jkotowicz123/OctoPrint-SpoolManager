@@ -156,6 +156,7 @@
 
                 <div class="pull-right" style="clear: both;">
                     <a href="#" data-bind="click: spoolItemTableHelper.toggleAllSpoolRows" title="Expand/collapse all spool rows"> <span data-bind="text: spoolItemTableHelper.buildButton('expandCollapse')"></span> </a>
+                    <a href="#" data-bind="click: $root.filterAssignedSpools" title=" Filter spools that are assigned to printers" > Only assigned spools</a>
                     <a href="#" data-bind="click: $root.sortFilamentGroupsBySum" title=" Sort by sum" > Sort by sum</a>
                     <a href="#" data-bind="click: spoolItemTableHelper.reloadItems" title="Force refresh" ><span class="icon-refresh"></span> Reload</a>
                 </div>
