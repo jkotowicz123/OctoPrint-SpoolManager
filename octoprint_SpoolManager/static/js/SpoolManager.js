@@ -794,12 +794,14 @@ $(function() {
                 if (filteringOnlyAssignedSpools == true){
                     console.log("------filteringOnlyAssignedSpools------");
                     flattenArray = flattenArray.filter((filamentGroup) => {
-                        console.log(filamentGroup[1]);
                         return filamentGroup[1].filter((spool) => {
-                            console.log(spool);
-                            spool.printerNumber != null}
-                        )});
+                            spool.printerNumber != null
+                        })
+                    });
                 }
+
+                console.log"----- flattenArray after filtering------);
+                console.log(flattenArray);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
