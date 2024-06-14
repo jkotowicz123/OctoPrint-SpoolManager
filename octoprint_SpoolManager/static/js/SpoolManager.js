@@ -795,7 +795,7 @@ $(function() {
                     Object.keys(groupedSpoolItems).forEach(key => {
                         filamentGroup = groupedSpoolItems[key];
                         for (var i = 0; i < filamentGroup.length; i++)
-                            filamentGroup = filamentGroup.filter((a) => a.printerNumber() != null); 
+                            filamentGroup = filamentGroup.filter((a) => a.printerNumber != null); 
                     });
                     flattenArray = Object.entries(groupedSpoolItems);
                 }
