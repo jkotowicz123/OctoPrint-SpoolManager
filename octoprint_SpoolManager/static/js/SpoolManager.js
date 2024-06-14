@@ -796,13 +796,15 @@ $(function() {
                         //console.log(filamentGroup[1]);
                         spools = filamentGroup[1];
                         spools = spools.filter((spool) => spool.printerNumber != null);
-                        console.log ("filtered spool group:");
-                        console.log(spools);
+                        if (spools.length > 0) {
+                            console.log ("filtered spool group:");
+                            console.log(spools);
+                        }
                     });
                 }
 
-                console.log("----- flattenArray after filtering------");
-                console.log(flattenArray);
+                //console.log("----- flattenArray after filtering------");
+                //console.log(flattenArray);
 
                 // assign catalogs to sidebarFilterSorter
                 // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
