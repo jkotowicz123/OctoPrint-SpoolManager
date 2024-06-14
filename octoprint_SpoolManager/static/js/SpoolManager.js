@@ -800,7 +800,7 @@ $(function() {
                     });
                 }
 
-                console.log"----- flattenArray after filtering------);
+                console.log("----- flattenArray after filtering------");
                 console.log(flattenArray);
 
                 // assign catalogs to sidebarFilterSorter
