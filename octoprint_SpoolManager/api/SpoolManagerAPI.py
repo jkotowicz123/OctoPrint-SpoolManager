@@ -260,7 +260,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					
 					#assign printerNumber to selected spool
 					spool = spoolModel
-					spool.printerNumber = printerNumber+"T"+toolIndex
+					notZeroIndexedToolNumber = toolIndex+1
+					spool.printerNumber = printerNumber+"T"+str(notZeroIndexedToolNumber)
 					self._databaseManager.saveSpool(spool)
 
 		
@@ -530,11 +531,19 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
 		if("T" in str(printerNumber)): # e.g. #5T3
-			printerNumber=printerNumber.split("T")
-			toolNumberZeroIndexed = int(printerNumber[1])-1
+			self._logger.info("T in printerNumber, assigning tool")
+		
+			printerNumber = str(printerNumber)
+			self._logger.info("stringprinternumber"+printerNumber)
+			printerNumber = printerNumber.split("T")
+			toolNumberZeroIndexed = int(printerNumber[1])
+			toolNumberZeroIndexed = toolNumberZeroIndexed-1 
 			printerNumber = printerNumber[0]
+			self._logger.info("stringprinternumber after split"+printerNumber)
+			self._logger.info("toolNumberZeroIndexed after split"+str(toolNumberZeroIndexed))
 			spoolModel = self._selectSpool(toolNumberZeroIndexed, databaseId,printerNumber)
 		else: #no tool specified, assign to tool0
+			self._logger.info("no T in printerNumber, assigning to tool 0")
 			spoolModel = self._selectSpool(0, databaseId,printerNumber)
 			
 		self._logger.info("spoolModel returned:"+ str(spoolModel))
