@@ -263,6 +263,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					notZeroIndexedToolNumber = toolIndex+1
 					spool.printerNumber = printerNumber+"T"+str(notZeroIndexedToolNumber)
 
+
 					#delete assigned shelf, as the spool is not in that place
 					spool.shelf = ""
 
