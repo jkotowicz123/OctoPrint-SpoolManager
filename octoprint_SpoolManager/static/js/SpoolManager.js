@@ -794,7 +794,7 @@ $(function() {
 
                 if (filteringOnlyAssignedSpools == true){
                     flattenArray.forEach((filamentGroup) => {
-                        filamentGroup[1] = filamentGroup[1].filter((spool) => spool.printerNumber != null);
+                        filamentGroup[1] = filamentGroup[1].filter((spool) => spool.printerNumber != "" );
                     });
                     flattenArray = flattenArray.filter((filamentGroup) => filamentGroup[1].length > 0);
                 }
