@@ -1,0 +1,16 @@
+{% import 'SpoolManager_tab_macros.jinja2' as forms %}
+
+<span id="modal-dialogs-spoolManager" style="display:none" >
+
+    <!--###############################################################  CSV Import Status-Dialog: id="dialog_spoolManager_csvImportStatus" -->
+    {% include "SpoolManager_dialog_csvImportStatus.jinja2" %}
+
+    <!--###############################################################  Spool EDIT Dialog: id="dialog_spool_edit" -->
+    {% include "SpoolManager_dialog_editSpool.jinja2" %}
+
+    <!--###############################################################  Spool SELECTION Dialog: id="dialog_spool_selection" -->
+    {% include "SpoolManager_dialog_selectSpool.jinja2" %}
+
+    <!--###############################################################  DatabaseConnectionProblem-Dialog: id="dialog_spoolManager_databaseConnectionProblem" -->
+    {% include "SpoolManager_dialog_databaseConnectionProblem.jinja2" %}
+</span>
