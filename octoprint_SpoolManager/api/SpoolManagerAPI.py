@@ -260,7 +260,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 					
 					#assign printerNumber to selected spool
 					spool = spoolModel
-					spool.printerNumber = printerNumber+"T"+str(toolIndex)
+					notZeroIndexedToolNumber = toolIndex+1
+					spool.printerNumber = printerNumber+"T"+str(notZeroIndexedToolNumber)
 					self._databaseManager.saveSpool(spool)
 
 		
