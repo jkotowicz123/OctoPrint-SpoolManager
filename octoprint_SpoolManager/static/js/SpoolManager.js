@@ -1315,4 +1315,8 @@ $(function() {
         elements: [
             document.getElementById("settings_spoolmanager"),
             document.getElementById("tab_spoolOverview"),
-            document.getElementById("modal-dialogs-s
+            document.getElementById("modal-dialogs-spoolManager"),
+            document.getElementById("sidebar_spool_select")
+        ]
+    });
+});

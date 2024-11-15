@@ -1279,4 +1279,4 @@ class DatabaseManager(object):
 					return None
 				pass
 
-		return self._handleReusableConnection(databaseCallMethode,
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "deleteSpool")
