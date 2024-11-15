@@ -1040,10 +1040,4 @@ function SpoolManagerEditSpoolDialog(){
     /*
     self.printImg = function(){
         $.ajax({
-            url: http://127.0.0.1:5000 + "plugin/"+PLUGIN_ID_string+"?action=isResetSettingsEnabled",
-            type: "GET"
-        }).done(function( data ){
-    }
-*/
-
-}
+            url: http://127.0.0.1:5000 + "plugin/"+PLUGIN_ID_string+"?action=isResetSettingsEnab

@@ -410,5 +410,4 @@ def createSampleSpoolModel():
 	s1.purchasedFrom = "Unknown Seller"
 	s1.cost = "12.30"
 	s1.costUnit = "€"
-	s1.noteText = "Very cheap spool!"
-	return s1
+	s1.note
