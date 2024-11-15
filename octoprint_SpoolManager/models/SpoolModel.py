@@ -40,6 +40,8 @@ class SpoolModel(BaseModel):
 	project = CharField(null=True, index=True)
 	# added "printerNumber" column for seeing assigned filaments
 	printerNumber = CharField(null=True)
+	# added "shelf" column to make finding specific spool easier
+	shelf = CharField(null=True)
 	
 
 	firstUse = DateTimeField(null=True)

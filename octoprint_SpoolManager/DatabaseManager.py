@@ -445,6 +445,7 @@ class DatabaseManager(object):
 				"serialNumber" VARCHAR(255),
 				"project" VARCHAR(255),
 				"printerNumber" VARCHAR(255),
+				"shelf" VARCHAR(255),
 				"firstUse" DATETIME,
 				"lastUse" DATETIME,
 				"purchasedFrom" VARCHAR(255),
@@ -464,8 +465,8 @@ class DatabaseManager(object):
 				'totalLength' INTEGER);
 
 				INSERT INTO 'spo_spoolmodel'
-				(databaseId, created, isTemplate, displayName, vendor, material, density, diameter, diameter, colorName, color, temperature, totalWeight, usedWeight, remainingWeight, usedLength, code, serialNumber,project, printerNumber, firstUse, lastUse, purchasedFrom, purchasedOn, cost, costUnit, labels, noteText, noteDeltaFormat, noteHtml, version, diameterTolerance, spoolWeight, flowRateCompensation, bedTemperature, enclosureTemperature, totalLength)
-				  SELECT databaseId, created, isTemplate, displayName, vendor, material, density, diameter, diameter, colorName, color, temperature, totalWeight, usedWeight, remainingWeight, usedLength, code, serialNumber,project, printerNumber, firstUse, lastUse, purchasedFrom, purchasedOn, cost, costUnit, labels, noteText, noteDeltaFormat, noteHtml, version, diameterTolerance, spoolWeight, flowRateCompensation, bedTemperature, encloserTemperature, totalLength
+				(databaseId, created, isTemplate, displayName, vendor, material, density, diameter, diameter, colorName, color, temperature, totalWeight, usedWeight, remainingWeight, usedLength, code, serialNumber,project, printerNumber,shelf, firstUse, lastUse, purchasedFrom, purchasedOn, cost, costUnit, labels, noteText, noteDeltaFormat, noteHtml, version, diameterTolerance, spoolWeight, flowRateCompensation, bedTemperature, enclosureTemperature, totalLength)
+				  SELECT databaseId, created, isTemplate, displayName, vendor, material, density, diameter, diameter, colorName, color, temperature, totalWeight, usedWeight, remainingWeight, usedLength, code, serialNumber,project, printerNumber,shelf, firstUse, lastUse, purchasedFrom, purchasedOn, cost, costUnit, labels, noteText, noteDeltaFormat, noteHtml, version, diameterTolerance, spoolWeight, flowRateCompensation, bedTemperature, encloserTemperature, totalLength
 				  FROM 'spo_spoolmodel_old';
 
 				DROP TABLE 'spo_spoolmodel_old';

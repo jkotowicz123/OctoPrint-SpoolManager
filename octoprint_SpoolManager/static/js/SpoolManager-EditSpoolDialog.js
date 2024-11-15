@@ -102,6 +102,7 @@ function SpoolManagerEditSpoolDialog(){
         this.serialNumber = ko.observable();
         //this.project = ko.observable();
         this.printerNumber = ko.observable();
+        this.shelf = ko.observable();
 
 //        this.labels = ko.observable();
 //            this.allLabels = ko.observable();
@@ -253,6 +254,7 @@ function SpoolManagerEditSpoolDialog(){
         this.serialNumber(updateData.serialNumber);
         this.project(updateData.project);
         this.printerNumber(updateData.printerNumber);
+        this.shelf(updateData.shelf);
         this.usedPercentage(updateData.usedPercentage);
 
         this.totalLength(updateData.totalLength);

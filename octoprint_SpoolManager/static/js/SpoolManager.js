@@ -716,6 +716,7 @@ $(function() {
             this.serialNumber = ko.observable(true);
             this.project = ko.observable(true);
             this.printerNumber = ko.observable(true);
+            this.shelf = ko.observable(true);
         }
         self.tableAttributeVisibility = new TableAttributeVisibility();
 
@@ -795,7 +796,6 @@ $(function() {
                     flattenArray.forEach((filamentGroup) => {
                         filamentGroup[1] = filamentGroup[1].filter((spool) => spool.printerNumber != null);
                     });
-                    console.log(flattenArray);
                     flattenArray = flattenArray.filter((filamentGroup) => filamentGroup[1].length > 0);
                 }
 
@@ -1076,7 +1076,8 @@ $(function() {
                         "cost": spoolItem.cost(),
                         "weight": spoolItem.totalWeight(),
                         "project":spoolItem.project(),
-                        "printerNumber":spoolItem.printerNumber()
+                        "printerNumber":spoolItem.printerNumber(),
+                        "shelf":spoolItem.shelf()
                     }
                 }
                 result.push(spoolData);
