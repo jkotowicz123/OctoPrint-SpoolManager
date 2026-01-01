@@ -994,10 +994,10 @@ class DatabaseManager(object):
 				myQuery = SpoolModel.select().offset(offset).limit(limit)
 
 			if ("materialFilter" in tableQuery):
-				materialFilter = tableQuery["materialFilter"]
-				vendorFilter = tableQuery["vendorFilter"]
-				colorFilter = tableQuery["colorFilter"]
-				projectFilter = tableQuery["projectFilter"]
+				materialFilter = tableQuery.get("materialFilter", "all")
+				vendorFilter = tableQuery.get("vendorFilter", "all")
+				colorFilter = tableQuery.get("colorFilter", "all")
+				projectFilter = tableQuery.get("projectFilter", "all")
 				# materialFilter
 				# u'ABS,PLA'
 				# u''
