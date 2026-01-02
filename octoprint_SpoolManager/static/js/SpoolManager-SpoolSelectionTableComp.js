@@ -64,9 +64,7 @@ function SpoolSelectionTableComp() {
         self.showAllColorsForFilter = ko.observable(true);
         self.selectedColorsForFilter = ko.observableArray();
 
-
         //////////////////////////////////////////////////////////////////// browser storage
-        // var storageKeyPrefix = "spoolmanager.filtersorter." + filterSorterId + ".";
         // All SpoolSelectionTableComponents use the same storage
         var storageKeyPrefix = "spoolmanager.filtersorter.";
 
@@ -77,31 +75,11 @@ function SpoolSelectionTableComp() {
             }
 
             if (localStorage[storageKeyPrefix + "hideEmptySpools"] != null){
-                self.hideEmptySpools(   localStorage[storageKeyPrefix + "hideEmptySpools"] == 'false' ? false : true);
+                self.hideEmptySpools(localStorage[storageKeyPrefix + "hideEmptySpools"] == 'false' ? false : true);
             }
             if (localStorage[storageKeyPrefix + "hideInActiveSpools"] != null){
                 self.hideInActiveSpools(localStorage[storageKeyPrefix + "hideInActiveSpools"] == 'false' ? false : true);
             }
-            // maybe if someone request for it
-            // if (localStorage[storageKeyPrefix + "showAllMaterialsForFilter"] != null){
-            //     self.showAllMaterialsForFilter(localStorage[storageKeyPrefix + "showAllMaterialsForFilter"] == 'false' ? false : true);
-            // }
-            // if (localStorage[storageKeyPrefix + "showAllVendorsForFilter"] != null){
-            //     self.showAllVendorsForFilter(localStorage[storageKeyPrefix + "showAllVendorsForFilter"] == 'false' ? false : true);
-            // }
-            // if (localStorage[storageKeyPrefix + "showAllColorsForFilter"] != null){
-            //     self.showAllColorsForFilter(localStorage[storageKeyPrefix + "showAllColorsForFilter"] == 'false' ? false : true);
-            // }
-            //
-            // if (localStorage[storageKeyPrefix + "selectedMaterialsForFilter"] != null){
-            //   self.selectedMaterialsForFilter(self._stringToArray(localStorage[storageKeyPrefix + "selectedMaterialsForFilter"]));
-            // }
-            // if (localStorage[storageKeyPrefix + "selectedVendorsForFilter"] != null){
-            //   self.selectedVendorsForFilter(self._stringToArray(localStorage[storageKeyPrefix + "selectedVendorsForFilter"]));
-            // }
-            // if (localStorage[storageKeyPrefix + "selectedColorsForFilter"] != null){
-            //   self.selectedColorsForFilter(self._stringToArray(localStorage[storageKeyPrefix + "selectedColorsForFilter"]));
-            // }
         }
 
         self._storeFilterSelectionsToBrowserStorage = function(){
@@ -115,20 +93,6 @@ function SpoolSelectionTableComp() {
             if (self.hideInActiveSpools() != null){
                 localStorage[storageKeyPrefix + "hideInActiveSpools"] = self.hideInActiveSpools();
             }
-            // maybe if someone request for it
-            // if (self.showAllMaterialsForFilter() != null){
-            //     localStorage[storageKeyPrefix + "showAllMaterialsForFilter"] = self.showAllMaterialsForFilter();
-            // }
-            // if (self.showAllVendorsForFilter() != null){
-            //     localStorage[storageKeyPrefix + "showAllVendorsForFilter"] = self.showAllVendorsForFilter();
-            // }
-            // if (self.showAllColorsForFilter() != null){
-            //     localStorage[storageKeyPrefix + "showAllColorsForFilter"] = self.showAllColorsForFilter();
-            // }
-            //
-            // localStorage[storageKeyPrefix + "selectedMaterialsForFilter"] = self._arrayToString(self.selectedMaterialsForFilter());
-            // localStorage[storageKeyPrefix + "selectedVendorsForFilter"] = self._arrayToString(self.selectedVendorsForFilter());
-            // localStorage[storageKeyPrefix + "selectedColorsForFilter"] = self._arrayToString(self.selectedColorsForFilter());
         }
 
         self._stringToArray = function(stringValues){
@@ -144,8 +108,50 @@ function SpoolSelectionTableComp() {
             return result;
         }
 
+        self._initCatalogSelections = function(){
+            if (self.allMaterials != null && self.allMaterials() != null && self.allMaterials().length > 0 && self.selectedMaterialsForFilter().length === 0){
+                self.selectedMaterialsForFilter().length = 0;
+                ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+            }
+            if (self.allVendors != null && self.allVendors() != null && self.allVendors().length > 0 && self.selectedVendorsForFilter().length === 0){
+                self.selectedVendorsForFilter().length = 0;
+                ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
+            }
+            if (self.allProjects != null && self.allProjects() != null && self.allProjects().length > 0 && self.selectedProjectsForFilter().length === 0){
+                self.selectedProjectsForFilter().length = 0;
+                ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+            }
+            if (self.allColors != null && self.allColors() != null && self.allColors().length > 0 && self.selectedColorsForFilter().length === 0){
+                self.selectedColorsForFilter().length = 0;
+                for (let i = 0; i < self.allColors().length; i++) {
+                    let colorObject = self.allColors()[i];
+                    self.selectedColorsForFilter().push(colorObject.colorId);
+                }
+                self.selectedColorsForFilter.valueHasMutated();
+            }
+            if (typeof self._executeFilter === "function") {
+                self._executeFilter();
+            }
+        }
+
+        self.allMaterials.subscribe(function(newValue){
+            self._initCatalogSelections();
+        });
+        self.allVendors.subscribe(function(newValue){
+            self._initCatalogSelections();
+        });
+        self.allProjects.subscribe(function(newValue){
+            self._initCatalogSelections();
+        });
+        self.allColors.subscribe(function(newValue){
+            self._initCatalogSelections();
+        });
+
         // initial loading from browser storage
         self._loadFilterSelectionsFromBrowserStorage();
+
+        // make sure catalogs are selected by default once they are available
+        self._initCatalogSelections();
 
 
         ///////////////////////////////////////////////////////////////////// subscribe listeners
@@ -177,7 +183,7 @@ function SpoolSelectionTableComp() {
         });
 
         self.selectedColorsForFilter.subscribe(function(newValues) {
-            if (self.selectedColorsForFilter().length == 0){
+            if (self.selectedColorsForFilter().length > 0){
                 self.showAllColorsForFilter(true);
             } else{
                 self.showAllColorsForFilter(false);
@@ -350,7 +356,7 @@ function SpoolSelectionTableComp() {
                     break;
                 case "color":
                     checked = self.showAllColorsForFilter();
-                    if (checked == false) {
+                    if (checked == true) {
                         self.selectedColorsForFilter().length = 0;
                         // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
                         // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
