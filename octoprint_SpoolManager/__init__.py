@@ -239,7 +239,7 @@ class SpoolmanagerPlugin(
 				path = fileData["path"]
 				if (origin !=  None and path != None):
 					metadata = self._file_manager.get_metadata(origin, path)
-					if ("analysis" in metadata):
+					if (metadata is not None and "analysis" in metadata):
 						if ("filament" in metadata["analysis"]):
 							for toolName, toolData in metadata["analysis"]["filament"].items():
 								toolIndex = int(toolName[4:])
