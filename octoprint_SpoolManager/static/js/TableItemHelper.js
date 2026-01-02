@@ -28,6 +28,11 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         return Array.isArray(value) ? value : [];
     }
 
+    self.searchQuery = ko.observable("");
+    self.clearSearchQuery = function(){
+        self.searchQuery("");
+    }
+
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
     self.totalItemCount = ko.observable(0);
@@ -68,13 +73,51 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
 
     self._evalFilter = function(allItems, selectedItems){
-        var filterResult = ["all"];
-        if (allItems.length != selectedItems.length){
-            filterResult = selectedItems;
+        if (!Array.isArray(allItems) || allItems.length === 0){
+            return ["all"];
         }
-        return filterResult;
-        // return selectedItems;
+        if (!Array.isArray(selectedItems) || selectedItems.length === 0){
+            return ["all"];
+        }
+        if (allItems.length === selectedItems.length){
+            return ["all"];
+        }
+        return selectedItems;
     }
+
+    self.filteredItems = ko.dependentObservable(function() {
+        var query = (self.searchQuery() || "").toLowerCase().trim();
+        var items = self.items();
+        if (!query){
+            return items;
+        }
+        var unwrap = function(valueOrObservable){
+            if (typeof valueOrObservable === "function"){
+                return valueOrObservable();
+            }
+            return valueOrObservable;
+        }
+        var safeString = function(valueOrObservable){
+            var v = unwrap(valueOrObservable);
+            if (v === null || v === undefined){
+                return "";
+            }
+            return String(v);
+        }
+        return ko.utils.arrayFilter(items, function(item){
+            var haystack = (
+                safeString(item.displayName) + " " +
+                safeString(item.material) + " " +
+                safeString(item.vendor) + " " +
+                safeString(item.project) + " " +
+                safeString(item.serialNumber) + " " +
+                safeString(item.noteText) + " " +
+                safeString(item.noteHtml) + " " +
+                safeString(item.code)
+            ).toLowerCase();
+            return haystack.indexOf(query) !== -1;
+        });
+    });
 
     self._loadItems = function(){
         var from = Math.max(self.currentPage() * self.pageSize(), 0);
@@ -221,18 +264,18 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         if (self.items() === undefined) {
             return [];
         } else if (self.pageSize() === 0) {
-            return self.items();
+            return self.filteredItems();
         } else {
             if (self.isInitialLoadDone == false){
                 self.isInitialLoadDone = true;
                 self._loadItems();
             }
-            return self.items();
+            return self.filteredItems();
         }
     });
 
 
-    // ############################################## SORTING
+    // ############################################################## SORTING
     self.changeSortOrder = function(newSortColumn){
         if (newSortColumn == self.sortColumn()){
             // toggle
