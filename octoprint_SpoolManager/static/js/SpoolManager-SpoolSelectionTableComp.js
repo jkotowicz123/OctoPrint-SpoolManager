@@ -26,7 +26,7 @@ function SpoolSelectionTableComp() {
         });
         self.allMaterials = params.allMaterialsKOArray;
         self.allVendors = params.allVendorsKOArray;
-        //self.allProjects = params.allProjectsKOArray;
+        self.allProjects = params.allProjectsKOArray;
         self.allColors = params.allColorsKOArray;
 
         self.selectSpoolFunction = params.selectSpoolFunction;
@@ -55,6 +55,10 @@ function SpoolSelectionTableComp() {
         // - Filtering - Vendor
         self.showAllVendorsForFilter = ko.observable(true);
         self.selectedVendorsForFilter = ko.observableArray();
+
+        // - Filtering - Project
+        self.showAllProjectsForFilter = ko.observable(true);
+        self.selectedProjectsForFilter = ko.observableArray();
 
         // - Filtering - Color
         self.showAllColorsForFilter = ko.observable(true);
@@ -177,6 +181,16 @@ function SpoolSelectionTableComp() {
                 self.showAllColorsForFilter(true);
             } else{
                 self.showAllColorsForFilter(false);
+            }
+            self._executeFilter();
+            self._storeFilterSelectionsToBrowserStorage();
+        });
+
+        self.selectedProjectsForFilter.subscribe(function(newValues) {
+            if (self.selectedProjectsForFilter().length > 0){
+                self.showAllProjectsForFilter(true);
+            } else{
+                self.showAllProjectsForFilter(false);
             }
             self._executeFilter();
             self._storeFilterSelectionsToBrowserStorage();
@@ -306,9 +320,9 @@ function SpoolSelectionTableComp() {
             if ("vendor" == filterLabelName){
                 return self._evalFilterLabel(self.allVendors(), self.selectedVendorsForFilter());
             }
-            //if ("project" == filterLabelName){
-            //    return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
-            //}
+            if ("project" == filterLabelName){
+                return self._evalFilterLabel(self.allProjects(), self.selectedProjectsForFilter());
+            }
 
             return "not defined:" + filterLabelName;
         }
@@ -347,6 +361,15 @@ function SpoolSelectionTableComp() {
                         self.selectedColorsForFilter.valueHasMutated();
                     } else {
                         self.selectedColorsForFilter.removeAll();
+                    }
+                    break;
+                case "project":
+                    checked = self.showAllProjectsForFilter();
+                    if (checked == true) {
+                        self.selectedProjectsForFilter().length = 0;
+                        ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                    } else {
+                        self.selectedProjectsForFilter.removeAll();
                     }
                     break;
             }
@@ -408,15 +431,15 @@ function SpoolSelectionTableComp() {
                                 }
                             }
                         }
-                        //if (spool.isFilteredForSelection() == false){
-                        //    // Project
-                        //    if (self.allProjects().length != self.selectedProjectsForFilter().length){
-                        //        var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
-                        //        if (self.selectedProjectsForFilter().includes(spoolProject) == false){
-                        //            spool.isFilteredForSelection(true);
-                        //        }
-                        //    }
-                        //}
+                        if (spool.isFilteredForSelection() == false){
+                            // Project
+                            if (self.allProjects().length != self.selectedProjectsForFilter().length){
+                                var spoolProject = spool.project != null && spool.project() != null ? spool.project() : "";
+                                if (self.selectedProjectsForFilter().includes(spoolProject) == false){
+                                    spool.isFilteredForSelection(true);
+                                }
+                            }
+                        }
                     }
                 }
                 if (spool.isFilteredForSelection() == false){
