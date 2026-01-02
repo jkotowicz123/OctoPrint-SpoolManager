@@ -742,7 +742,7 @@ $(function() {
             assignVisibility("note");
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////// TABLE BEHAVIOR
+        //test////////////////////////////////////////////////////////////////////////////////////// TABLE BEHAVIOR
         /* needed for Filter-Search dropdown-menu */
         $('.dropdown-menu.keep-open').click(function(e) {
             e.stopPropagation();
