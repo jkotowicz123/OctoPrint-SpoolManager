@@ -759,71 +759,21 @@ $(function() {
                     self.pluginNotWorking(false);
                 }
 
-                totalItemCount = responseData["totalItemCount"];
-                allSpoolItems = responseData["allSpools"];
+                var totalItemCount = responseData["totalItemCount"];
+                var allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
-                console.log(allCatalogs);
-        
 
-                // assign catalogs to sidebarFilterSorter
-                // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
                 // assign catalogs to tablehelper
                 self.spoolItemTableHelper.updateCatalogs(allCatalogs);
                 // assign all catalogs to editview
                 self.spoolDialog.updateCatalogs(allCatalogs);
 
-                templateSpoolsData = responseData["templateSpools"];
+                var templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
-                
-                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
-                    return result;
+
+                var dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
+                    return self.spoolDialog.createSpoolItemForTable(spoolData);
                 });
-
-                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
-                    (x[y.displayName] = x[y.displayName] || []).push(y);
-                    return x;
-                }, {});
-
-                flattenArray = Object.entries(groupedSpoolItems);
-                /*
-                dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
-                    return result;
-                });
-                */
-
-                //get a list of used categories
-                /*dataRows7 = ko.computed(function() {
-                    var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
-                        return item.displayName();
-                    });
-                    return categories.sort();
-                });*/
-                
-              
-                
-                dataRows4 = ko.utils.arrayMap(groupedSpoolItems, function (spoolData) {
-                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
-                    return result;
-                });
-
-
-
-                dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
-                    var result = { 
-                        name : spoolData.name, 
-                        fields: ko.observableArray(spoolData.fields) 
-                    };
-                    return result;
-                }))
-
-                dataRows3 = ko.mapping.fromJS(flattenArray);
-
-                flattenArray = Object.entries(groupedSpoolItems);
-                console.log(groupedSpoolItems);
-                //console.log(flattenArray);
-                displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);

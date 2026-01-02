@@ -12,7 +12,7 @@
     <div data-bind="visible: pluginNotWorking()==false">
         <div class="row-fluid" >
             <div class="span3">
-                Show/Total: <b><span data-bind="text: spoolItemTableHelper.items().length"></span> /
+                Show/Total: <b><span data-bind="text: spoolItemTableHelper.filteredItems().length"></span> /
                                 <span data-bind="text: spoolItemTableHelper.totalItemCount"></span></b>
                 <br/>per Page:
                 <select class="input-mini text-right"
@@ -25,6 +25,10 @@
             </div>
 
             <div class="span9">
+                <div style="margin-top:5px;" class="pull-right search-query-with-clear active-clear" data-bind="css: {'active-clear': spoolItemTableHelper.searchQuery}">
+                    <input type="search" class="input-block search-query" data-bind="value: spoolItemTableHelper.searchQuery, valueUpdate: 'input'" placeholder="Filter...">
+                    <span class="search-clear" data-bind="click: spoolItemTableHelper.clearSearchQuery"><i class="fas fa-times"></i></span>
+                </div>
                 <!-- TODO Export CSV -->
                 <div class="pull-right">
                     <small>
