@@ -69,6 +69,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.selectedColorsForFilter = ko.observableArray();
 
     self.isInitialLoadDone = false;
+    self._isUpdatingCatalogs = false;
     // ############################################################################################### private functions
 
 
@@ -83,6 +84,36 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             return ["all"];
         }
         return selectedItems;
+    }
+
+    self._areAllValuesSelected = function(allValues, selectedValues){
+        if (!Array.isArray(allValues) || allValues.length === 0){
+            return true;
+        }
+        if (!Array.isArray(selectedValues) || selectedValues.length === 0){
+            return false;
+        }
+        var selectionCount = 0;
+        for (let item of allValues) {
+            if (selectedValues.indexOf(item) !== -1){
+                selectionCount++;
+            }
+        }
+        return selectionCount === allValues.length;
+    }
+
+    self._getAllColorIds = function(){
+        var allColors = self._safeArray(self.allColors);
+        var ids = [];
+        for (let i = 0; i < allColors.length; i++) {
+            let colorItem = allColors[i];
+            if (colorItem && typeof colorItem === "object" && colorItem.colorId !== undefined){
+                ids.push(colorItem.colorId);
+            } else if (typeof colorItem === "string"){
+                ids.push(colorItem);
+            }
+        }
+        return ids;
     }
 
     self.filteredItems = ko.dependentObservable(function() {
@@ -171,45 +202,41 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     });
 
     self.selectedMaterialsForFilter.subscribe(function(newValues) {
-        if (self.selectedMaterialsForFilter().length > 0){
-            self.showAllMaterialsForFilter(true);
-        } else{
-            self.showAllMaterialsForFilter(false);
+        self.showAllMaterialsForFilter(
+            self._areAllValuesSelected(self._safeArray(self.allMaterials), self._safeArray(self.selectedMaterialsForFilter))
+        );
+        if (self._isUpdatingCatalogs){
+            return;
         }
-        // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
     });
     self.selectedVendorsForFilter.subscribe(function(newValues) {
-        if (self.selectedVendorsForFilter().length > 0){
-            self.showAllVendorsForFilter(true);
-        } else{
-            self.showAllVendorsForFilter(false);
+        self.showAllVendorsForFilter(
+            self._areAllValuesSelected(self._safeArray(self.allVendors), self._safeArray(self.selectedVendorsForFilter))
+        );
+        if (self._isUpdatingCatalogs){
+            return;
         }
-        // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
     });
     self.selectedProjectsForFilter.subscribe(function(newValues) {
-        if (self.selectedProjectsForFilter().length > 0){
-            self.showAllProjectsForFilter(true);
-        } else{
-            self.showAllProjectsForFilter(false);
+        self.showAllProjectsForFilter(
+            self._areAllValuesSelected(self._safeArray(self.allProjects), self._safeArray(self.selectedProjectsForFilter))
+        );
+        if (self._isUpdatingCatalogs){
+            return;
         }
-        // TODO Optimize enable after the values where initialy changed
         self.reloadItems();
     });
     self.selectedColorsForFilter.subscribe(function(newValues) {
-        if (self.selectedColorsForFilter().length == 0){
-            self.showAllColorsForFilter(true);
-            self.reloadItems();
-        } else{
-            self.showAllColorsForFilter(false);
+        var allColorIds = self._getAllColorIds();
+        self.showAllColorsForFilter(
+            self._areAllValuesSelected(allColorIds, self._safeArray(self.selectedColorsForFilter))
+        );
+        if (self._isUpdatingCatalogs){
+            return;
         }
-
-        if (self.selectedColorsForFilter().length != 0){
-            // TODO Optimize enable after the values where initialy changed
-            self.reloadItems();
-        }
-
+        self.reloadItems();
     });
 
     self._evalFilterLabel = function(allArray, selectionArray){
@@ -230,6 +257,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self.updateCatalogs = function(catalogs){
+        self._isUpdatingCatalogs = true;
         self.allCatalogs = catalogs || {};
         var materialsCatalog = self.allCatalogs["materials"] || [];
         var vendorsCatalog = self.allCatalogs["vendors"] || [];
@@ -251,13 +279,12 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             ko.utils.arrayPushAll(self.selectedProjectsForFilter, self._safeArray(self.allProjects));
         }
         if (self.selectedColorsForFilter().length === 0 && self.allColors().length > 0){
-            var allColors = self._safeArray(self.allColors);
-            for (let i = 0; i < allColors.length; i++) {
-                let colorObject = allColors[i];
-                self.selectedColorsForFilter().push(colorObject.colorId);
-            }
+            self.selectedColorsForFilter.removeAll();
+            ko.utils.arrayPushAll(self.selectedColorsForFilter, self._getAllColorIds());
             self.selectedColorsForFilter.valueHasMutated();
         }
+
+        self._isUpdatingCatalogs = false;
     }
 
     self.paginatedItems = ko.dependentObservable(function() {
@@ -328,49 +355,38 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     };
 
     self.doFilterSelectAll = function(data, catalogName){
-        let checked;
         switch (catalogName) {
             case "material":
-                checked = self.showAllMaterialsForFilter();
-                if (checked == true) {
-                    self.selectedMaterialsForFilter.removeAll();
-                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self._safeArray(self.allMaterials));
-                } else {
-                    self.selectedMaterialsForFilter.removeAll();
+                var allMaterials = self._safeArray(self.allMaterials);
+                var allMaterialsSelected = self._areAllValuesSelected(allMaterials, self._safeArray(self.selectedMaterialsForFilter));
+                self.selectedMaterialsForFilter.removeAll();
+                if (!allMaterialsSelected) {
+                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter, allMaterials);
                 }
                 break;
             case "vendor":
-                checked = self.showAllVendorsForFilter();
-                if (checked == true) {
-                    self.selectedVendorsForFilter.removeAll();
-                    ko.utils.arrayPushAll(self.selectedVendorsForFilter, self._safeArray(self.allVendors));
-                } else {
-                    self.selectedVendorsForFilter.removeAll();
+                var allVendors = self._safeArray(self.allVendors);
+                var allVendorsSelected = self._areAllValuesSelected(allVendors, self._safeArray(self.selectedVendorsForFilter));
+                self.selectedVendorsForFilter.removeAll();
+                if (!allVendorsSelected) {
+                    ko.utils.arrayPushAll(self.selectedVendorsForFilter, allVendors);
                 }
                 break;
             case "project":
-                checked = self.showAllProjectsForFilter();
-                if (checked == true) {
-                    self.selectedProjectsForFilter.removeAll();
-                    ko.utils.arrayPushAll(self.selectedProjectsForFilter, self._safeArray(self.allProjects));
-                } else {
-                    self.selectedProjectsForFilter.removeAll();
+                var allProjects = self._safeArray(self.allProjects);
+                var allProjectsSelected = self._areAllValuesSelected(allProjects, self._safeArray(self.selectedProjectsForFilter));
+                self.selectedProjectsForFilter.removeAll();
+                if (!allProjectsSelected) {
+                    ko.utils.arrayPushAll(self.selectedProjectsForFilter, allProjects);
                 }
                 break;
             case "color":
-                checked = self.showAllColorsForFilter();
-                if (checked == true) {
-                    self.selectedColorsForFilter.removeAll();
-                    // we are using an colorId as a checked attribute, we can just move the color-objects to the selectedArrary
-                    // ko.utils.arrayPushAll(self.spoolItemTableHelper.selectedColorsForFilter, self.spoolItemTableHelper.allColors());
-                    var allColors = self._safeArray(self.allColors);
-                    for (let i = 0; i < allColors.length; i++) {
-                        let colorObject = allColors[i];
-                        self.selectedColorsForFilter().push(colorObject.colorId);
-                    }
+                var allColorIds = self._getAllColorIds();
+                var allColorsSelected = self._areAllValuesSelected(allColorIds, self._safeArray(self.selectedColorsForFilter));
+                self.selectedColorsForFilter.removeAll();
+                if (!allColorsSelected) {
+                    ko.utils.arrayPushAll(self.selectedColorsForFilter, allColorIds);
                     self.selectedColorsForFilter.valueHasMutated();
-                } else {
-                    self.selectedColorsForFilter.removeAll();
                 }
                 break;
         }
