@@ -742,7 +742,7 @@ $(function() {
             assignVisibility("note");
         }
 
-        //test////////////////////////////////////////////////////////////////////////////////////// TABLE BEHAVIOR
+        ///////////////////////////////////////////////////////////////////////////////////////////////// TABLE BEHAVIOR
         /* needed for Filter-Search dropdown-menu */
         $('.dropdown-menu.keep-open').click(function(e) {
             e.stopPropagation();
@@ -759,21 +759,71 @@ $(function() {
                     self.pluginNotWorking(false);
                 }
 
-                var totalItemCount = responseData["totalItemCount"];
-                var allSpoolItems = responseData["allSpools"];
+                totalItemCount = responseData["totalItemCount"];
+                allSpoolItems = responseData["allSpools"];
                 var allCatalogs = responseData["catalogs"];
+                console.log(allCatalogs);
+        
 
+                // assign catalogs to sidebarFilterSorter
+                // self.sidebarFilterSorter.updateCatalogs(allCatalogs);
                 // assign catalogs to tablehelper
                 self.spoolItemTableHelper.updateCatalogs(allCatalogs);
                 // assign all catalogs to editview
                 self.spoolDialog.updateCatalogs(allCatalogs);
 
-                var templateSpoolsData = responseData["templateSpools"];
+                templateSpoolsData = responseData["templateSpools"];
                 self.spoolDialog.updateTemplateSpools(templateSpoolsData);
-
-                var dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
-                    return self.spoolDialog.createSpoolItemForTable(spoolData);
+                
+                dataRows = ko.utils.arrayMap(allSpoolItems, function (spoolData) {
+                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                    return result;
                 });
+
+                groupedSpoolItems = allSpoolItems.reduce((x, y) => {
+                    (x[y.displayName] = x[y.displayName] || []).push(y);
+                    return x;
+                }, {});
+
+                flattenArray = Object.entries(groupedSpoolItems);
+                /*
+                dataRows = ko.utils.arrayMap(flattenArray[0][0], function (spoolData) {
+                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                    return result;
+                });
+                */
+
+                //get a list of used categories
+                /*dataRows7 = ko.computed(function() {
+                    var categories = ko.utils.arrayMap(allSpoolItems, function(item) {
+                        return item.displayName();
+                    });
+                    return categories.sort();
+                });*/
+                
+              
+                
+                dataRows4 = ko.utils.arrayMap(groupedSpoolItems, function (spoolData) {
+                    var result = self.spoolDialog.createSpoolItemForTable(spoolData);
+                    return result;
+                });
+
+
+
+                dataRows2 = ko.observableArray(ko.utils.arrayMap(groupedSpoolItems, function(spoolData) {
+                    var result = { 
+                        name : spoolData.name, 
+                        fields: ko.observableArray(spoolData.fields) 
+                    };
+                    return result;
+                }))
+
+                dataRows3 = ko.mapping.fromJS(flattenArray);
+
+                flattenArray = Object.entries(groupedSpoolItems);
+                console.log(groupedSpoolItems);
+                //console.log(flattenArray);
+                displayNames = Object.keys(groupedSpoolItems);
 
                 observableTotalItemCount(totalItemCount);
                 observableTableModel(dataRows);

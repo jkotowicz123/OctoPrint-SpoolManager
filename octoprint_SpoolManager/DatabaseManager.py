@@ -994,17 +994,17 @@ class DatabaseManager(object):
 				myQuery = SpoolModel.select().offset(offset).limit(limit)
 
 			if ("materialFilter" in tableQuery):
-				materialFilter = tableQuery.get("materialFilter", "all")
-				vendorFilter = tableQuery.get("vendorFilter", "all")
-				colorFilter = tableQuery.get("colorFilter", "all")
-				projectFilter = tableQuery.get("projectFilter", "all")
+				materialFilter = tableQuery["materialFilter"]
+				vendorFilter = tableQuery["vendorFilter"]
+				colorFilter = tableQuery["colorFilter"]
+				projectFilter = tableQuery["projectFilter"]
 				# materialFilter
 				# u'ABS,PLA'
 				# u''
 				# u'all'
 				materialFilter = StringUtils.to_native_str(materialFilter)
 				if (materialFilter != "all"):
-					if (StringUtils.isEmpty(materialFilter)):
+					if (StringUtils.isEmpty(colorFilter)):
 						myQuery = myQuery.where( (SpoolModel.material == '') )
 					else:
 						allMaterials = materialFilter.split(",")
