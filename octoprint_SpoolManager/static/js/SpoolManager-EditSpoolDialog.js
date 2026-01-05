@@ -101,6 +101,7 @@ function SpoolManagerEditSpoolDialog(){
         this.usedPercentage = ko.observable();
         this.code = ko.observable();
         this.serialNumber = ko.observable();
+        this.project = ko.observable();
       
 
 //        this.labels = ko.observable();
@@ -248,6 +249,7 @@ function SpoolManagerEditSpoolDialog(){
         this.remainingPercentage(updateData.remainingPercentage);
         this.code(updateData.code);
         this.serialNumber(updateData.serialNumber);
+        this.project(updateData.project);
         this.usedPercentage(updateData.usedPercentage);
 
         this.totalLength(updateData.totalLength);
@@ -852,7 +854,7 @@ function SpoolManagerEditSpoolDialog(){
             keyboard: false,
             clickClose: true,
             showClose: false,
-            backdrop: "static"
+            backdrop: true
         })
         .css({
             width: 'auto',

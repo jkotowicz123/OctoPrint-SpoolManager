@@ -14,11 +14,6 @@
             <div class="span3">
                 Show/Total: <b><span data-bind="text: spoolItemTableHelper.items().length"></span> /
                                 <span data-bind="text: spoolItemTableHelper.totalItemCount"></span></b>
-                <br/>per Page:
-                <select class="input-mini text-right"
-                        data-bind="options: spoolItemTableHelper.pageSizeOptions,
-                                   value: spoolItemTableHelper.selectedPageSize">
-                </select>
                 <div class="pull-left">
                     <button title="Add new Spool" class="btn" data-bind="click: addNewSpool"><i class="fa fa-plus"></i> Add Spool</button>
                 </div>
@@ -155,6 +150,10 @@
                     </small>
                 </div>
                 <div class="pull-right" style="clear: both;">
+                    <a href="#" data-bind="click: spoolItemTableHelper.toggleAllGroups" title="Collapse/expand all groups"><span class="icon-resize-small"></span> <span data-bind="text: spoolItemTableHelper.toggleAllGroupsLabel"></span></a>
+                    <span> | </span>
+                    <a href="#" data-bind="click: spoolItemTableHelper.toggleGroupSortMode" title="Toggle group sort"><span class="icon-random"></span> <span data-bind="text: spoolItemTableHelper.groupSortLabel"></span></a>
+                    <span> | </span>
                     <a href="#" data-bind="click: spoolItemTableHelper.reloadItems" title="Force refresh" ><span class="icon-refresh"></span> Reload</a>
                 </div>
 
@@ -433,10 +432,7 @@
     </table>
 
     -->
-
-
         <!-- Table start -->
-        {{ forms.tablePagination() }}
         <table class="table table-striped table-hover table-condensed table-hover" style="clear: both;">
             <thead>
                 <tr>
@@ -454,7 +450,26 @@
                 </tr>
             </thead>
 
-            <tbody data-bind="foreach: spoolItemTableHelper.paginatedItems" >
+            <tbody data-bind="foreach: spoolItemTableHelper.groupedItemsByDisplayName">
+                <tr style="cursor: pointer;" data-bind="click: function() { expanded(!expanded()); }">
+                    <td data-bind="visible: $root.tableAttributeVisibility.displayName, attr: { colspan: $root.tableAttributeVisibility.databaseId() ? 2 : 1 }" style="padding: 0;">
+                        <i data-bind="css: expanded() ? 'icon-chevron-down' : 'icon-chevron-right'"></i>
+                        <b><span data-bind="text: displayName"></span></b>
+                        <span>(<span data-bind="text: totalRemainingWeight"></span>g / <span data-bind="text: spoolCount"></span> szpule)</span>
+                    </td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.material"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: center;">
+                        <b><span data-bind="text: totalRemainingWeight"></span>g</b>
+                    </td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.used"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.note"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.project"></td>
+                </tr>
+
+                <!-- ko if: expanded -->
+                <!-- ko foreach: items -->
                 <tr data-bind="click: function() { $root.showSpoolDialogAction($data); }">
                     <td data-bind="visible: $root.tableAttributeVisibility.databaseId"><span data-bind="text: databaseId, attr: { title: databaseId }"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.displayName"><span data-bind="text: displayName, attr: { title: displayName }"></span></td>
@@ -464,16 +479,18 @@
                         </div></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"><span data-bind="text: formatOnlyDate($data, 'lastUse')"></span></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.weight">
-    {#                  <span data-bind="text: usedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedWeight')}"></span>g<br/>#}
-                    <b><span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight: ', 'remainingWeight')}"></span>g</b>   (<span data-bind="text: remainingCombinedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Total remaining weight with spool: ', 'remainingCombinedWeight')}"></span>g) <br>
+    {#                  <span data-bind="text: usedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedWeight')}" ></span>g<br/>#}
+                    <b><span data-bind="text: remainingWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Remaining weight: ', 'remainingWeight')}" ></span>g</b>   (<span data-bind="text: remainingCombinedWeight, attr: {title: $root.buildTooltipForSpoolItem($data, 'Total remaining weight with spool: ', 'remainingCombinedWeight')}" ></span>g) <br>
                     </td>
                     <td data-bind="visible: $root.tableAttributeVisibility.used" style="text-align: right;">
                     
-                    <span data-bind="text: usedPercentage, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedPercentage')}"></span>%<br></td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }"></span></td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }"></span></td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.project"><span data-bind="text: project, attr: { title: project }"></span></td>
+                    <span data-bind="text: usedPercentage, attr: {title: $root.buildTooltipForSpoolItem($data, 'Used weight: ', 'usedPercentage')}" ></span>%<br></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.note"><span data-bind="html: noteHtml, attr: { title: noteText }" ></span></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"><span data-bind="text: serialNumber, attr: { title: serialNumber }" ></span></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.project"><span data-bind="text: project, attr: { title: project }" ></span></td>
                 </tr>
+                <!-- /ko -->
+                <!-- /ko -->
             </tbody>
             <tfoot>
             <tr>
@@ -496,7 +513,6 @@
             </li>
         </ul>-->
 
-        {{ forms.tablePagination() }}
     </div> <!-- visible -->
 </div>
 

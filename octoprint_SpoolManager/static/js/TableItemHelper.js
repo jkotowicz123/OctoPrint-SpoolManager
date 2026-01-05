@@ -20,14 +20,177 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     var self = this;
     var totalFilamentsWeight = 0;
 
+    var _pureComputed = ko.pureComputed ? ko.pureComputed : ko.computed;
+
     self.loadItemsFunction = loadItemsFunction;
     self.items = ko.observableArray([]);
     self.totalItemCount = ko.observable(0);
 
+    self.groupedItemsByDisplayName = ko.observableArray([]);
+
+    self.groupSortMode = ko.observable("name");
+
+    self.toggleGroupSortMode = function () {
+        if (self.groupSortMode() === "name") {
+            self.groupSortMode("remaining");
+        } else {
+            self.groupSortMode("name");
+        }
+        self._rebuildGroupsByDisplayName();
+    };
+
+    self.groupSortLabel = _pureComputed(function () {
+        return self.groupSortMode() === "name" ? "Sort groups by remaining" : "Sort groups by name";
+    });
+
+    self.toggleAllGroups = function () {
+        var groups = self.groupedItemsByDisplayName();
+        if (!groups) {
+            return;
+        }
+
+        var anyExpanded = false;
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i] && groups[i].expanded && groups[i].expanded()) {
+                anyExpanded = true;
+                break;
+            }
+        }
+
+        for (var j = 0; j < groups.length; j++) {
+            if (groups[j] && groups[j].expanded) {
+                groups[j].expanded(!anyExpanded);
+            }
+        }
+    };
+
+    self.toggleAllGroupsLabel = _pureComputed(function () {
+        var groups = self.groupedItemsByDisplayName();
+        if (!groups || groups.length === 0) {
+            return "Collapse all";
+        }
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i] && groups[i].expanded && groups[i].expanded()) {
+                return "Collapse all";
+            }
+        }
+        return "Expand all";
+    });
+
+    self.totalFilamentsWeight = _pureComputed(function () {
+        var sum = 0;
+        var items = self.items();
+        if (!items) {
+            return 0;
+        }
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (!item) {
+                continue;
+            }
+            var remainingWeight = ko.utils.unwrapObservable(item.remainingWeight);
+            var w = parseFloat(remainingWeight);
+            if (!isNaN(w)) {
+                sum += w;
+            }
+        }
+        return Math.round(sum * 100) / 100;
+    });
+
+    self._rebuildGroupsByDisplayName = function () {
+        var items = self.items();
+        if (!items) {
+            self.groupedItemsByDisplayName([]);
+            return;
+        }
+
+        var expandedByName = {};
+        var prevGroups = self.groupedItemsByDisplayName();
+        if (prevGroups) {
+            for (var p = 0; p < prevGroups.length; p++) {
+                var prev = prevGroups[p];
+                if (prev && prev.displayName != null && prev.expanded) {
+                    expandedByName[prev.displayName] = prev.expanded();
+                }
+            }
+        }
+
+        var groups = {};
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (!item) {
+                continue;
+            }
+
+            var displayName = ko.utils.unwrapObservable(item.displayName);
+            var key = (displayName != null && ("" + displayName).length > 0) ? ("" + displayName) : "(no name)";
+
+            if (!groups[key]) {
+                groups[key] = {
+                    displayName: key,
+                    spoolCount: 0,
+                    totalRemainingWeight: 0,
+                    items: [],
+                    expanded: ko.observable(expandedByName[key] !== undefined ? expandedByName[key] : true)
+                };
+            }
+
+            groups[key].items.push(item);
+            groups[key].spoolCount += 1;
+
+            var remainingWeight = ko.utils.unwrapObservable(item.remainingWeight);
+            var w = parseFloat(remainingWeight);
+            if (!isNaN(w)) {
+                groups[key].totalRemainingWeight += w;
+            }
+        }
+
+        var result = [];
+        for (var name in groups) {
+            if (Object.prototype.hasOwnProperty.call(groups, name)) {
+                groups[name].items.sort(function (a, b) {
+                    var aVal = parseFloat(ko.utils.unwrapObservable(a.remainingWeight));
+                    var bVal = parseFloat(ko.utils.unwrapObservable(b.remainingWeight));
+
+                    if (isNaN(aVal)) {
+                        aVal = Number.POSITIVE_INFINITY;
+                    }
+                    if (isNaN(bVal)) {
+                        bVal = Number.POSITIVE_INFINITY;
+                    }
+
+                    return aVal - bVal;
+                });
+                groups[name].totalRemainingWeight = Math.round(groups[name].totalRemainingWeight * 100) / 100;
+                result.push(groups[name]);
+            }
+        }
+
+        if (self.groupSortMode && self.groupSortMode() === "remaining") {
+            result.sort(function (a, b) {
+                return a.totalRemainingWeight - b.totalRemainingWeight;
+            });
+        } else {
+            result.sort(function (a, b) {
+                return ("" + a.displayName).toLowerCase().localeCompare(("" + b.displayName).toLowerCase());
+            });
+        }
+
+        self.groupedItemsByDisplayName(result);
+    };
+
+    self.items.subscribe(function () {
+        self._rebuildGroupsByDisplayName();
+    });
+
+    self.collapseAllGroups = function () {
+        self.toggleAllGroups();
+    };
+
     // paging
     self.pageSizeOptions = ko.observableArray([10, 25, 50, 100, "all"])
     self.selectedPageSize = ko.observable(defaultPageSize)
-    self.pageSize = ko.observable(self.selectedPageSize());
+    self.pageSize = ko.observable(self.selectedPageSize() === "all" ? 0 : self.selectedPageSize());
     self.currentPage = ko.observable(0);
     // Sorting
     self.sortColumn = ko.observable("displayName");
@@ -36,7 +199,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     //self.filterOptions = ["all", "onlySuccess", "onlyFailed"];
     self.selectedFilterName = ko.observable("hideEmptySpools");
 
-    self.selectedFilterNameArrayKO = ko.observableArray([]);
+    self.selectedFilterNameArrayKO = ko.observableArray(defaultFilterName ? [defaultFilterName] : []);
 
     // Filtering - Material
     self.allMaterials = ko.observableArray([]);
@@ -70,11 +233,18 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     }
 
     self._loadItems = function(){
-        var from = Math.max(self.currentPage() * self.pageSize(), 0);
-//        var to = Math.min(from + self.pageSize(), self.totalItemCount());
-        var to = self.pageSize();
-        if (to == 0){
+        var selectedPageSize = self.selectedPageSize();
+
+        var from = 0;
+        var to = 0;
+
+        if ("all" != selectedPageSize){
+            from = Math.max(self.currentPage() * self.pageSize(), 0);
+    //        var to = Math.min(from + self.pageSize(), self.totalItemCount());
             to = self.pageSize();
+            if (to == 0){
+                to = self.pageSize();
+            }
         }
 
         var materialFilter = self._evalFilter(self.allMaterials(), self.selectedMaterialsForFilter());
@@ -82,14 +252,14 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         var projectFilter = self._evalFilter(self.allProjects(), self.selectedProjectsForFilter());
         var colorFilter = self._evalFilter(self.allColors(), self.selectedColorsForFilter());
 
-        var selectedFilterNamesString = "hideEmptySpools";
+        var selectedFilterNamesString = "all";
         var selectedFilterNames = self.selectedFilterNameArrayKO();
         if (selectedFilterNames.length != 0){
             selectedFilterNamesString = selectedFilterNames.sort().join();
         }
 
         var tableQuery = {
-            "selectedPageSize": self.selectedPageSize(),
+            "selectedPageSize": selectedPageSize,
             "from": from,
             "to": to,
             "sortColumn": self.sortColumn(),
@@ -112,7 +282,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.selectedPageSize.subscribe(function(newPageSize) {
         self.currentPage(0);
         if ("all" == newPageSize){
-            self.pageSize(self.totalItemCount());
+            self.pageSize(0);
         } else {
             self.pageSize(newPageSize);
         }
@@ -195,15 +365,15 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             self._catalogsInitialized = true;
 
             self.selectedMaterialsForFilter().length = 0;
-            ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+            ko.utils.arrayPushAll(self.selectedMaterialsForFilter(), self.allMaterials());
             self.selectedMaterialsForFilter.valueHasMutated();
 
             self.selectedVendorsForFilter().length = 0;
-            ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
+            ko.utils.arrayPushAll(self.selectedVendorsForFilter(), self.allVendors());
             self.selectedVendorsForFilter.valueHasMutated();
 
             self.selectedProjectsForFilter().length = 0;
-            ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+            ko.utils.arrayPushAll(self.selectedProjectsForFilter(), self.allProjects());
             self.selectedProjectsForFilter.valueHasMutated();
 
             self.selectedColorsForFilter().length = 0;
@@ -291,7 +461,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 checked = self.showAllMaterialsForFilter();
                 if (checked == true) {
                     self.selectedMaterialsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter(), self.allMaterials());
                 } else {
                     self.selectedMaterialsForFilter.removeAll();
                 }
@@ -300,7 +470,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 checked = self.showAllVendorsForFilter();
                 if (checked == true) {
                     self.selectedVendorsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
+                    ko.utils.arrayPushAll(self.selectedVendorsForFilter(), self.allVendors());
                 } else {
                     self.selectedVendorsForFilter.removeAll();
                 }
@@ -309,7 +479,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
                 checked = self.showAllProjectsForFilter();
                 if (checked == true) {
                     self.selectedProjectsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedProjectsForFilter, self.allProjects());
+                    ko.utils.arrayPushAll(self.selectedProjectsForFilter(), self.allProjects());
                 } else {
                     self.selectedProjectsForFilter.removeAll();
                 }
@@ -418,5 +588,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
         }
         return pages;
     });
+
+    if (self.isInitialLoadDone == false){
+        self.isInitialLoadDone = true;
+        self._loadItems();
+    }
     
 }
