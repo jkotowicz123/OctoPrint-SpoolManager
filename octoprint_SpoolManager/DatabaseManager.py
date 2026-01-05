@@ -1004,7 +1004,7 @@ class DatabaseManager(object):
 				# u'all'
 				materialFilter = StringUtils.to_native_str(materialFilter)
 				if (materialFilter != "all"):
-					if (StringUtils.isEmpty(colorFilter)):
+					if (StringUtils.isEmpty(materialFilter)):
 						myQuery = myQuery.where( (SpoolModel.material == '') )
 					else:
 						allMaterials = materialFilter.split(",")

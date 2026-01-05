@@ -962,11 +962,11 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		allSpoolsAsDict = Transformer.transformAllSpoolModelsToDict(allSpools)
 
 		# load all catalogs: vendors, materials, labels, [colors]
-		vendors = list(self._databaseManager.loadCatalogVendors(tableQuery))
-		projects = list(self._databaseManager.loadCatalogProjects(tableQuery))
-		materials = list(self._databaseManager.loadCatalogMaterials(tableQuery))
+		vendors = list(self._databaseManager.loadCatalogVendors())
+		projects = list(self._databaseManager.loadCatalogProjects())
+		materials = list(self._databaseManager.loadCatalogMaterials())
 		labels = list(self._databaseManager.loadCatalogLabels(tableQuery))
-		colors = list(self._databaseManager.loadCatalogColors(tableQuery))
+		colors = list(self._databaseManager.loadCatalogColors())
 
 		materials = self._addAdditionalMaterials(materials)
 
