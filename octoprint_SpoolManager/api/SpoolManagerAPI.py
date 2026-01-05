@@ -484,8 +484,39 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		self.checkRemainingFilament()
 
 		return flask.jsonify({
-								"selectedSpool": spoolModelAsDict
-							})
+							"selectedSpool": spoolModelAsDict
+						})
+
+	@octoprint.plugin.BlueprintPlugin.route("/selectedSpools", methods=["GET"])
+	def selectedSpools(self):
+		printer_profile = self._printer_profile_manager.get_current_or_default()
+		printerProfileToolCount = printer_profile['extruder']['count']
+
+		databaseIds = self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS])
+		if (databaseIds == None):
+			databaseIds = []
+
+		selectedSpoolsAsDicts = []
+		self._databaseManager.connectoToDatabase()
+		try:
+			for toolIndex in range(printerProfileToolCount):
+				databaseId = databaseIds[toolIndex] if toolIndex < len(databaseIds) else None
+				spoolModel = None
+				if (databaseId != None):
+					spoolModel = self._databaseManager.loadSpool(databaseId, withReusedConnection=True)
+
+				spoolModelAsDict = None
+				if (spoolModel != None):
+					spoolModelAsDict = Transformer.transformSpoolModelToDict(spoolModel)
+					spoolModelAsDict["toolIndex"] = toolIndex
+				selectedSpoolsAsDicts.append(spoolModelAsDict)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"toolCount": printerProfileToolCount,
+			"selectedSpools": selectedSpoolsAsDicts
+		})
 
 	#####################################################################################################   SELECT SPOOL BY QR
 
