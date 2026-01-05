@@ -101,6 +101,11 @@
     text-overflow: ellipsis;
 }
 
+.spm-group-header > td {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
 /*   use of own span elemenst so that no one can break it (e.g. UI Customizer) */
 .myspan12{width:940px}
 .myspan11{width:860px}

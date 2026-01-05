@@ -451,16 +451,16 @@
             </thead>
 
             <tbody data-bind="foreach: spoolItemTableHelper.groupedItemsByDisplayName">
-                <tr style="cursor: pointer;" data-bind="click: function() { expanded(!expanded()); }">
-                    <td data-bind="visible: $root.tableAttributeVisibility.displayName, attr: { colspan: $root.tableAttributeVisibility.databaseId() ? 2 : 1 }" style="padding: 0;">
+                <tr class="spm-group-header" style="cursor: pointer;" data-bind="click: function() { expanded(!expanded()); }">
+                    <td data-bind="visible: $root.tableAttributeVisibility.displayName, attr: { colspan: $root.tableAttributeVisibility.databaseId() ? 2 : 1 }" style="padding-left: 0;">
                         <i data-bind="css: expanded() ? 'icon-chevron-down' : 'icon-chevron-right'"></i>
                         <b><span data-bind="text: displayName"></span></b>
+                    </td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.material" style="white-space: nowrap;">
                         <span>(<span data-bind="text: totalRemainingWeight"></span>g / <span data-bind="text: spoolCount"></span> szpule)</span>
                     </td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.material"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: center;">
-                        <b><span data-bind="text: totalRemainingWeight"></span>g</b>
                     </td>
                     <td data-bind="visible: $root.tableAttributeVisibility.used"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.note"></td>
