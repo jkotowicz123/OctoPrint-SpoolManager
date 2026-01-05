@@ -41,6 +41,7 @@ def _calculateUsedPercentage(usedWeight, totalWeight):
 
 def transformSpoolModelToDict(spoolModel):
 	spoolAsDict = spoolModel.__data__
+	spoolAsDict["shelf"] = spoolModel.shelf
 
 	# Date time needs to be converted
 	spoolAsDict["firstUse"] = StringUtils.formatDateTime(spoolModel.firstUse)

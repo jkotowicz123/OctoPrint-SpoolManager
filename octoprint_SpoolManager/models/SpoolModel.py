@@ -36,6 +36,7 @@ class SpoolModel(BaseModel):
 	# Bar or QR Code
 	code = CharField(null=True)
 	serialNumber = CharField(null=True)
+	shelf = CharField(null=True)
 	# added "Project" column for filtering groups of filaments
 	project = CharField(null=True,index=True)
 	

@@ -23,7 +23,7 @@ from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 
 FORCE_CREATE_TABLES = False
 
-CURRENT_DATABASE_SCHEME_VERSION = 7
+CURRENT_DATABASE_SCHEME_VERSION = 8
 
 # List all Models
 MODELS = [PluginMetaDataModel, SpoolModel]
@@ -202,10 +202,13 @@ class DatabaseManager(object):
 
 	def _upgradeFrom7To8(self):
 		self._logger.info(" Starting 7 -> 8")
-		# What is changed:
-		# -
-		self._passMessageToClient("error", "DatabaseManager",
-								  "Could not upgrade database scheme V1 to V2. See OctoPrint.log for details!")
+		connection = sqlite3.connect(self._databaseSettings.fileLocation)
+		cursor = connection.cursor()
+
+		self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_spoolmodel' ADD 'shelf' VARCHAR(255)")
+		self._executeSQLQuietly(cursor, "UPDATE 'spo_pluginmetadatamodel' SET value=8 WHERE key='databaseSchemeVersion'")
+
+		connection.close()
 		self._logger.info(" Successfully 7 -> 8")
 
 	def _upgradeFrom6To7(self):
@@ -982,22 +985,25 @@ class DatabaseManager(object):
 			if (tableQuery == None):
 				return SpoolModel.select().order_by(SpoolModel.created.desc())
 
-			sortColumn = tableQuery["sortColumn"]
-			sortOrder = tableQuery["sortOrder"]
-			filterName = tableQuery["filterName"]
+			sortColumn = tableQuery.get("sortColumn", "displayName")
+			sortOrder = tableQuery.get("sortOrder", "desc")
+			filterName = tableQuery.get("filterName", "")
 
 			if ("selectedPageSize" in tableQuery and StringUtils.to_native_str(tableQuery["selectedPageSize"]) == "all"):
 				myQuery = SpoolModel.select()
 			else:
-				offset = int(tableQuery["from"])
-				limit = int(tableQuery["to"])
-				myQuery = SpoolModel.select().offset(offset).limit(limit)
+				if ("from" in tableQuery and "to" in tableQuery):
+					offset = int(tableQuery["from"])
+					limit = int(tableQuery["to"])
+					myQuery = SpoolModel.select().offset(offset).limit(limit)
+				else:
+					myQuery = SpoolModel.select()
 
 			if ("materialFilter" in tableQuery):
-				materialFilter = tableQuery["materialFilter"]
-				vendorFilter = tableQuery["vendorFilter"]
-				colorFilter = tableQuery["colorFilter"]
-				projectFilter = tableQuery["projectFilter"]
+				materialFilter = tableQuery.get("materialFilter", "all")
+				vendorFilter = tableQuery.get("vendorFilter", "all")
+				colorFilter = tableQuery.get("colorFilter", "")
+				projectFilter = tableQuery.get("projectFilter", "all")
 				# materialFilter
 				# u'ABS,PLA'
 				# u''
@@ -1101,6 +1107,11 @@ class DatabaseManager(object):
 					myQuery = myQuery.order_by(SpoolModel.databaseId.desc())
 				else:
 					myQuery = myQuery.order_by(SpoolModel.databaseId.asc())
+			if ("shelf" == sortColumn):
+				if ("desc" == sortOrder):
+					myQuery = myQuery.order_by(fn.Lower(SpoolModel.shelf).desc())
+				else:
+					myQuery = myQuery.order_by(fn.Lower(SpoolModel.shelf).asc())
 			#if ("project" == sortColumn):
 			#	if ("desc" == sortOrder):
 			#		myQuery = myQuery.order_by(SpoolModel.project.desc())

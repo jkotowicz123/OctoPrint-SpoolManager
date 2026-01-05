@@ -26,6 +26,49 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     self.items = ko.observableArray([]);
     self.totalItemCount = ko.observable(0);
 
+    self.filterSelectionQuery = ko.observable("");
+    self.clearFilterSelectionQuery = function(){
+        self.filterSelectionQuery("");
+    };
+
+    self._getSearchFilteredItems = function(){
+        var items = self.items();
+        if (!items) {
+            return [];
+        }
+
+        var q = self.filterSelectionQuery ? self.filterSelectionQuery() : "";
+        q = (q || "").toLowerCase();
+        if (q.length === 0) {
+            return items;
+        }
+
+        var result = [];
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (!item) {
+                continue;
+            }
+
+            var text = "";
+            text += (ko.utils.unwrapObservable(item.material) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.vendor) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.shelf) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.displayName) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.colorName) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.project) || "");
+
+            if (("" + text).toLowerCase().indexOf(q) > -1) {
+                result.push(item);
+            }
+        }
+        return result;
+    };
+
+    self.totalShown = _pureComputed(function(){
+        return self._getSearchFilteredItems().length;
+    });
+
     self.groupedItemsByDisplayName = ko.observableArray([]);
 
     self.groupSortMode = ko.observable("name");
@@ -79,7 +122,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
     self.totalFilamentsWeight = _pureComputed(function () {
         var sum = 0;
-        var items = self.items();
+        var items = self._getSearchFilteredItems();
         if (!items) {
             return 0;
         }
@@ -98,7 +141,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     });
 
     self._rebuildGroupsByDisplayName = function () {
-        var items = self.items();
+        var items = self._getSearchFilteredItems();
         if (!items) {
             self.groupedItemsByDisplayName([]);
             return;
@@ -180,6 +223,10 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
     };
 
     self.items.subscribe(function () {
+        self._rebuildGroupsByDisplayName();
+    });
+
+    self.filterSelectionQuery.subscribe(function(){
         self._rebuildGroupsByDisplayName();
     });
 
@@ -460,8 +507,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             case "material":
                 checked = self.showAllMaterialsForFilter();
                 if (checked == true) {
-                    self.selectedMaterialsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedMaterialsForFilter(), self.allMaterials());
+                    self.selectedMaterialsForFilter(self.allMaterials().slice(0));
                 } else {
                     self.selectedMaterialsForFilter.removeAll();
                 }
@@ -469,8 +515,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             case "vendor":
                 checked = self.showAllVendorsForFilter();
                 if (checked == true) {
-                    self.selectedVendorsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedVendorsForFilter(), self.allVendors());
+                    self.selectedVendorsForFilter(self.allVendors().slice(0));
                 } else {
                     self.selectedVendorsForFilter.removeAll();
                 }
@@ -478,8 +523,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             case "project":
                 checked = self.showAllProjectsForFilter();
                 if (checked == true) {
-                    self.selectedProjectsForFilter().length = 0;
-                    ko.utils.arrayPushAll(self.selectedProjectsForFilter(), self.allProjects());
+                    self.selectedProjectsForFilter(self.allProjects().slice(0));
                 } else {
                     self.selectedProjectsForFilter.removeAll();
                 }

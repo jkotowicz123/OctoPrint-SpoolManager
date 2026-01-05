@@ -101,6 +101,7 @@ function SpoolManagerEditSpoolDialog(){
         this.usedPercentage = ko.observable();
         this.code = ko.observable();
         this.serialNumber = ko.observable();
+        this.shelf = ko.observable();
         this.project = ko.observable();
       
 
@@ -249,6 +250,7 @@ function SpoolManagerEditSpoolDialog(){
         this.remainingPercentage(updateData.remainingPercentage);
         this.code(updateData.code);
         this.serialNumber(updateData.serialNumber);
+        this.shelf(updateData.shelf);
         this.project(updateData.project);
         this.usedPercentage(updateData.usedPercentage);
 

@@ -701,6 +701,7 @@ $(function() {
         }
 
         var TableAttributeVisibility = function (){
+            this.shelf = ko.observable(true);
             this.databaseId = ko.observable(false);
             this.displayName = ko.observable(true);
             this.material = ko.observable(true);
@@ -733,6 +734,7 @@ $(function() {
                 });
             }
 
+            assignVisibility("shelf");
             assignVisibility("databaseId");
             assignVisibility("displayName");
             assignVisibility("material");
@@ -740,6 +742,8 @@ $(function() {
             assignVisibility("weight");
             assignVisibility("used");
             assignVisibility("note");
+            assignVisibility("serialNumber");
+            assignVisibility("project");
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////// TABLE BEHAVIOR

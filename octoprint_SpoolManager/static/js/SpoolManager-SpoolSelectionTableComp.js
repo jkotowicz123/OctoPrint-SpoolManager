@@ -319,8 +319,7 @@ function SpoolSelectionTableComp() {
                 case "material":
                     checked = self.showAllMaterialsForFilter();
                     if (checked == true) {
-                        self.selectedMaterialsForFilter().length = 0;
-                        ko.utils.arrayPushAll(self.selectedMaterialsForFilter, self.allMaterials());
+                        self.selectedMaterialsForFilter(self.allMaterials().slice(0));
                     } else {
                         self.selectedMaterialsForFilter.removeAll();
                     }
@@ -328,8 +327,7 @@ function SpoolSelectionTableComp() {
                 case "vendor":
                     checked = self.showAllVendorsForFilter();
                     if (checked == true) {
-                        self.selectedVendorsForFilter().length = 0;
-                        ko.utils.arrayPushAll(self.selectedVendorsForFilter, self.allVendors());
+                        self.selectedVendorsForFilter(self.allVendors().slice(0));
                     } else {
                         self.selectedVendorsForFilter.removeAll();
                     }
