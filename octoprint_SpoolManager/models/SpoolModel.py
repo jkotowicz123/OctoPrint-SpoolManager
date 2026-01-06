@@ -1,10 +1,18 @@
 # coding=utf-8
 from __future__ import absolute_import
 
+
 from peewee import CharField, Model, DecimalField, FloatField, DateField, DateTimeField, TextField, IntegerField, \
 	BooleanField
 
 from octoprint_SpoolManager.models.BaseModel import BaseModel
+
+
+def _create_printer_field():
+	try:
+		return CharField(null=True, column_name="printerNumber")
+	except TypeError:
+		return CharField(null=True, db_column="printerNumber")
 
 
 class SpoolModel(BaseModel):
@@ -36,6 +44,7 @@ class SpoolModel(BaseModel):
 	# Bar or QR Code
 	code = CharField(null=True)
 	serialNumber = CharField(null=True)
+	printer = _create_printer_field()
 	shelf = CharField(null=True)
 	# added "Project" column for filtering groups of filaments
 	project = CharField(null=True,index=True)

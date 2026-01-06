@@ -701,6 +701,7 @@ $(function() {
         }
 
         var TableAttributeVisibility = function (){
+            this.printer = ko.observable(true);
             this.shelf = ko.observable(true);
             this.databaseId = ko.observable(false);
             this.displayName = ko.observable(true);
@@ -734,6 +735,7 @@ $(function() {
                 });
             }
 
+            assignVisibility("printer");
             assignVisibility("shelf");
             assignVisibility("databaseId");
             assignVisibility("displayName");

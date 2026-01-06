@@ -53,6 +53,7 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             var text = "";
             text += (ko.utils.unwrapObservable(item.material) || "") + " ";
             text += (ko.utils.unwrapObservable(item.vendor) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.printer) || "") + " ";
             text += (ko.utils.unwrapObservable(item.shelf) || "") + " ";
             text += (ko.utils.unwrapObservable(item.displayName) || "") + " ";
             text += (ko.utils.unwrapObservable(item.colorName) || "") + " ";

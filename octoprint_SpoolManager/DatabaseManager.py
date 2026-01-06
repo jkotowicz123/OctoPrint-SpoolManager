@@ -23,7 +23,7 @@ from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 
 FORCE_CREATE_TABLES = False
 
-CURRENT_DATABASE_SCHEME_VERSION = 8
+CURRENT_DATABASE_SCHEME_VERSION = 10
 
 # List all Models
 MODELS = [PluginMetaDataModel, SpoolModel]
@@ -186,18 +186,39 @@ class DatabaseManager(object):
 
 	def _upgradeFrom9To10(self):
 		self._logger.info(" Starting 9 -> 10")
-		# What is changed:
-		# -
-		self._passMessageToClient("error", "DatabaseManager",
-								  "Could not upgrade database scheme V1 to V2. See OctoPrint.log for details!")
+		connection = sqlite3.connect(self._databaseSettings.fileLocation)
+		cursor = connection.cursor()
+
+		columns = []
+		try:
+			cursor.execute("PRAGMA table_info('spo_spoolmodel')")
+			columns = [row[1] for row in cursor.fetchall()]
+		except Exception:
+			columns = []
+
+		if ("printerNumber" not in columns):
+			self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_spoolmodel' ADD 'printerNumber' VARCHAR(255)")
+
+		if ("printer" in columns):
+			self._executeSQLQuietly(cursor,
+				"UPDATE 'spo_spoolmodel' SET printerNumber = printer "
+				"WHERE (printerNumber IS NULL OR printerNumber = '') "
+				"AND (printer IS NOT NULL AND printer <> '')")
+
+		self._executeSQLQuietly(cursor, "UPDATE 'spo_pluginmetadatamodel' SET value=10 WHERE key='databaseSchemeVersion'")
+
+		connection.close()
 		self._logger.info(" Successfully 9 -> 10")
 
 	def _upgradeFrom8To9(self):
 		self._logger.info(" Starting 8 -> 9")
-		# What is changed:
-		# -
-		self._passMessageToClient("error", "DatabaseManager",
-								  "Could not upgrade database scheme V1 to V2. See OctoPrint.log for details!")
+		connection = sqlite3.connect(self._databaseSettings.fileLocation)
+		cursor = connection.cursor()
+
+		self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_spoolmodel' ADD 'printerNumber' VARCHAR(255)")
+		self._executeSQLQuietly(cursor, "UPDATE 'spo_pluginmetadatamodel' SET value=9 WHERE key='databaseSchemeVersion'")
+
+		connection.close()
 		self._logger.info(" Successfully 8 -> 9")
 
 	def _upgradeFrom7To8(self):
@@ -1112,6 +1133,11 @@ class DatabaseManager(object):
 					myQuery = myQuery.order_by(fn.Lower(SpoolModel.shelf).desc())
 				else:
 					myQuery = myQuery.order_by(fn.Lower(SpoolModel.shelf).asc())
+			if ("printer" == sortColumn):
+				if ("desc" == sortOrder):
+					myQuery = myQuery.order_by(fn.Lower(SpoolModel.printer).desc())
+				else:
+					myQuery = myQuery.order_by(fn.Lower(SpoolModel.printer).asc())
 			#if ("project" == sortColumn):
 			#	if ("desc" == sortOrder):
 			#		myQuery = myQuery.order_by(SpoolModel.project.desc())

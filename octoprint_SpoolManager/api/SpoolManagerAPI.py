@@ -68,6 +68,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel.usedWeight = self._toFloatFromJSONOrNone("usedWeight", jsonData)
 		spoolModel.code = self._getValueFromJSONOrNone("code", jsonData)
 		spoolModel.serialNumber = self._getValueFromJSONOrNone("serialNumber", jsonData)
+		spoolModel.printer = self._getValueFromJSONOrNone("printer", jsonData)
 		spoolModel.shelf = self._getValueFromJSONOrNone("shelf", jsonData)
 		spoolModel.project = self._getValueFromJSONOrNone("project", jsonData)
 
