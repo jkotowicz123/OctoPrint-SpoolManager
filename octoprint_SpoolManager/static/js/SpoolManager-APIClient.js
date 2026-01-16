@@ -106,6 +106,16 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
         });
     }
 
+    this.callLoadSheets = function (responseHandler){
+        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadSheets";
+        $.ajax({
+            url: urlToCall,
+            type: "GET"
+        }).always(function( data ){
+            responseHandler(data)
+        });
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////// SAVE Spool-Item
     this.callSaveSpool = function (spoolItem, responseHandler){
@@ -123,6 +133,20 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
         });
     }
 
+    this.callSaveSheet = function (sheetItem, responseHandler){
+        jsonPayload = ko.toJSON(sheetItem)
+
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/saveSheet",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: jsonPayload,
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////// DELETE Spool-Item
     this.callDeleteSpool = function (databaseId, responseHandler){
         $.ajax({
@@ -131,6 +155,134 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
             type: "DELETE"
         }).always(function( data ){
             responseHandler();
+        });
+    }
+
+    this.callDeleteSheet = function (databaseId, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/deleteSheet/" + databaseId,
+            type: "DELETE"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callAssignSheetToPrinter = function (printerNumber, databaseId, responseHandler){
+        var payload = {
+            printerNumber: printerNumber,
+            databaseId: databaseId
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/assignSheetToPrinter",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callAppendSheetToMagazine = function (printerNumber, databaseId, responseHandler){
+        var payload = {
+            printerNumber: printerNumber,
+            databaseId: databaseId
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/appendSheetToMagazine",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callUnassignSheet = function (databaseId, responseHandler){
+        var payload = {
+            databaseId: databaseId
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/unassignSheet",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callAssignSheetToPrinterByNid = function (printerNumber, nid, responseHandler){
+        var payload = {
+            printerNumber: printerNumber,
+            nid: nid
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/assignSheetToPrinter",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callAppendSheetToMagazineByNid = function (printerNumber, nid, responseHandler){
+        var payload = {
+            printerNumber: printerNumber,
+            nid: nid
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/appendSheetToMagazine",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callUnassignSheetByNid = function (nid, responseHandler){
+        var payload = {
+            nid: nid
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/unassignSheet",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callSheetsState = function(printerNumber, responseHandler){
+        urlToCall = this.baseUrl + "plugin/" + this.pluginId + "/sheetsState/" + printerNumber;
+        $.ajax({
+            url: urlToCall,
+            type: "GET"
+        }).always(function( data ){
+            responseHandler(data)
+        });
+    }
+
+    this.callSaveSheetType = function(name, responseHandler){
+        var payload = {
+            name: name
+        }
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/saveSheetType",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
         });
     }
 

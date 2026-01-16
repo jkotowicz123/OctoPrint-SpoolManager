@@ -1,0 +1,64 @@
+<div id="tab_sheetsOverview">
+    <div data-bind="visible: pluginNotWorking()==true">
+        <div class="row-fluid">
+            <font color="red"><b>Plugin not working, because of Database issues. Check Plugin-Settings!</b></font>
+        </div>
+    </div>
+    <div data-bind="visible: pluginNotWorking()==false">
+        <div class="row-fluid">
+            <div class="span3">
+                Total: <b><span data-bind="text: sheetsTotalCount"></span></b>
+                <div class="pull-left">
+                    <button title="Add new Sheet" class="btn" data-bind="click: addNewSheet"><i class="fa fa-plus"></i> Add Sheet</button>
+                </div>
+            </div>
+            <div class="span9">
+                <div class="pull-right">
+                    <small>
+                        Instance: <b><span data-bind="text: octoPrintInstanceName"></span></b>
+                        <span data-bind="visible: currentPrinterNumber() != null"> | Printer #: <b><span data-bind="text: currentPrinterNumber"></span></b></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="pull-left" style="margin-bottom: 6px;">
+            <div style="margin-top:5px;" class="pull-right search-query-with-clear active-clear" data-bind="css: {'active-clear': sheetFilterQuery}">
+                <input type="search" class="input-block search-query" data-bind="value: sheetFilterQuery, valueUpdate: 'input'" placeholder="Filter...">
+                <span class="search-clear" data-bind="click: clearSheetFilterQuery"><i class="fas fa-times"></i></span>
+            </div>
+        </div>
+
+        <table class="table table-striped table-hover table-condensed table-hover" style="clear: both;">
+            <thead>
+                <tr>
+                    <th style="width: 8%">ID</th>
+                    <th style="width: 20%">Type</th>
+                    <th style="width: 15%">Assigned</th>
+                    <th style="width: 30%">Note</th>
+                    <th style="width: 12%"></th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: groupedSheets">
+                <tr>
+                    <td colspan="5"><b><span data-bind="text: typeName"></span></b></td>
+                </tr>
+                <!-- ko foreach: sheets -->
+                <tr>
+                    <td><span data-bind="text: databaseId"></span></td>
+                    <td><span data-bind="text: sheetTypeName"></span></td>
+                    <td><span data-bind="text: assignmentLabel"></span></td>
+                    <td><span data-bind="text: note"></span></td>
+                    <td style="white-space: nowrap; text-align: right;">
+                        <button class="btn btn-mini" data-bind="click: function() { $root.editSheet($data); }">Edit</button>
+                        <button class="btn btn-mini" data-bind="click: function() { $root.assignSheetToCurrentPrinter($data); }, enable: $root.currentPrinterNumber() != null && databaseId() != null">Set</button>
+                        <button class="btn btn-mini" data-bind="click: function() { $root.appendSheetToCurrentMagazine($data); }, enable: $root.currentPrinterNumber() != null && databaseId() != null">Append</button>
+                        <button class="btn btn-mini" data-bind="click: function() { $root.unassignSheet($data); }, enable: databaseId() != null && printerNumber() != null">Unassign</button>
+                        <button class="btn btn-mini btn-danger" data-bind="click: function() { $root.deleteSheet($data); }">Delete</button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+            </tbody>
+        </table>
+    </div>
+</div>

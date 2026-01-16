@@ -51,4 +51,62 @@
             <!-- /ko -->
         </div>
     </div>
+
+    <div style="margin-top: 10px;" data-bind="visible: pluginNotWorking()==false">
+        <div data-bind="visible: currentPrinterNumber() != null">
+            <div>
+                <b>Sheets</b>
+                <span> (#<span data-bind="text: currentPrinterNumber"></span>)</span>
+            </div>
+
+            <div class="input-append" style="margin-top: 4px;">
+                <input type="text" class="input-small" placeholder="NID" data-bind="value: sidebarSheetNid, valueUpdate: 'input'" />
+                <button class="btn btn-mini" data-bind="click: sidebarSetSheetFromScan">Set</button>
+                <button class="btn btn-mini" data-bind="click: sidebarAppendSheetFromScan">Append</button>
+            </div>
+
+            <div style="margin-top: 6px;">
+                <div><b>Current</b></div>
+                <!-- ko if: sidebarCurrentSheet -->
+                <div data-bind="with: sidebarCurrentSheet">
+                    <div>
+                        <span data-bind="text: nid"></span>
+                        <span data-bind="visible: sheetTypeName"> (<span data-bind="text: sheetTypeName"></span>)</span>
+                    </div>
+                    <div class="btn-group" style="margin-top: 2px;">
+                        <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Unassign</button>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko ifnot: sidebarCurrentSheet -->
+                <div><i>None</i></div>
+                <!-- /ko -->
+            </div>
+
+            <div style="margin-top: 6px;">
+                <div><b>Magazine</b></div>
+                <!-- ko if: sidebarMagazineSheets().length == 0 -->
+                <div><i>Empty</i></div>
+                <!-- /ko -->
+                <div data-bind="foreach: sidebarMagazineSheets">
+                    <div style="margin-top: 2px;">
+                        <span data-bind="text: magazinePosition"></span>.
+                        <span data-bind="text: nid"></span>
+                        <span data-bind="visible: sheetTypeName"> (<span data-bind="text: sheetTypeName"></span>)</span>
+                        <div class="btn-group" style="margin-top: 2px;">
+                            <button class="btn btn-mini" data-bind="click: $root.sidebarSetSheetFromMagazine.bind($data, $data)">Set</button>
+                            <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div data-bind="visible: currentPrinterNumber() == null" style="margin-top: 10px;">
+            <div>
+                <b>Sheets</b>
+            </div>
+            <div><i>Printer # unknown</i></div>
+        </div>
+    </div>
 </div>

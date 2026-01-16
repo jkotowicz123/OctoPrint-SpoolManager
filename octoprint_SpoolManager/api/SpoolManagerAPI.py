@@ -18,6 +18,8 @@ import textwrap
 
 from octoprint_SpoolManager import DatabaseManager
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
+from octoprint_SpoolManager.models.SheetModel import SheetModel
+from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
 from octoprint_SpoolManager.common import StringUtils, CSVExportImporter
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.common.SettingsKeys import SettingsKeys
@@ -88,6 +90,35 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel.noteText = self._getValueFromJSONOrNone("noteText", jsonData)
 		spoolModel.noteDeltaFormat = json.dumps(self._getValueFromJSONOrNone("noteDeltaFormat", jsonData))
 		spoolModel.noteHtml = self._getValueFromJSONOrNone("noteHtml", jsonData)
+		pass
+
+	def _updateSheetModelFromJSONData(self, sheetModel, jsonData):
+		version = self._toIntFromJSONOrNone("version", jsonData)
+		if (version != None):
+			sheetModel.version = version
+		if (self._getValueFromJSONOrNone("databaseId", jsonData) != None):
+			sheetModel.databaseId = self._getValueFromJSONOrNone("databaseId", jsonData)
+
+		sheetModel.nid = self._getValueFromJSONOrNone("nid", jsonData)
+		sheetModel.note = self._getValueFromJSONOrNone("note", jsonData)
+
+		compatibleMaterials = self._getValueFromJSONOrNone("compatibleMaterials", jsonData)
+		if (compatibleMaterials != None and (type(compatibleMaterials) == list or type(compatibleMaterials) == dict)):
+			sheetModel.compatibleMaterials = json.dumps(compatibleMaterials)
+		else:
+			sheetModel.compatibleMaterials = compatibleMaterials
+
+		sheetTypeId = self._toIntFromJSONOrNone("sheetTypeId", jsonData)
+		if (sheetTypeId != None):
+			sheetTypeModel = SheetTypeModel.get_or_none(SheetTypeModel.databaseId == int(sheetTypeId))
+			if (sheetTypeModel != None):
+				sheetModel.sheetType = sheetTypeModel
+		else:
+			sheetTypeName = self._getValueFromJSONOrNone("sheetTypeName", jsonData)
+			if (sheetTypeName != None):
+				sheetTypeModel = self._databaseManager.getOrCreateSheetTypeByName(sheetTypeName, withReusedConnection=True)
+				sheetModel.sheetType = sheetTypeModel
+
 		pass
 
 
@@ -902,6 +933,234 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		# 	"metadata": metaDataResult
 		# })
 		return flask.jsonify()
+
+	##################################################################################################   LOAD ALL SHEETS
+	@octoprint.plugin.BlueprintPlugin.route("/loadSheets", methods=["GET"])
+	def loadAllSheets(self):
+		self._logger.debug("API Load all sheets")
+		self._databaseManager.connectoToDatabase()
+		try:
+			allSheets = self._databaseManager.loadAllSheets(withReusedConnection=True)
+			allSheetTypes = self._databaseManager.loadAllSheetTypes(withReusedConnection=True)
+			allSheetsAsDict = Transformer.transformAllSheetModelsToDict(allSheets)
+			allSheetTypesAsDict = Transformer.transformAllSheetTypeModelsToDict(allSheetTypes)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"allSheets": allSheetsAsDict,
+			"sheetTypes": allSheetTypesAsDict
+		})
+
+	#####################################################################################################   SAVE SHEET
+	@octoprint.plugin.BlueprintPlugin.route("/saveSheet", methods=["PUT"])
+	def saveSheet(self):
+		self._logger.info("API Save sheet")
+		jsonData = request.json
+
+		databaseId = self._getValueFromJSONOrNone("databaseId", jsonData)
+		self._databaseManager.connectoToDatabase()
+		try:
+			if (databaseId != None):
+				sheetModel = self._databaseManager.loadSheet(databaseId, withReusedConnection=True)
+				if (sheetModel == None):
+					self._logger.warning("Save sheet failed. Inital loading not possible, maybe already deleted.")
+					return flask.jsonify(), 404
+				self._updateSheetModelFromJSONData(sheetModel, jsonData)
+			else:
+				sheetModel = SheetModel()
+				sheetModel.version = 1
+				self._updateSheetModelFromJSONData(sheetModel, jsonData)
+
+			newDatabaseId = self._databaseManager.saveSheet(sheetModel, withReusedConnection=True)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		if (databaseId == None and newDatabaseId != None):
+			eventPayload = {
+				"databaseId": sheetModel.databaseId,
+				"nid": sheetModel.nid
+			}
+			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ADDED, eventPayload)
+
+		return flask.jsonify()
+
+	#####################################################################################################   DELETE SHEET
+	@octoprint.plugin.BlueprintPlugin.route("/deleteSheet/<int:databaseId>", methods=["DELETE"])
+	def deleteSheet(self, databaseId):
+		self._logger.info("API Delete sheet with database id '" + str(databaseId) + "'")
+		databaseId = self._databaseManager.deleteSheet(databaseId)
+		if (databaseId != None):
+			eventPayload = {
+				"databaseId": databaseId
+			}
+			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_DELETED, eventPayload)
+
+		return flask.jsonify()
+
+	#################################################################################################   SHEET TYPES
+	@octoprint.plugin.BlueprintPlugin.route("/sheetTypes", methods=["GET"])
+	def sheetTypes(self):
+		self._databaseManager.connectoToDatabase()
+		try:
+			allSheetTypes = self._databaseManager.loadAllSheetTypes(withReusedConnection=True)
+			allSheetTypesAsDict = Transformer.transformAllSheetTypeModelsToDict(allSheetTypes)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"sheetTypes": allSheetTypesAsDict
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/saveSheetType", methods=["PUT"])
+	def saveSheetType(self):
+		jsonData = request.json
+		name = self._getValueFromJSONOrNone("name", jsonData)
+		compatibleMaterials = self._getValueFromJSONOrNone("compatibleMaterials", jsonData)
+		if (name == None or StringUtils.isEmpty(name)):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetTypeModel = self._databaseManager.getOrCreateSheetTypeByName(name, withReusedConnection=True)
+			if (compatibleMaterials != None):
+				try:
+					if (isinstance(compatibleMaterials, list) or isinstance(compatibleMaterials, dict)):
+						sheetTypeModel.compatibleMaterials = json.dumps(compatibleMaterials, ensure_ascii=False)
+					else:
+						sheetTypeModel.compatibleMaterials = compatibleMaterials
+				except Exception:
+					sheetTypeModel.compatibleMaterials = compatibleMaterials
+				sheetTypeModel.save()
+			payload = Transformer.transformSheetTypeModelToDict(sheetTypeModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"sheetType": payload
+		})
+
+	#################################################################################################   ASSIGN SHEET
+	@octoprint.plugin.BlueprintPlugin.route("/assignSheetToPrinter", methods=["PUT"])
+	def assignSheetToPrinter(self):
+		jsonData = request.json
+		printerNumber = self._toIntFromJSONOrNone("printerNumber", jsonData)
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		nid = self._getValueFromJSONOrNone("nid", jsonData)
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetModel = None
+			if (databaseId != None):
+				sheetModel = self._databaseManager.loadSheet(databaseId, withReusedConnection=True)
+			elif (nid != None):
+				sheetModel = self._databaseManager.loadSheetByNid(nid, withReusedConnection=True)
+
+			if (sheetModel == None):
+				return flask.jsonify(), 404
+
+			sheetModel = self._databaseManager.assignSheetToPrinter(sheetModel, printerNumber, withReusedConnection=True)
+			payload = Transformer.transformSheetModelToDict(sheetModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+			"databaseId": payload.get("databaseId"),
+			"nid": payload.get("nid"),
+			"printerNumber": payload.get("printerNumber"),
+			"magazinePosition": payload.get("magazinePosition")
+		})
+
+		return flask.jsonify({
+			"sheet": payload
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/appendSheetToMagazine", methods=["PUT"])
+	def appendSheetToMagazine(self):
+		jsonData = request.json
+		printerNumber = self._toIntFromJSONOrNone("printerNumber", jsonData)
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		nid = self._getValueFromJSONOrNone("nid", jsonData)
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetModel = None
+			if (databaseId != None):
+				sheetModel = self._databaseManager.loadSheet(databaseId, withReusedConnection=True)
+			elif (nid != None):
+				sheetModel = self._databaseManager.loadSheetByNid(nid, withReusedConnection=True)
+
+			if (sheetModel == None):
+				return flask.jsonify(), 404
+
+			sheetModel = self._databaseManager.appendSheetToMagazine(sheetModel, printerNumber, withReusedConnection=True)
+			payload = Transformer.transformSheetModelToDict(sheetModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+			"databaseId": payload.get("databaseId"),
+			"nid": payload.get("nid"),
+			"printerNumber": payload.get("printerNumber"),
+			"magazinePosition": payload.get("magazinePosition")
+		})
+
+		return flask.jsonify({
+			"sheet": payload
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/unassignSheet", methods=["PUT"])
+	def unassignSheet(self):
+		jsonData = request.json
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		nid = self._getValueFromJSONOrNone("nid", jsonData)
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetModel = None
+			if (databaseId != None):
+				sheetModel = self._databaseManager.loadSheet(databaseId, withReusedConnection=True)
+			elif (nid != None):
+				sheetModel = self._databaseManager.loadSheetByNid(nid, withReusedConnection=True)
+
+			if (sheetModel == None):
+				return flask.jsonify(), 404
+
+			sheetModel = self._databaseManager.unassignSheet(sheetModel, withReusedConnection=True)
+			payload = Transformer.transformSheetModelToDict(sheetModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_UNASSIGNED, {
+			"databaseId": payload.get("databaseId"),
+			"nid": payload.get("nid")
+		})
+
+		return flask.jsonify({
+			"sheet": payload
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/sheetsState/<int:printerNumber>", methods=["GET"])
+	def sheetsState(self, printerNumber):
+		self._databaseManager.connectoToDatabase()
+		try:
+			currentSheet, magazineSheets = self._databaseManager.getSheetsStateForPrinter(printerNumber, withReusedConnection=True)
+			currentSheetDict = None if currentSheet == None else Transformer.transformSheetModelToDict(currentSheet)
+			magazineSheetsDict = Transformer.transformAllSheetModelsToDict(magazineSheets)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"printerNumber": printerNumber,
+			"currentSheet": currentSheetDict,
+			"magazineSheets": magazineSheetsDict
+		})
 
 	###########################################################################################   EXPORT DATABASE as CSV
 	@octoprint.plugin.BlueprintPlugin.route("/exportSpools/<string:exportType>", methods=["GET"])

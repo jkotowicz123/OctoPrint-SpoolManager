@@ -70,6 +70,314 @@ $(function() {
         self.spoolDialog = new SpoolManagerEditSpoolDialog();
 
 
+        self.octoPrintInstanceName = ko.observable(null);
+        self.currentPrinterNumber = ko.observable(null);
+
+        self.sidebarSheetNid = ko.observable("");
+        self.sidebarCurrentSheet = ko.observable(null);
+        self.sidebarMagazineSheets = ko.observableArray([]);
+
+        self.sheets = ko.observableArray([]);
+        self.sheetTypes = ko.observableArray([]);
+        self.sheetFilterQuery = ko.observable("");
+        self.currentSheetEditItem = ko.observable(null);
+
+        self.sheetsTotalCount = ko.pureComputed(function(){
+            return self.sheets().length;
+        });
+
+        self.canSaveCurrentSheet = ko.pureComputed(function(){
+            var item = self.currentSheetEditItem();
+            if (!item){
+                return false;
+            }
+            var sheetTypeId = item.sheetTypeId();
+            if (sheetTypeId == null || sheetTypeId === ""){
+                return false;
+            }
+            return true;
+        });
+
+        self._parsePrinterNumberFromInstanceName = function(instanceName){
+            if (!instanceName){
+                return null;
+            }
+            var m = instanceName.match(/#\s*(\d+)/);
+            if (!m){
+                return null;
+            }
+            var n = parseInt(m[1]);
+            if (isNaN(n)){
+                return null;
+            }
+            return n;
+        }
+
+        self._createSheetItem = function(sheetData){
+            sheetData = sheetData || {};
+
+            var item = {
+                databaseId: ko.observable(sheetData.databaseId),
+                version: ko.observable(sheetData.version),
+                nid: ko.observable(sheetData.nid),
+                note: ko.observable(sheetData.note),
+                compatibleMaterials: ko.observable(sheetData.compatibleMaterials),
+                sheetTypeId: ko.observable(sheetData.sheetType != null ? sheetData.sheetType : sheetData.sheetTypeId),
+                sheetTypeName: ko.observable(sheetData.sheetTypeName),
+                printerNumber: ko.observable(sheetData.printerNumber),
+                magazinePosition: ko.observable(sheetData.magazinePosition)
+            };
+
+            item.assignmentLabel = ko.pureComputed(function(){
+                var p = item.printerNumber();
+                if (p == null){
+                    return "-";
+                }
+                var pos = item.magazinePosition();
+                if (pos == null){
+                    return "#" + p;
+                }
+                return "#" + p + "-" + pos;
+            });
+
+            return item;
+        }
+
+        self.clearSheetFilterQuery = function(){
+            self.sheetFilterQuery("");
+        }
+
+        self.filteredSheets = ko.pureComputed(function(){
+            var q = (self.sheetFilterQuery() || "").toLowerCase();
+            if (!q){
+                return self.sheets();
+            }
+
+            return ko.utils.arrayFilter(self.sheets(), function(sheet){
+                var text = (
+                    (sheet.databaseId() != null ? ("" + sheet.databaseId()) : "") + " " +
+                    (sheet.nid() || "") + " " +
+                    (sheet.sheetTypeName() || "") + " " +
+                    (sheet.assignmentLabel() || "") + " " +
+                    (sheet.note() || "")
+                ).toLowerCase();
+                return text.indexOf(q) !== -1;
+            });
+        });
+
+        self.groupedSheets = ko.pureComputed(function(){
+            var items = self.filteredSheets() || [];
+            var copy = items.slice(0);
+            copy.sort(function(a, b){
+                var at = (a.sheetTypeName() || "").toLowerCase();
+                var bt = (b.sheetTypeName() || "").toLowerCase();
+                if (at < bt){
+                    return -1;
+                }
+                if (at > bt){
+                    return 1;
+                }
+                var ad = a.databaseId() || 0;
+                var bd = b.databaseId() || 0;
+                return ad - bd;
+            });
+
+            var groups = [];
+            var current = null;
+            for (var i=0; i<copy.length; i++){
+                var s = copy[i];
+                var typeName = s.sheetTypeName() || "";
+                if (!current || current.typeName !== typeName){
+                    current = {typeName: typeName, sheets: []};
+                    groups.push(current);
+                }
+                current.sheets.push(s);
+            }
+            return groups;
+        });
+
+        self.loadSheets = function(){
+            self.apiClient.callLoadSheets(function(responseData){
+                var sheetsData = responseData.allSheets || [];
+                var sheetTypesData = responseData.sheetTypes || [];
+
+                self.sheetTypes(sheetTypesData);
+                self.sheets(ko.utils.arrayMap(sheetsData, function(sheetData){
+                    return self._createSheetItem(sheetData);
+                }));
+            });
+        }
+
+        self.loadSheetsStateForSidebar = function(){
+            if (self.currentPrinterNumber() == null){
+                self.sidebarCurrentSheet(null);
+                self.sidebarMagazineSheets([]);
+                return;
+            }
+
+            self.apiClient.callSheetsState(self.currentPrinterNumber(), function(responseData){
+                var current = responseData.currentSheet || null;
+                var magazine = responseData.magazineSheets || [];
+                self.sidebarCurrentSheet(current ? self._createSheetItem(current) : null);
+                self.sidebarMagazineSheets(ko.utils.arrayMap(magazine, function(sheetData){
+                    return self._createSheetItem(sheetData);
+                }));
+            });
+        }
+
+        self.sidebarSetSheetFromScan = function(){
+            if (self.currentPrinterNumber() == null){
+                return;
+            }
+            var nid = (self.sidebarSheetNid() || "").trim();
+            if (!nid){
+                return;
+            }
+
+            self.apiClient.callAssignSheetToPrinterByNid(self.currentPrinterNumber(), nid, function(){
+                self.sidebarSheetNid("");
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            });
+        }
+
+        self.sidebarAppendSheetFromScan = function(){
+            if (self.currentPrinterNumber() == null){
+                return;
+            }
+            var nid = (self.sidebarSheetNid() || "").trim();
+            if (!nid){
+                return;
+            }
+
+            self.apiClient.callAppendSheetToMagazineByNid(self.currentPrinterNumber(), nid, function(){
+                self.sidebarSheetNid("");
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            });
+        }
+
+        self.sidebarUnassignSheet = function(sheetItem){
+            if (!sheetItem || sheetItem.databaseId() == null){
+                return;
+            }
+            self.apiClient.callUnassignSheet(sheetItem.databaseId(), function(){
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            });
+        }
+
+        self.sidebarSetSheetFromMagazine = function(sheetItem){
+            if (self.currentPrinterNumber() == null || !sheetItem || sheetItem.databaseId() == null){
+                return;
+            }
+            self.apiClient.callAssignSheetToPrinter(self.currentPrinterNumber(), sheetItem.databaseId(), function(){
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            });
+        }
+
+        self._showSheetDialog = function(){
+            $("#dialog_sheet_edit").modal({
+                keyboard: false
+            });
+        }
+
+        self.addNewSheet = function(){
+            self.currentSheetEditItem(self._createSheetItem({
+                databaseId: null,
+                nid: "",
+                note: "",
+                compatibleMaterials: "",
+                sheetTypeId: null,
+                sheetTypeName: null,
+                printerNumber: null,
+                magazinePosition: null
+            }));
+            self._showSheetDialog();
+        }
+
+        self.editSheet = function(sheetItem){
+            self.currentSheetEditItem(self._createSheetItem({
+                databaseId: sheetItem.databaseId(),
+                version: sheetItem.version(),
+                nid: sheetItem.nid(),
+                note: sheetItem.note(),
+                compatibleMaterials: sheetItem.compatibleMaterials(),
+                sheetTypeId: sheetItem.sheetTypeId(),
+                sheetTypeName: sheetItem.sheetTypeName(),
+                printerNumber: sheetItem.printerNumber(),
+                magazinePosition: sheetItem.magazinePosition()
+            }));
+            self._showSheetDialog();
+        }
+
+        self.saveCurrentSheet = function(){
+            var item = self.currentSheetEditItem();
+            if (!item){
+                return;
+            }
+			if (!self.canSaveCurrentSheet()){
+				return;
+			}
+
+            self.apiClient.callSaveSheet(item, function(){
+                $("#dialog_sheet_edit").modal("hide");
+                self.loadSheets();
+            });
+        }
+
+        self.deleteSheet = function(sheetItem){
+            if (!sheetItem || sheetItem.databaseId() == null){
+                return;
+            }
+            if (!confirm("Delete sheet " + sheetItem.nid() + "?")){
+                return;
+            }
+            self.apiClient.callDeleteSheet(sheetItem.databaseId(), function(){
+                self.loadSheets();
+            });
+        }
+
+        self.assignSheetToCurrentPrinter = function(sheetItem){
+            if (self.currentPrinterNumber() == null || sheetItem == null){
+                return;
+            }
+            if (sheetItem.databaseId() == null){
+                return;
+            }
+            self.apiClient.callAssignSheetToPrinter(self.currentPrinterNumber(), sheetItem.databaseId(), function(){
+                self.loadSheets();
+                self.loadSheetsStateForSidebar();
+            });
+        }
+
+        self.appendSheetToCurrentMagazine = function(sheetItem){
+            if (self.currentPrinterNumber() == null || sheetItem == null){
+                return;
+            }
+            if (sheetItem.databaseId() == null){
+                return;
+            }
+            self.apiClient.callAppendSheetToMagazine(self.currentPrinterNumber(), sheetItem.databaseId(), function(){
+                self.loadSheets();
+                self.loadSheetsStateForSidebar();
+            });
+        }
+
+        self.unassignSheet = function(sheetItem){
+            if (sheetItem == null){
+                return;
+            }
+            if (sheetItem.databaseId() == null){
+                return;
+            }
+            self.apiClient.callUnassignSheet(sheetItem.databaseId(), function(){
+                self.loadSheets();
+            });
+        }
+
+
         //////////////////////////////////////////////////////////////////////////////////////////////// HELPER FUNCTION
 
         loadSettingsFromBrowserStore = function(){
@@ -1087,6 +1395,23 @@ $(function() {
 
             // needed after the tool-count is changed
             self.settingsViewModel.printerProfiles.currentProfileData.subscribe(self.loadSpoolsForSidebar);
+
+			try {
+				var instanceNameObservable = self.settingsViewModel.settings.appearance.name;
+				self.octoPrintInstanceName(instanceNameObservable());
+				self.currentPrinterNumber(self._parsePrinterNumberFromInstanceName(instanceNameObservable()));
+				instanceNameObservable.subscribe(function(newName){
+					self.octoPrintInstanceName(newName);
+					self.currentPrinterNumber(self._parsePrinterNumberFromInstanceName(newName));
+					self.loadSheetsStateForSidebar();
+				});
+			} catch (e) {
+				self.octoPrintInstanceName(null);
+				self.currentPrinterNumber(null);
+			}
+
+			self.loadSheets();
+			self.loadSheetsStateForSidebar();
         }
 
         self.onAfterBinding = function() {
@@ -1175,8 +1500,14 @@ $(function() {
         }
 
         self.onTabChange = function(next, current){
-            if ("#tab_plugin_SpoolManager" == next) {
-                self.spoolItemTableHelper.reloadItems();
+            try {
+                if ($(next).find("#tab_spoolOverview").length) {
+                    self.spoolItemTableHelper.reloadItems();
+                }
+                if ($(next).find("#tab_sheetsOverview").length) {
+                    self.loadSheets();
+                }
+            } catch (e) {
             }
             //alert("Next:"+next +" Current:"+current);
             if ("#tab_plugin_PrintJobHistory" == next){
@@ -1247,6 +1578,7 @@ $(function() {
         elements: [
             document.getElementById("settings_spoolmanager"),
             document.getElementById("tab_spoolOverview"),
+            document.getElementById("tab_sheetsOverview"),
             document.getElementById("modal-dialogs-spoolManager"),
             document.getElementById("sidebar_spool_select")
         ]

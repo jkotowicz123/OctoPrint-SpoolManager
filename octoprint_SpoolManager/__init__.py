@@ -841,6 +841,8 @@ class SpoolmanagerPlugin(
 	def get_template_configs(self):
 		return [
 			dict(type="tab", name="Spools"),
+			dict(type="tab", name="Sheets", template="SpoolManager_tab_sheets.jinja2"),
+			dict(type="sidebar", template="SpoolManager_sidebar.jinja2"),
 			dict(type="settings", custom_bindings=True, name="Spool Manager")
 		]
 
@@ -922,7 +924,11 @@ class SpoolmanagerPlugin(
 				EventBusKeys.EVENT_BUS_SPOOL_SELECTED,
 				EventBusKeys.EVENT_BUS_SPOOL_DESELECTED,
 				EventBusKeys.EVENT_BUS_SPOOL_ADDED,
-				EventBusKeys.EVENT_BUS_SPOOL_DELETED
+				EventBusKeys.EVENT_BUS_SPOOL_DELETED,
+				EventBusKeys.EVENT_BUS_SHEET_ASSIGNED,
+				EventBusKeys.EVENT_BUS_SHEET_UNASSIGNED,
+				EventBusKeys.EVENT_BUS_SHEET_ADDED,
+				EventBusKeys.EVENT_BUS_SHEET_DELETED
 				]
 
 

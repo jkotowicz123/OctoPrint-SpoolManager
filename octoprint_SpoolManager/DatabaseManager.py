@@ -7,6 +7,7 @@ import os
 import logging
 import shutil
 import sqlite3
+import uuid
 
 from octoprint_SpoolManager.WrappedLoggingHandler import WrappedLoggingHandler
 from peewee import *
@@ -17,16 +18,19 @@ from octoprint_SpoolManager.common import StringUtils
 from octoprint_SpoolManager.models.BaseModel import BaseModel
 from octoprint_SpoolManager.models.PluginMetaDataModel import PluginMetaDataModel
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
+from octoprint_SpoolManager.models.FilamentTypeModel import FilamentTypeModel
+from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
+from octoprint_SpoolManager.models.SheetModel import SheetModel
 
 # from octoprint_SpoolManager.models.MaterialModel import MaterialModel
 # from octoprint_SpoolManager.models.MaterialCharacteristicModel import MaterialCharacteristicModel
 
 FORCE_CREATE_TABLES = False
 
-CURRENT_DATABASE_SCHEME_VERSION = 10
+CURRENT_DATABASE_SCHEME_VERSION = 11
 
 # List all Models
-MODELS = [PluginMetaDataModel, SpoolModel]
+MODELS = [PluginMetaDataModel, SpoolModel, FilamentTypeModel, SheetTypeModel, SheetModel]
 
 class DatabaseManager(object):
 
@@ -115,7 +119,10 @@ class DatabaseManager(object):
 			cursor = PluginMetaDataModel.get(PluginMetaDataModel.key == PluginMetaDataModel.KEY_DATABASE_SCHEME_VERSION)
 			result = cursor.value
 			if (result != None):
-				schemeVersionFromDatabase = int(result[0])
+				try:
+					schemeVersionFromDatabase = int(result)
+				except Exception:
+					schemeVersionFromDatabase = int(result[0])
 				self._logger.info("Current databasescheme: " + str(schemeVersionFromDatabase))
 			else:
 				self._logger.warn("Strange, table is found (maybe), but there is no result of the schem version. Try to recreate a new db-scheme")
@@ -146,24 +153,267 @@ class DatabaseManager(object):
 				# auto upgrade done only for local database
 				if (self._databaseSettings.useExternal == True):
 					self._logger.warn("Scheme upgrade is only done for local database")
-					return
+				else:
+					# evautate upgrade steps (from 1-2 , 1...6)
+					self._logger.info("We need to upgrade the database scheme from: '" + str(currentDatabaseSchemeVersion) + "' to: '" + str(CURRENT_DATABASE_SCHEME_VERSION) + "'")
 
-				# evautate upgrade steps (from 1-2 , 1...6)
-				self._logger.info("We need to upgrade the database scheme from: '" + str(currentDatabaseSchemeVersion) + "' to: '" + str(CURRENT_DATABASE_SCHEME_VERSION) + "'")
-
-				try:
-					self.backupDatabaseFile()
-					self._upgradeDatabase(currentDatabaseSchemeVersion, CURRENT_DATABASE_SCHEME_VERSION)
-				except Exception as e:
-					self._logger.error("Error during database upgrade!!!!")
-					self._logger.exception(e)
-					return
-				self._logger.info("...Database-scheme successfully upgraded.")
+					try:
+						self.backupDatabaseFile()
+						self._upgradeDatabase(currentDatabaseSchemeVersion, CURRENT_DATABASE_SCHEME_VERSION)
+					except Exception as e:
+						self._logger.error("Error during database upgrade!!!!")
+						self._logger.exception(e)
+						return
+					self._logger.info("...Database-scheme successfully upgraded.")
 			else:
 				self._logger.info("...Database-scheme upgraded not needed.")
 		else:
 			self._logger.warn("...something was strange. Should not be shwon in log. Check full log")
+
+		self._ensureSheetTablesExist()
+		self._ensureFilamentTypesTableExists()
 		pass
+
+	def _ensureFilamentTypesTableExists(self):
+		try:
+			self._database.connect(reuse_if_open=True)
+			self._database.create_tables([FilamentTypeModel], safe=True)
+			self._seedFilamentTypes()
+		except Exception as e:
+			self._logger.exception("Could not ensure filament types exist: " + str(e))
+
+	def _ensureSheetTablesExist(self):
+		try:
+			self._database.connect(reuse_if_open=True)
+			self._database.create_tables([SheetTypeModel, SheetModel], safe=True)
+			self._ensureSheetTypeCompatibleMaterialsColumnExists()
+			self._seedDefaultSheets()
+			self._normalizeSheetTypeNames()
+			self._syncSheetNidsToDatabaseIds()
+		except Exception as e:
+			self._logger.exception("Could not ensure sheet tables exist: " + str(e))
+
+	def _ensureSheetTypeCompatibleMaterialsColumnExists(self):
+		try:
+			if (self._databaseSettings.useExternal == False):
+				connection = sqlite3.connect(self._databaseSettings.fileLocation)
+				cursor = connection.cursor()
+
+				columns = []
+				try:
+					cursor.execute("PRAGMA table_info('spo_sheettypemodel')")
+					columns = [row[1] for row in cursor.fetchall()]
+				except Exception:
+					columns = []
+
+				if ("compatibleMaterials" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_sheettypemodel' ADD 'compatibleMaterials' TEXT")
+				connection.close()
+				return
+
+			databaseType = self._databaseSettings.type
+			if ("postgres" == databaseType):
+				self._database.execute_sql('ALTER TABLE "spo_sheettypemodel" ADD COLUMN IF NOT EXISTS "compatibleMaterials" TEXT')
+			else:
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_sheettypemodel` ADD COLUMN `compatibleMaterials` TEXT")
+				except Exception:
+					self._database.execute_sql("ALTER TABLE spo_sheettypemodel ADD COLUMN compatibleMaterials TEXT")
+		except Exception as e:
+			self._logger.exception("Could not ensure sheet type compatibleMaterials column exists: " + str(e))
+
+	def _syncSheetNidsToDatabaseIds(self):
+		try:
+			SheetModel.update({SheetModel.nid: SheetModel.databaseId}).execute()
+		except Exception as e:
+			self._logger.exception("Could not sync sheet NIDs: " + str(e))
+
+	def _normalizeSheetTypeNames(self):
+		try:
+			canonical = SheetTypeModel.get_or_none(SheetTypeModel.name == "Satin")
+			lowercase = SheetTypeModel.get_or_none(fn.Lower(SheetTypeModel.name) == "satin")
+			if (lowercase == None):
+				return
+			if (canonical == None):
+				lowercase.name = "Satin"
+				lowercase.save()
+				return
+			if (canonical.databaseId == lowercase.databaseId):
+				return
+			SheetModel.update({SheetModel.sheetType: canonical}).where(SheetModel.sheetType == lowercase).execute()
+			lowercase.delete_instance()
+		except Exception as e:
+			self._logger.exception("Could not normalize sheet type names: " + str(e))
+
+	def _seedDefaultSheets(self):
+		sheetTypeNames = ["Textured", "Smooth", "Satin", "Nylon"]
+		defaultCompatibleMaterials = json.dumps(["PLA", "PETG", "SILK", "FLEX", "PA"], ensure_ascii=False)
+		defaultTypeCompatibleMaterials = {
+			"Textured": defaultCompatibleMaterials,
+			"Smooth": defaultCompatibleMaterials,
+			"Satin": defaultCompatibleMaterials,
+			"Nylon": defaultCompatibleMaterials
+		}
+		sheetTypesByName = {}
+		for name in sheetTypeNames:
+			model, _created = SheetTypeModel.get_or_create(name=name)
+			try:
+				if (model.compatibleMaterials == None or str(model.compatibleMaterials).strip() == ""):
+					model.compatibleMaterials = defaultTypeCompatibleMaterials.get(name)
+					model.save()
+			except Exception:
+				pass
+			sheetTypesByName[name] = model
+
+		rows = [
+			{"pos": 1, "type": "Textured", "series": "BP-24", "sn": "", "note": ""},
+			{"pos": 2, "type": "Textured", "series": "BP-24", "sn": "", "note": ""},
+			{"pos": 3, "type": "Textured", "series": "MD-28", "sn": "", "note": ""},
+			{"pos": 4, "type": "Textured", "series": "BH-25", "sn": "", "note": u"Stara, z oderwaną powłoką na środku po obu stronach"},
+			{"pos": 5, "type": "Textured", "series": "BP-24", "sn": "SN-11397-028614", "note": ""},
+			{"pos": 6, "type": "Textured", "series": "", "sn": "", "note": ""},
+			{"pos": 7, "type": "Textured", "series": "", "sn": "", "note": ""},
+			{"pos": 8, "type": "Textured", "series": "", "sn": "", "note": ""},
+			{"pos": 9, "type": "Textured", "series": "", "sn": "", "note": ""},
+			{"pos": 10, "type": "Textured", "series": "", "sn": "", "note": ""},
+			{"pos": 11, "type": "Textured", "series": "", "sn": "", "note": ""},
+
+			{"pos": 1, "type": "Smooth", "series": "IT-22", "sn": "", "note": ""},
+			{"pos": 2, "type": "Smooth", "series": "TF-21", "sn": "", "note": u"Stara, porysowana z jednej strony i wgnieciona z drugiej"},
+			{"pos": 3, "type": "Smooth", "series": "PD-24", "sn": "", "note": ""},
+			{"pos": 4, "type": "Smooth", "series": "IT-22", "sn": "", "note": ""},
+			{"pos": 5, "type": "Smooth", "series": "DB-23", "sn": "", "note": ""},
+			{"pos": 6, "type": "Smooth", "series": "PD-24", "sn": "", "note": ""},
+			{"pos": 7, "type": "Smooth", "series": "", "sn": "", "note": ""},
+			{"pos": 8, "type": "Smooth", "series": "", "sn": "", "note": ""},
+			{"pos": 9, "type": "Smooth", "series": "", "sn": "", "note": ""},
+			{"pos": 10, "type": "Smooth", "series": "", "sn": "", "note": ""},
+			{"pos": 11, "type": "Smooth", "series": "", "sn": "", "note": ""},
+
+			{"pos": 1, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 2, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 3, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 4, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 5, "type": "Satin", "series": "LT-11", "sn": "", "note": u"Porysowana na środku"},
+			{"pos": 6, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 7, "type": "Satin", "series": "MB-23", "sn": "", "note": ""},
+			{"pos": 8, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+			{"pos": 9, "type": "Satin", "series": "LT-11", "sn": "", "note": u"„2”, ghost po lustrze na środku"},
+			{"pos": 10, "type": "Satin", "series": "MB-23", "sn": "", "note": u"„4”"},
+			{"pos": 11, "type": "Satin", "series": "VT-24", "sn": "", "note": ""},
+
+			{"pos": 1, "type": "Nylon", "series": "VS-11", "sn": "", "note": u"Z jednej strony ślady po MBLu z MK4"}
+		]
+
+		for r in rows:
+			sheetType = sheetTypesByName.get(r.get("type"))
+			if (sheetType == None):
+				continue
+
+			pos = r.get("pos")
+			nid = str(r.get("type")) + "-" + str(pos)
+
+			noteParts = []
+			series = (r.get("series") or "").strip()
+			if (series != ""):
+				noteParts.append("Seria: " + series)
+			sn = (r.get("sn") or "").strip()
+			if (sn != ""):
+				noteParts.append("SN: " + sn)
+			n = (r.get("note") or "")
+			try:
+				n = n.strip()
+			except Exception:
+				pass
+			if (n != ""):
+				noteParts.append(n)
+
+			noteText = None
+			if (len(noteParts) > 0):
+				noteText = " | ".join(noteParts)
+
+			SheetModel.get_or_create(
+				nid=nid,
+				defaults={
+					"sheetType": sheetType,
+					"note": noteText,
+					"compatibleMaterials": None,
+					"printerNumber": None,
+					"magazinePosition": None
+				}
+			)
+
+	def _seedFilamentTypes(self):
+		def _row(pos, series, sn, note):
+			return {
+				"pos": pos,
+				"series": series,
+				"sn": sn,
+				"note": note
+			}
+
+		data = {
+			"Textured": {
+				"slotCount": 11,
+				"items": [
+					_row(1, "BP-24", "", ""),
+					_row(2, "BP-24", "", ""),
+					_row(3, "MD-28", "", ""),
+					_row(4, "BH-25", "", u"Stara, z oderwaną powłoką na środku po obu stronach"),
+					_row(5, "BP-24", "SN-11397-028614", ""),
+					_row(6, "", "", ""),
+					_row(7, "", "", ""),
+					_row(8, "", "", ""),
+					_row(9, "", "", ""),
+					_row(10, "", "", ""),
+					_row(11, "", "", "")
+				]
+			},
+			"Smooth": {
+				"slotCount": 11,
+				"items": [
+					_row(1, "IT-22", "", ""),
+					_row(2, "TF-21", "", u"Stara, porysowana z jednej strony i wgnieciona z drugiej"),
+					_row(3, "PD-24", "", ""),
+					_row(4, "IT-22", "", ""),
+					_row(5, "DB-23", "", ""),
+					_row(6, "PD-24", "", ""),
+					_row(7, "", "", ""),
+					_row(8, "", "", ""),
+					_row(9, "", "", ""),
+					_row(10, "", "", ""),
+					_row(11, "", "", "")
+				]
+			},
+			"Satin": {
+				"slotCount": 11,
+				"items": [
+					_row(1, "VT-24", "", ""),
+					_row(2, "VT-24", "", ""),
+					_row(3, "VT-24", "", ""),
+					_row(4, "VT-24", "", ""),
+					_row(5, "LT-11", "", u"Porysowana na środku"),
+					_row(6, "VT-24", "", ""),
+					_row(7, "MB-23", "", ""),
+					_row(8, "VT-24", "", ""),
+					_row(9, "LT-11", "", u"„2”, ghost po lustrze na środku"),
+					_row(10, "MB-23", "", u"„4”"),
+					_row(11, "VT-24", "", "")
+				]
+			},
+			"Nylon": {
+				"slotCount": 1,
+				"items": [
+					_row(1, "VS-11", "", u"Z jednej strony ślady po MBLu z MK4")
+				]
+			}
+		}
+
+		for name, payload in data.items():
+			model, _created = FilamentTypeModel.get_or_create(name=name)
+			model.slotCount = payload.get("slotCount")
+			model.items = json.dumps(payload.get("items"), ensure_ascii=False)
+			model.save()
 
 	def _upgradeDatabase(self,currentDatabaseSchemeVersion, targetDatabaseSchemeVersion):
 
@@ -176,6 +426,7 @@ class DatabaseManager(object):
 							  self._upgradeFrom7To8,
 							  self._upgradeFrom8To9,
 							  self._upgradeFrom9To10
+							  ,self._upgradeFrom10To11
 							  ]
 
 		for migrationMethodIndex in range(currentDatabaseSchemeVersion -1, targetDatabaseSchemeVersion -1):
@@ -209,6 +460,25 @@ class DatabaseManager(object):
 
 		connection.close()
 		self._logger.info(" Successfully 9 -> 10")
+
+	def _upgradeFrom10To11(self):
+		self._logger.info(" Starting 10 -> 11")
+		try:
+			self._database.connect(reuse_if_open=True)
+			self._database.create_tables([SheetTypeModel, SheetModel], safe=True)
+		except Exception as e:
+			self._logger.exception("Could not create sheet tables during database migration: " + str(e))
+		finally:
+			try:
+				self.closeDatabase()
+			except Exception:
+				pass
+
+		connection = sqlite3.connect(self._databaseSettings.fileLocation)
+		cursor = connection.cursor()
+		self._executeSQLQuietly(cursor, "UPDATE 'spo_pluginmetadatamodel' SET value=11 WHERE key='databaseSchemeVersion'")
+		connection.close()
+		self._logger.info(" Successfully 10 -> 11")
 
 	def _upgradeFrom8To9(self):
 		self._logger.info(" Starting 8 -> 9")
@@ -597,10 +867,18 @@ class DatabaseManager(object):
 	def _createDatabaseTables(self):
 		self._logger.info("Creating new database tables for spoolmanager-plugin")
 		self._database.connect(reuse_if_open=True)
-		self._database.drop_tables(MODELS)
-		self._database.create_tables(MODELS)
+		if (self._databaseSettings.useExternal == True):
+			self._database.create_tables(MODELS, safe=True)
+		else:
+			self._database.drop_tables(MODELS)
+			self._database.create_tables(MODELS)
 
-		PluginMetaDataModel.create(key=PluginMetaDataModel.KEY_DATABASE_SCHEME_VERSION, value=CURRENT_DATABASE_SCHEME_VERSION)
+		meta = PluginMetaDataModel.get_or_none(PluginMetaDataModel.key == PluginMetaDataModel.KEY_DATABASE_SCHEME_VERSION)
+		if (meta == None):
+			PluginMetaDataModel.create(key=PluginMetaDataModel.KEY_DATABASE_SCHEME_VERSION, value=CURRENT_DATABASE_SCHEME_VERSION)
+		else:
+			meta.value = CURRENT_DATABASE_SCHEME_VERSION
+			meta.save()
 		self.closeDatabase()
 
 	def _storeErrorMessage(self, type, title, message, sendErrorPopUp):
@@ -786,6 +1064,9 @@ class DatabaseManager(object):
 		self._currentErrorMessageDict = None
 		self._logger.info("ReCreating Database")
 		self._logger.info(databaseSettings)
+		if ((databaseSettings != None and databaseSettings.useExternal == True) or (databaseSettings == None and self._databaseSettings.useExternal == True)):
+			self._logger.warn("ReCreating database is disabled for external databases")
+			return
 
 		backupCurrentDatabaseSettings = None
 		if (databaseSettings != None):
@@ -805,6 +1086,12 @@ class DatabaseManager(object):
 				self._databaseSettings = backupCurrentDatabaseSettings
 
 	def copySpoolData(self, databaseSettings = None):
+		if (databaseSettings != None and databaseSettings.useExternal == True):
+			self._logger.warn("Copying data into an external database is disabled")
+			return {
+				"success": False,
+				"copySpoolCount": 0
+			}
 
 		loadResult = False
 		copySpoolCount = 0
@@ -894,7 +1181,7 @@ class DatabaseManager(object):
 		finally:
 			try:
 				if (withReusedConnection == False):
-					self._closeDatabase()
+					self.closeDatabase()
 			except:
 				pass # do nothing
 		pass
@@ -1322,4 +1609,180 @@ class DatabaseManager(object):
 				pass
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "deleteSpool")
+
+	def loadSheet(self, databaseId, withReusedConnection=False):
+		def databaseCallMethode():
+			return SheetModel.get_or_none(SheetModel.databaseId == int(databaseId))
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadSheet")
+
+	def loadSheetByNid(self, nid, withReusedConnection=False):
+		def databaseCallMethode():
+			try:
+				parsed = int(nid)
+				result = SheetModel.get_or_none(SheetModel.databaseId == parsed)
+				if (result != None):
+					return result
+			except Exception:
+				pass
+			return SheetModel.get_or_none(SheetModel.nid == nid)
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadSheetByNid")
+
+	def loadAllSheets(self, withReusedConnection=False):
+		def databaseCallMethode():
+			return SheetModel.select().order_by(SheetModel.created.desc())
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadAllSheets")
+
+	def loadAllSheetTypes(self, withReusedConnection=False):
+		def databaseCallMethode():
+			return SheetTypeModel.select().order_by(fn.Lower(SheetTypeModel.name).asc())
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadAllSheetTypes")
+
+	def getOrCreateSheetTypeByName(self, name, withReusedConnection=False):
+		def databaseCallMethode():
+			model, _created = SheetTypeModel.get_or_create(name=name)
+			return model
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "getOrCreateSheetTypeByName")
+
+	def saveSheet(self, sheetModel, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					databaseId = sheetModel.databaseId
+					if (databaseId != None):
+						currentSheetModel = self.loadSheet(databaseId, withReusedConnection)
+						if (currentSheetModel == None):
+							self._passMessageToClient("error", "DatabaseManager",
+												  "Could not update the Sheet, because it is already deleted!")
+							return
+						versionFromUI = sheetModel.version if sheetModel.version != None else 1
+						versionFromDatabase = currentSheetModel.version if currentSheetModel.version != None else 1
+						if (versionFromUI != versionFromDatabase):
+							self._passMessageToClient("error", "DatabaseManager",
+												  "Could not update the Sheet, because someone already modified the sheet. Do a manuel reload!")
+							return
+						sheetModel.version = versionFromUI + 1
+
+					if (databaseId == None):
+						try:
+							if (sheetModel.nid == None or str(sheetModel.nid).strip() == ""):
+								sheetModel.nid = "tmp-" + uuid.uuid4().hex
+						except Exception:
+							sheetModel.nid = "tmp-" + uuid.uuid4().hex
+
+					sheetModel.save()
+					databaseId = sheetModel.get_id()
+					sheetModel.nid = str(databaseId)
+					sheetModel.save()
+					transaction.commit()
+				except Exception as e:
+					transaction.rollback()
+					self._logger.exception("Could not insert Sheet into database")
+					self._passMessageToClient("error", "DatabaseManager",
+											  "Could not insert the sheet into the database. See OctoPrint.log for details!")
+					return None
+				return databaseId
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "saveSheet")
+
+	def deleteSheet(self, databaseId, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					deleteResult = SheetModel.delete_by_id(databaseId)
+					if (deleteResult == 0):
+						return None
+					return databaseId
+				except Exception as e:
+					transaction.rollback()
+					self._logger.exception("Could not delete sheet from database:" + str(e))
+					self._passMessageToClient("Sheet-DatabaseManager",
+											  "Could not delete the sheet ('"+ str(databaseId) +"') from the database. See OctoPrint.log for details!")
+					return None
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "deleteSheet")
+
+	def unassignSheet(self, sheetModel, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					sheetModel.printerNumber = None
+					sheetModel.magazinePosition = None
+					sheetModel.save()
+					transaction.commit()
+					return sheetModel
+				except Exception:
+					transaction.rollback()
+					raise
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "unassignSheet")
+
+	def assignSheetToPrinter(self, sheetModel, printerNumber, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					SheetModel.update({
+						SheetModel.printerNumber: None,
+						SheetModel.magazinePosition: None
+					}).where(
+						(SheetModel.printerNumber == int(printerNumber)) &
+						(SheetModel.magazinePosition.is_null(True)) &
+						(SheetModel.databaseId != sheetModel.databaseId)
+					).execute()
+
+					sheetModel.printerNumber = int(printerNumber)
+					sheetModel.magazinePosition = None
+					sheetModel.save()
+					transaction.commit()
+					return sheetModel
+				except Exception:
+					transaction.rollback()
+					raise
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "assignSheetToPrinter")
+
+	def appendSheetToMagazine(self, sheetModel, printerNumber, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					maxPos = (SheetModel
+							  .select(fn.MAX(SheetModel.magazinePosition))
+							  .where((SheetModel.printerNumber == int(printerNumber)) & (SheetModel.magazinePosition.is_null(False)))
+							  .scalar())
+
+					if (maxPos == None):
+						maxPos = 0
+					newPos = int(maxPos) + 1
+
+					sheetModel.printerNumber = int(printerNumber)
+					sheetModel.magazinePosition = newPos
+					sheetModel.save()
+					transaction.commit()
+					return sheetModel
+				except Exception:
+					transaction.rollback()
+					raise
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "appendSheetToMagazine")
+
+	def getSheetsStateForPrinter(self, printerNumber, withReusedConnection=False):
+		def databaseCallMethode():
+			currentSheet = (SheetModel
+							.select()
+							.where((SheetModel.printerNumber == int(printerNumber)) & (SheetModel.magazinePosition.is_null(True)))
+							.limit(1)
+							.first())
+
+			magazineSheets = (SheetModel
+							 .select()
+							 .where((SheetModel.printerNumber == int(printerNumber)) & (SheetModel.magazinePosition.is_null(False)))
+							 .order_by(SheetModel.magazinePosition.asc(), SheetModel.databaseId.asc()))
+
+			return currentSheet, magazineSheets
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "getSheetsStateForPrinter")
 

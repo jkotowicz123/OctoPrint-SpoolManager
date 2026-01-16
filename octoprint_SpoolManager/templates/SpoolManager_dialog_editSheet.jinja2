@@ -1,0 +1,34 @@
+<div class="modal hide fade" id="dialog_sheet_edit" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Sheet</h3>
+    </div>
+    <div class="modal-body">
+        <div class="row-fluid" data-bind="with: currentSheetEditItem">
+            <div class="control-group">
+                <label class="control-label">Type</label>
+                <div class="controls">
+                    <select class="input-block-level" data-bind="options: $root.sheetTypes, optionsText: 'name', optionsValue: 'databaseId', value: sheetTypeId"></select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Compatible materials (JSON)</label>
+                <div class="controls">
+                    <textarea class="input-block-level" rows="3" data-bind="value: compatibleMaterials"></textarea>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Note</label>
+                <div class="controls">
+                    <textarea class="input-block-level" rows="3" data-bind="value: note"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" data-bind="click: saveCurrentSheet, enable: canSaveCurrentSheet">Save</button>
+    </div>
+</div>
