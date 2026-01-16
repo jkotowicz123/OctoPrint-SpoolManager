@@ -558,6 +558,35 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	def selectSpoolByQRCode(self, databaseId):
 		self._logger.info("API select spool by QR code" + str(databaseId))
 
+		printerNumberParam = request.args.get("printerNumber")
+		printerNumber = None
+		printerLabel = None
+		toolNumber = None
+		toolIndex = 0
+		if (printerNumberParam != None):
+			try:
+				import re
+				m = re.search(r"#?\s*(\d+)\s*(?:T\s*(\d+))?", str(printerNumberParam))
+				if (m != None):
+					printerNumber = int(m.group(1))
+					if (m.group(2) != None):
+						toolNumber = int(m.group(2))
+			except Exception:
+				printerNumber = None
+				oolNumber = None
+
+		if (printerNumber != None):
+			printerLabel = "#" + str(printerNumber)
+			if (toolNumber != None):
+				toolIndex = toolNumber - 1
+				printerLabel += "T" + str(toolNumber)
+
+		if (toolIndex < 0):
+			return flask.jsonify(), 400
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
 		#if self._printer.is_printing():
 		#	# not doing this mid-print since we can't ask the user what to do
 		#	abort(409)
@@ -571,8 +600,15 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			databaseId = spoolModel.databaseId
 
 		# TODO QR-Code pre-select always tool0 and then the edit-dialog is shown. Better approach: show dialog and the user could choose
-		spoolModel = self._selectSpool(0, databaseId)
-		json_object = json.dumps(spoolModel, indent = 4)
+		spoolModel = self._selectSpool(toolIndex, databaseId)
+		if (spoolModel == None):
+			return flask.jsonify(), 404
+
+		payload = Transformer.transformSpoolModelToDict(spoolModel)
+		json_object = json.dumps({
+			"printerNumber": printerLabel,
+			"spool": payload
+		}, indent=4, ensure_ascii=False)
 		return flask.Response(json_object, status=200, mimetype='application/json')
 
 	@octoprint.plugin.BlueprintPlugin.route("/selectSheetByQRCode/<string:databaseId>", methods=["GET"])
@@ -582,16 +618,24 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		printerNumberParam = request.args.get("printerNumber")
 		printerNumber = None
+		printerLabel = None
+		toolNumber = None
 		if (printerNumberParam != None):
 			try:
 				import re
-				m = re.search(r"#\s*(\d+)", str(printerNumberParam))
+				m = re.search(r"#?\s*(\d+)\s*(?:T\s*(\d+))?", str(printerNumberParam))
 				if (m != None):
 					printerNumber = int(m.group(1))
-				else:
-					printerNumber = int(printerNumberParam)
+					if (m.group(2) != None):
+						toolNumber = int(m.group(2))
 			except Exception:
 				printerNumber = None
+				oolNumber = None
+
+		if (printerNumber != None):
+			printerLabel = "#" + str(printerNumber)
+			if (toolNumber != None):
+				printerLabel += "T" + str(toolNumber)
 
 		if (printerNumber == None):
 			return flask.jsonify(), 400
@@ -618,7 +662,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			pass
 
 		json_object = json.dumps({
-			"printerNumber": printerNumber,
+			"printerNumber": printerLabel,
 			"sheet": payload
 		}, indent=4, ensure_ascii=False)
 		return flask.Response(json_object, status=200, mimetype='application/json')

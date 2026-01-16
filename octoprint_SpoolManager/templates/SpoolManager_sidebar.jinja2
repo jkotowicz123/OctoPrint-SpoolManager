@@ -62,8 +62,8 @@
                 <!-- ko if: sidebarCurrentSheet -->
                 <div data-bind="with: sidebarCurrentSheet">
                     <div>
-                        <span data-bind="text: nid"></span>
-                        <span data-bind="visible: sheetTypeName"> (<span data-bind="text: sheetTypeName"></span>)</span>
+                        <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
+                        <span data-bind="visible: !sheetTypeName()">Unknown</span>
                     </div>
                     <div class="btn-group" style="margin-top: 2px;">
                         <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Unassign</button>
@@ -83,8 +83,8 @@
                 <div data-bind="foreach: sidebarMagazineSheets">
                     <div style="margin-top: 2px;">
                         <span data-bind="text: magazinePosition"></span>.
-                        <span data-bind="text: nid"></span>
-                        <span data-bind="visible: sheetTypeName"> (<span data-bind="text: sheetTypeName"></span>)</span>
+                        <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
+                        <span data-bind="visible: !sheetTypeName()">Unknown</span>
                         <div class="btn-group" style="margin-top: 2px;">
                             <button class="btn btn-mini" data-bind="click: $root.sidebarSetSheetFromMagazine.bind($data, $data)">Set</button>
                             <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Remove</button>
