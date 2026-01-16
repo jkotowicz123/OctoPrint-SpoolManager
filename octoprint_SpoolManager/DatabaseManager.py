@@ -190,6 +190,7 @@ class DatabaseManager(object):
 			self._seedDefaultSheets()
 			self._normalizeSheetTypeNames()
 			self._syncSheetNidsToDatabaseIds()
+			self._syncSheetCompatibleMaterialsFromType()
 		except Exception as e:
 			self._logger.exception("Could not ensure sheet tables exist: " + str(e))
 
@@ -227,6 +228,27 @@ class DatabaseManager(object):
 			SheetModel.update({SheetModel.nid: SheetModel.databaseId}).execute()
 		except Exception as e:
 			self._logger.exception("Could not sync sheet NIDs: " + str(e))
+
+	def _syncSheetCompatibleMaterialsFromType(self):
+		try:
+			allTypes = SheetTypeModel.select()
+			for t in allTypes:
+				cm = None
+				try:
+					cm = t.compatibleMaterials
+				except Exception:
+					cm = None
+				if (cm == None or str(cm).strip() == ""):
+					continue
+				SheetModel.update({SheetModel.compatibleMaterials: cm}).where(
+					(SheetModel.sheetType == t) &
+					(
+						(SheetModel.compatibleMaterials.is_null(True)) |
+						(SheetModel.compatibleMaterials == "")
+					)
+				).execute()
+		except Exception as e:
+			self._logger.exception("Could not sync sheet compatibleMaterials: " + str(e))
 
 	def _normalizeSheetTypeNames(self):
 		try:
@@ -337,7 +359,7 @@ class DatabaseManager(object):
 				defaults={
 					"sheetType": sheetType,
 					"note": noteText,
-					"compatibleMaterials": None,
+					"compatibleMaterials": sheetType.compatibleMaterials,
 					"printerNumber": None,
 					"magazinePosition": None
 				}
@@ -1673,6 +1695,13 @@ class DatabaseManager(object):
 								sheetModel.nid = "tmp-" + uuid.uuid4().hex
 						except Exception:
 							sheetModel.nid = "tmp-" + uuid.uuid4().hex
+
+					try:
+						if (sheetModel.compatibleMaterials == None or str(sheetModel.compatibleMaterials).strip() == ""):
+							if (sheetModel.sheetType != None and sheetModel.sheetType.compatibleMaterials != None):
+								sheetModel.compatibleMaterials = sheetModel.sheetType.compatibleMaterials
+					except Exception:
+						pass
 
 					sheetModel.save()
 					databaseId = sheetModel.get_id()

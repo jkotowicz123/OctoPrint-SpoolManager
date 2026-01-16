@@ -574,6 +574,54 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel = self._selectSpool(0, databaseId)
 		json_object = json.dumps(spoolModel, indent = 4)
 		return flask.Response(json_object, status=200, mimetype='application/json')
+
+	@octoprint.plugin.BlueprintPlugin.route("/selectSheetByQRCode/<string:databaseId>", methods=["GET"])
+	@no_firstrun_access
+	def selectSheetByQRCode(self, databaseId):
+		self._logger.info("API select sheet by QR code" + str(databaseId))
+
+		printerNumberParam = request.args.get("printerNumber")
+		printerNumber = None
+		if (printerNumberParam != None):
+			try:
+				import re
+				m = re.search(r"#\s*(\d+)", str(printerNumberParam))
+				if (m != None):
+					printerNumber = int(m.group(1))
+				else:
+					printerNumber = int(printerNumberParam)
+			except Exception:
+				printerNumber = None
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetModel = self._databaseManager.loadSheetByNid(databaseId, withReusedConnection=True)
+			if (sheetModel == None):
+				return flask.jsonify(), 404
+
+			sheetModel = self._databaseManager.assignSheetToPrinter(sheetModel, printerNumber, withReusedConnection=True)
+			payload = Transformer.transformSheetModelToDict(sheetModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		try:
+			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+				"databaseId": payload.get("databaseId"),
+				"nid": payload.get("nid"),
+				"printerNumber": payload.get("printerNumber"),
+				"magazinePosition": payload.get("magazinePosition")
+			})
+		except Exception:
+			pass
+
+		json_object = json.dumps({
+			"printerNumber": printerNumber,
+			"sheet": payload
+		}, indent=4, ensure_ascii=False)
+		return flask.Response(json_object, status=200, mimetype='application/json')
 	
 	
 		#spoolModelAsDict = None

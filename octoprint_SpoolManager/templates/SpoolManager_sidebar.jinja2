@@ -56,13 +56,6 @@
         <div data-bind="visible: currentPrinterNumber() != null">
             <div>
                 <b>Sheets</b>
-                <span> (#<span data-bind="text: currentPrinterNumber"></span>)</span>
-            </div>
-
-            <div class="input-append" style="margin-top: 4px;">
-                <input type="text" class="input-small" placeholder="NID" data-bind="value: sidebarSheetNid, valueUpdate: 'input'" />
-                <button class="btn btn-mini" data-bind="click: sidebarSetSheetFromScan">Set</button>
-                <button class="btn btn-mini" data-bind="click: sidebarAppendSheetFromScan">Append</button>
             </div>
 
             <div style="margin-top: 6px;">
@@ -106,7 +99,7 @@
             <div>
                 <b>Sheets</b>
             </div>
-            <div><i>Printer # unknown</i></div>
+            <div><i>Unavailable</i></div>
         </div>
     </div>
 </div>
