@@ -287,6 +287,18 @@ class DatabaseManager(object):
 				pass
 			sheetTypesByName[name] = model
 
+		try:
+			if (self._databaseSettings.useExternal):
+				return
+		except Exception:
+			pass
+
+		try:
+			if (SheetModel.select().count() > 0):
+				return
+		except Exception:
+			pass
+
 		rows = [
 			{"pos": 1, "type": "Textured", "series": "BP-24", "sn": "", "note": ""},
 			{"pos": 2, "type": "Textured", "series": "BP-24", "sn": "", "note": ""},
