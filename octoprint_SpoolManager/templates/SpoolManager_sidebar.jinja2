@@ -64,9 +64,9 @@
                     <div>
                         <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
                         <span data-bind="visible: !sheetTypeName()">Unknown</span>
-                    </div>
-                    <div class="btn-group" style="margin-top: 2px;">
-                        <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Unassign</button>
+                        <span class="pull-right">
+                            <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)" title="Unassign"><span class="icon-remove"></span></button>
+                        </span>
                     </div>
                 </div>
                 <!-- /ko -->
