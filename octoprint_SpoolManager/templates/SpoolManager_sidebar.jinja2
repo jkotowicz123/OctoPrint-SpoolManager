@@ -4,7 +4,7 @@
         <div>
             <!-- ko if: $parent.selectedSpoolsForSidebar().length > 1 -->
             <div>
-                <b><span data-bind="text: $index"></span>:</b>
+                <b><span data-bind="text: $index() + 1"></span>:</b>
             </div>
             <!-- /ko -->
             <!-- ko ifnot: $data -->

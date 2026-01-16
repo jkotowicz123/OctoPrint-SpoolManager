@@ -573,19 +573,18 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						toolNumber = int(m.group(2))
 			except Exception:
 				printerNumber = None
-				oolNumber = None
+				toolNumber = None
+
+		if (printerNumberParam != None and printerNumber == None):
+			return flask.jsonify(), 400
 
 		if (printerNumber != None):
 			printerLabel = "#" + str(printerNumber)
 			if (toolNumber != None):
 				toolIndex = toolNumber - 1
 				printerLabel += "T" + str(toolNumber)
-
-		if (toolIndex < 0):
-			return flask.jsonify(), 400
-
-		if (printerNumber == None):
-			return flask.jsonify(), 400
+				if (toolIndex < 0):
+					return flask.jsonify(), 400
 
 		#if self._printer.is_printing():
 		#	# not doing this mid-print since we can't ask the user what to do
@@ -630,7 +629,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						toolNumber = int(m.group(2))
 			except Exception:
 				printerNumber = None
-				oolNumber = None
+				toolNumber = None
 
 		if (printerNumber != None):
 			printerLabel = "#" + str(printerNumber)
@@ -1250,6 +1249,40 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		return flask.jsonify({
 			"printerNumber": printerNumber,
+			"currentSheet": currentSheetDict,
+			"magazineSheets": magazineSheetsDict
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/sheetsState", methods=["GET"])
+	def sheetsStateLocal(self):
+		printerNumber = None
+		printerLabel = None
+		try:
+			from octoprint.settings import settings as octo_settings
+			instanceName = octo_settings().get(["appearance", "name"])
+			if (instanceName != None):
+				import re
+				m = re.search(r"#?\s*(\d+)", str(instanceName))
+				if (m != None):
+					printerNumber = int(m.group(1))
+					printerLabel = "#" + str(printerNumber)
+		except Exception:
+			printerNumber = None
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			currentSheet, magazineSheets = self._databaseManager.getSheetsStateForPrinter(printerNumber, withReusedConnection=True)
+			currentSheetDict = None if currentSheet == None else Transformer.transformSheetModelToDict(currentSheet)
+			magazineSheetsDict = Transformer.transformAllSheetModelsToDict(magazineSheets)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"printerNumber": printerNumber,
+			"printerLabel": printerLabel,
 			"currentSheet": currentSheetDict,
 			"magazineSheets": magazineSheetsDict
 		})
