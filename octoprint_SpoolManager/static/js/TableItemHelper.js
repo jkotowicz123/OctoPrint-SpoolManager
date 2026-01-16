@@ -39,9 +39,31 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
 
         var q = self.filterSelectionQuery ? self.filterSelectionQuery() : "";
         q = (q || "").toLowerCase();
-        if (q.length === 0) {
+
+        var tokens = ("" + q).trim().split(/[\s,]+/).filter(function(t) { return t && t.length > 0; });
+        if (tokens.length === 0) {
             return items;
         }
+
+        var parseWeightToken = function(token) {
+            if (token == null) {
+                return null;
+            }
+            var t = ("" + token).trim().toLowerCase();
+            if (t.length === 0) {
+                return null;
+            }
+            var m = t.match(/^(-?\d+(?:\.\d+)?)(kg|g)?$/);
+            if (!m) {
+                return null;
+            }
+            var val = parseFloat(m[1]);
+            if (isNaN(val)) {
+                return null;
+            }
+            var unit = m[2] || "g";
+            return unit === "kg" ? val * 1000 : val;
+        };
 
         var result = [];
         for (var i = 0; i < items.length; i++) {
@@ -51,15 +73,55 @@ function TableItemHelper(loadItemsFunction, defaultPageSize, defaultSortColumn, 
             }
 
             var text = "";
+            text += (ko.utils.unwrapObservable(item.databaseId) || "") + " ";
             text += (ko.utils.unwrapObservable(item.material) || "") + " ";
             text += (ko.utils.unwrapObservable(item.vendor) || "") + " ";
             text += (ko.utils.unwrapObservable(item.printer) || "") + " ";
             text += (ko.utils.unwrapObservable(item.shelf) || "") + " ";
             text += (ko.utils.unwrapObservable(item.displayName) || "") + " ";
             text += (ko.utils.unwrapObservable(item.colorName) || "") + " ";
-            text += (ko.utils.unwrapObservable(item.project) || "");
+            text += (ko.utils.unwrapObservable(item.project) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.serialNumber) || "") + " ";
+            text += (ko.utils.unwrapObservable(item.code) || "");
 
-            if (("" + text).toLowerCase().indexOf(q) > -1) {
+            var textLower = ("" + text).toLowerCase();
+            var remainingWeight = parseFloat(ko.utils.unwrapObservable(item.remainingWeight));
+            var remainingCombinedWeight = parseFloat(ko.utils.unwrapObservable(item.remainingCombinedWeight));
+            var totalWeight = parseFloat(ko.utils.unwrapObservable(item.totalWeight));
+            var usedWeight = parseFloat(ko.utils.unwrapObservable(item.usedWeight));
+
+            var matches = true;
+            for (var t = 0; t < tokens.length; t++) {
+                var token = tokens[t];
+                var weightQuery = parseWeightToken(token);
+
+                if (weightQuery != null) {
+                    if (textLower.indexOf(token) > -1) {
+                        continue;
+                    }
+                    if (!isNaN(remainingWeight) && remainingWeight >= weightQuery) {
+                        continue;
+                    }
+                    if (!isNaN(remainingCombinedWeight) && remainingCombinedWeight >= weightQuery) {
+                        continue;
+                    }
+                    if (!isNaN(totalWeight) && totalWeight >= weightQuery) {
+                        continue;
+                    }
+                    if (!isNaN(usedWeight) && usedWeight >= weightQuery) {
+                        continue;
+                    }
+                    matches = false;
+                    break;
+                }
+
+                if (textLower.indexOf(token) === -1) {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches) {
                 result.push(item);
             }
         }

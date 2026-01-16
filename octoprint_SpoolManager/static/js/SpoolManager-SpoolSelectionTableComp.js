@@ -354,19 +354,90 @@ function SpoolSelectionTableComp() {
         self._executeFilter = function(){
             var filterQuery = self.filterSelectionQuery == null || self.filterSelectionQuery() == null ? "" : self.filterSelectionQuery() ;
             filterQuery = filterQuery.toLowerCase();
+            var tokens = ("" + filterQuery).trim().split(/[\s,]+/).filter(function(t) { return t && t.length > 0; });
+
+            var safeObs = function(obs) {
+                if (obs == null) {
+                    return "";
+                }
+                var v = (typeof obs === "function") ? obs() : obs;
+                return v == null ? "" : v;
+            };
+
+            var parseWeightToken = function(token) {
+                if (token == null) {
+                    return null;
+                }
+                var t = ("" + token).trim().toLowerCase();
+                if (t.length === 0) {
+                    return null;
+                }
+                var m = t.match(/^(-?\d+(?:\.\d+)?)(kg|g)?$/);
+                if (!m) {
+                    return null;
+                }
+                var val = parseFloat(m[1]);
+                if (isNaN(val)) {
+                    return null;
+                }
+                var unit = m[2] || "g";
+                return unit === "kg" ? val * 1000 : val;
+            };
             var totalShownCount = -1;
             //console.error(self.allSpoolsKOArray().length)
             for (spool of self.allSpools()) {
 
-                var spoolProperties = spool.material() + " " +
-                                      spool.vendor() + " " +
-                                      spool.displayName() + " " +
-                                      spool.colorName();
+                var spoolProperties = safeObs(spool.databaseId) + " " +
+                                      safeObs(spool.material) + " " +
+                                      safeObs(spool.vendor) + " " +
+                                      safeObs(spool.displayName) + " " +
+                                      safeObs(spool.colorName) + " " +
+                                      safeObs(spool.serialNumber) + " " +
+                                      safeObs(spool.code) + " " +
+                                      safeObs(spool.printer) + " " +
+                                      safeObs(spool.shelf) + " " +
+                                      safeObs(spool.project);
 
-                if (spoolProperties.toLowerCase().indexOf(filterQuery) > -1) {
+                if (tokens.length === 0) {
                     spool.isFilteredForSelection(false);
                 } else {
-                    spool.isFilteredForSelection(true);
+                    var spoolPropertiesLower = spoolProperties.toLowerCase();
+                    var remainingWeight = parseFloat(spool.remainingWeight());
+                    var remainingCombinedWeight = parseFloat(spool.remainingCombinedWeight());
+                    var totalWeight = parseFloat(spool.totalWeight());
+                    var usedWeight = parseFloat(spool.usedWeight());
+
+                    var matches = true;
+                    for (var t = 0; t < tokens.length; t++) {
+                        var token = tokens[t];
+                        var weightQuery = parseWeightToken(token);
+
+                        if (weightQuery != null) {
+                            if (spoolPropertiesLower.indexOf(token) > -1) {
+                                continue;
+                            }
+                            if (!isNaN(remainingWeight) && remainingWeight >= weightQuery) {
+                                continue;
+                            }
+                            if (!isNaN(remainingCombinedWeight) && remainingCombinedWeight >= weightQuery) {
+                                continue;
+                            }
+                            if (!isNaN(totalWeight) && totalWeight >= weightQuery) {
+                                continue;
+                            }
+                            if (!isNaN(usedWeight) && usedWeight >= weightQuery) {
+                                continue;
+                            }
+                            matches = false;
+                            break;
+                        }
+
+                        if (spoolPropertiesLower.indexOf(token) === -1) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                    spool.isFilteredForSelection(!matches);
                 }
                 if (self.hideEmptySpools() == true){
                     var isEmpty = spool.remainingWeight == null || spool.remainingWeight() <= 0 ? true : false;
