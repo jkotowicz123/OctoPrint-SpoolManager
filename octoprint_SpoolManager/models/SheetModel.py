@@ -27,6 +27,7 @@ class SheetModel(BaseModel):
 	sheetType = ForeignKeyField(SheetTypeModel, null=False, backref="sheets")
 	note = TextField(null=True)
 	compatibleMaterials = TextField(null=True)
+	currentlyPrinting = TextField(null=True)
 
 	printerNumber = _create_printer_number_field()
 	magazinePosition = _create_magazine_position_field()

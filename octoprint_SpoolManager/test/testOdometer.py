@@ -1,71 +1,38 @@
-import logging
+import os
+import sys
 import unittest
 
-from octoprint_SpoolManager import NewFilamentOdometer
-from octoprint_SpoolManager.Odometer import FilamentOdometer
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from newodometer import NewFilamentOdometer
 
 
 class TestOdometer(unittest.TestCase):
 
-    def test_loadJobSettings(self):
+	def test_checksum_delimited_values_are_parsed(self):
+		odometer = NewFilamentOdometer()
+		odometer.processGCodeLine("N1 M82*0")
+		odometer.processGCodeLine("N2 G1 X0.0 E10.0*0")
+		odometer.processGCodeLine("N3 G1 X1.0 E12.5*0")
+		odometer.processGCodeLine("N4 G1 E11.0*0")
+		self.assertAlmostEqual(odometer.getExtrusionAmount()[0], 12.5)
 
-        logging.basicConfig(level=logging.DEBUG)
-        testLogger = logging.getLogger("testLogger")
-        logging.info("Start Odometer-Test")
+	def test_m221_flow_factor_scales_extrusion(self):
+		odometer = NewFilamentOdometer()
+		odometer.processGCodeLine("M82")
+		odometer.processGCodeLine("M221 S110")
+		odometer.processGCodeLine("G1 E10")
+		odometer.processGCodeLine("G1 E20")
+		self.assertAlmostEqual(odometer.getExtrusionAmount()[0], 22.0)
 
-        self.filamentOdometer = FilamentOdometer()
-        self.myFilamentOdometer = NewFilamentOdometer()
-        # filename = "/Users/o0632/0_Projekte/3DDruck/OctoPrint/OctoPrint-FilamentManager/issues/issue24/Ornaments.01_colored.gcode"
-        filename = "/Users/o0632/0_Projekte/3DDruck/OctoPrint/GitHub-Issues/FilamentManager/issue24/LeftAnchorBlock_0.2mm_ABS_MK3SMMU2S_12h19m.gcode"
-        # filename = "/Users/o0632/0_Projekte/3DDruck/OctoPrint/OctoPrint-FilamentManager/issues/issue27/logs+gcode/root-miniatures-cat.stl-809000d_0.2mm_PLA+PVA_MK3SMMU2S_6h13m.gcode"
-        # M204 P1250 R1250 T1250 ; sets acceleration (P, T) and retract acceleration (R), mm/sec^2
-        lineCounter = 0
-        with open(filename) as fp:
-            for line in fp:
-                lineCounter = lineCounter +1
-                stripedLine = line.strip();
-                # print(stripedLine)
-                gcode = None
-
-                if (stripedLine.startswith("G1")):
-                    gcode = "G1"
-                if (stripedLine.startswith("G0")):
-                    gcode = "G0"
-                if (stripedLine.startswith("G90")):
-                    gcode = "G90"
-                if (stripedLine.startswith("G91")):
-                    gcode = "G91"
-                if (stripedLine.startswith("G92")):
-                    gcode = "G92"
-                if (stripedLine.startswith("M82")):
-                    gcode = "M82"
-                if (stripedLine.startswith("M83")):
-                    gcode = "M83"
-                if (stripedLine.startswith("T")):
-                    gcode = stripedLine.split()[0]
-
-
-                if (lineCounter == 358):
-                    # break
-                    pass
-                self.filamentOdometer.parse(gcode, stripedLine)
-                self.myFilamentOdometer.processGCodeLine(stripedLine)
-
-                # print(str(lineCounter) + " " + str(self.filamentOdometer.get_extrusion()) + " " + str(self.myFilamentOdometer.getExtrusionAmount()))
-                # if (lineCounter == 1000):
-                #     break
-
-        extrusion = self.filamentOdometer.allToolExtrusions
-        myExtrusion = self.myFilamentOdometer.getExtrusionAmount()
-
-        print(filename)
-        print("Old-Implementation")
-        for total in extrusion:
-			print(total + " " + str(extrusion[total].totalExtrusion))
-        print("New-Implementation")
-        print(myExtrusion)
+	def test_m221_can_be_set_per_tool(self):
+		odometer = NewFilamentOdometer()
+		odometer.processGCodeLine("M83")
+		odometer.processGCodeLine("T1")
+		odometer.processGCodeLine("M221 T1 S120")
+		odometer.processGCodeLine("G1 E10")
+		self.assertAlmostEqual(odometer.getExtrusionAmount()[1], 12.0)
 
 if __name__ == '__main__':
-	print("Start Odometer Test")
 	unittest.main()
-	print("Finished")

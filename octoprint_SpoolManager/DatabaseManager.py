@@ -187,6 +187,7 @@ class DatabaseManager(object):
 			self._database.connect(reuse_if_open=True)
 			self._database.create_tables([SheetTypeModel, SheetModel], safe=True)
 			self._ensureSheetTypeCompatibleMaterialsColumnExists()
+			self._ensureSheetCurrentlyPrintingColumnExists()
 			self._seedDefaultSheets()
 			self._normalizeSheetTypeNames()
 			self._syncSheetNidsToDatabaseIds()
@@ -222,6 +223,35 @@ class DatabaseManager(object):
 					self._database.execute_sql("ALTER TABLE spo_sheettypemodel ADD COLUMN compatibleMaterials TEXT")
 		except Exception as e:
 			self._logger.exception("Could not ensure sheet type compatibleMaterials column exists: " + str(e))
+
+	def _ensureSheetCurrentlyPrintingColumnExists(self):
+		try:
+			if (self._databaseSettings.useExternal == False):
+				connection = sqlite3.connect(self._databaseSettings.fileLocation)
+				cursor = connection.cursor()
+
+				columns = []
+				try:
+					cursor.execute("PRAGMA table_info('spo_sheetmodel')")
+					columns = [row[1] for row in cursor.fetchall()]
+				except Exception:
+					columns = []
+
+				if ("currentlyPrinting" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_sheetmodel' ADD 'currentlyPrinting' TEXT")
+				connection.close()
+				return
+
+			databaseType = self._databaseSettings.type
+			if ("postgres" == databaseType):
+				self._database.execute_sql('ALTER TABLE "spo_sheetmodel" ADD COLUMN IF NOT EXISTS "currentlyPrinting" TEXT')
+			else:
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_sheetmodel` ADD COLUMN `currentlyPrinting` TEXT")
+				except Exception:
+					self._database.execute_sql("ALTER TABLE spo_sheetmodel ADD COLUMN currentlyPrinting TEXT")
+		except Exception as e:
+			self._logger.exception("Could not ensure sheet currentlyPrinting column exists: " + str(e))
 
 	def _syncSheetNidsToDatabaseIds(self):
 		try:
@@ -1826,4 +1856,22 @@ class DatabaseManager(object):
 			return currentSheet, magazineSheets
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "getSheetsStateForPrinter")
+
+	def setCurrentlyPrintingForPrinter(self, printerNumber, currentlyPrinting, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					SheetModel.update({
+						SheetModel.currentlyPrinting: currentlyPrinting
+					}).where(
+						(SheetModel.printerNumber == int(printerNumber)) &
+						(SheetModel.magazinePosition.is_null(True))
+					).execute()
+					transaction.commit()
+					return True
+				except Exception:
+					transaction.rollback()
+					raise
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "setCurrentlyPrintingForPrinter", False)
 

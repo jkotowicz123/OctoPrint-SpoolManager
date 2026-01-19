@@ -665,6 +665,77 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"sheet": payload
 		}, indent=4, ensure_ascii=False)
 		return flask.Response(json_object, status=200, mimetype='application/json')
+
+	@octoprint.plugin.BlueprintPlugin.route("/appendSheetToMagazineByQRCode/<string:databaseId>", methods=["GET"])
+	@no_firstrun_access
+	def appendSheetToMagazineByQRCode(self, databaseId):
+		self._logger.info("API append sheet to magazine by QR code " + str(databaseId))
+
+		printerNumberParam = request.args.get("printerNumber")
+		printerNumber = None
+		printerLabel = None
+		toolNumber = None
+
+		if (printerNumberParam != None):
+			try:
+				import re
+				m = re.search(r"#?\s*(\d+)\s*(?:T\s*(\d+))?", str(printerNumberParam))
+				if (m != None):
+					printerNumber = int(m.group(1))
+					if (m.group(2) != None):
+						toolNumber = int(m.group(2))
+			except Exception:
+				printerNumber = None
+				toolNumber = None
+		else:
+			try:
+				from octoprint.settings import settings as octo_settings
+				instanceName = octo_settings().get(["appearance", "name"])
+				if (instanceName != None):
+					import re
+					m = re.search(r"#?\s*(\d+)", str(instanceName))
+					if (m != None):
+						printerNumber = int(m.group(1))
+			except Exception:
+				printerNumber = None
+
+		if (printerNumberParam != None and printerNumber == None):
+			return flask.jsonify(), 400
+
+		if (printerNumber != None):
+			printerLabel = "#" + str(printerNumber)
+			if (toolNumber != None):
+				printerLabel += "T" + str(toolNumber)
+
+		if (printerNumber == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			sheetModel = self._databaseManager.loadSheetByNid(databaseId, withReusedConnection=True)
+			if (sheetModel == None):
+				return flask.jsonify(), 404
+
+			sheetModel = self._databaseManager.appendSheetToMagazine(sheetModel, printerNumber, withReusedConnection=True)
+			payload = Transformer.transformSheetModelToDict(sheetModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		try:
+			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+				"databaseId": payload.get("databaseId"),
+				"nid": payload.get("nid"),
+				"printerNumber": payload.get("printerNumber"),
+				"magazinePosition": payload.get("magazinePosition")
+			})
+		except Exception:
+			pass
+
+		json_object = json.dumps({
+			"printerNumber": printerLabel,
+			"sheet": payload
+		}, indent=4, ensure_ascii=False)
+		return flask.Response(json_object, status=200, mimetype='application/json')
 	
 	
 		#spoolModelAsDict = None

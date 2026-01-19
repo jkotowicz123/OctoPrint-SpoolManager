@@ -20,6 +20,10 @@ from octoprint_SpoolManager.common import StringUtils
 from octoprint_SpoolManager.common.SettingsKeys import SettingsKeys
 from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
 
+import json
+import re
+from octoprint.settings import settings as octo_settings
+
 class SpoolmanagerPlugin(
 							SpoolManagerAPI,
 							octoprint.plugin.SimpleApiPlugin,
@@ -430,31 +434,8 @@ class SpoolmanagerPlugin(
 	# - PAUSED
 	# - STARTING
 	# - PRINTING
-	# def _on_printer_state_changed(self, payload):
-	# 	printerState = payload['state_id']
-	# 	print("######################  " +str(printerState))
-	# 	if payload['state_id'] == "PRINTING":
-	# 		if self._lastPrintState == "PAUSED":
-	# 			# resuming print
-	# 			self.filamentOdometer.reset_extruded_length()
-	# 		else:
-	# 			# starting new print
-	# 			self.filamentOdometer.reset()
-	# 		self.odometerEnabled = self._settings.getBoolean(["enableOdometer"])
-	# 		self.pauseEnabled = self._settings.getBoolean(["autoPause"])
-	# 		self._logger.debug("Printer State: %s" % payload["state_string"])
-	# 		self._logger.debug("Odometer: %s" % ("On" if self.odometerEnabled else "Off"))
-	# 		self._logger.debug("AutoPause: %s" % ("On" if self.pauseEnabled and self.odometerEnabled else "Off"))
-	# 	elif self._lastPrintState == "PRINTING":
-	# 		# print state changed from printing => update filament usage
-	# 		self._logger.debug("Printer State: %s" % payload["state_string"])
-	# 		if self.odometerEnabled:
-	# 			self.odometerEnabled = False  # disabled because we don't want to track manual extrusion
-	#
-	# 			self.currentExtrusion = self.filamentOdometer.get_extrusion()
-	#
-	# 	# update last print state
-	# 	self._lastPrintState = payload['state_id']
+	# - FINISHING
+	# - OPERATIONAL
 
 	def _on_printJobStarted(self):
 		# starting new print
@@ -476,11 +457,162 @@ class SpoolmanagerPlugin(
 					reloadTable = True
 		if reloadTable:
 			self._sendDataToClient(dict(
-										action="reloadTable"
-										))
-	# assign the current extrusion to the current selected spools
+									action="reloadTable"
+									))
+		try:
+			self._storeObjectsInfoOnCurrentSheet()
+		except Exception:
+			self._logger.exception("Could not store objects_info on current sheet")
+		# assign the current extrusion to the current selected spools
 
-	def commitOdometerData(self):
+	def _getCurrentPrinterNumber(self):
+		try:
+			instanceName = octo_settings().get(["appearance", "name"])
+			if (instanceName == None):
+				return None
+			m = re.search(r"#?\s*(\d+)", str(instanceName))
+			if (m == None):
+				return None
+			return int(m.group(1))
+		except Exception:
+			return None
+
+	def _getCurrentJobFile(self):
+		try:
+			data = self._printer.get_current_data()
+			if (data == None or "job" not in data):
+				return None, None, None
+			jobData = data.get("job")
+			if (jobData == None or "file" not in jobData):
+				return None, None, None
+			fileData = jobData.get("file")
+			if (fileData == None):
+				return None, None, None
+			origin = fileData.get("origin")
+			path = fileData.get("path")
+			name = fileData.get("name")
+			return origin, path, name
+		except Exception:
+			return None, None, None
+
+	def _readFileTail(self, filePath, maxBytes):
+		try:
+			with open(filePath, "rb") as f:
+				try:
+					f.seek(0, 2)
+					size = f.tell()
+					start = max(0, size - int(maxBytes))
+					f.seek(start, 0)
+				except Exception:
+					f.seek(0, 0)
+				data = f.read()
+			try:
+				return data.decode("utf-8", errors="replace")
+			except Exception:
+				return data.decode(errors="replace")
+		except Exception:
+			return None
+
+	def _extractObjectsInfoJson(self, text):
+		try:
+			matches = re.findall(r"^;\s*objects_info\s*=\s*(\{.*\})\s*$", text, flags=re.MULTILINE)
+			if (matches == None or len(matches) == 0):
+				return None
+			return matches[-1]
+		except Exception:
+			return None
+
+	def _aggregateObjectQuantities(self, objectsInfoJson):
+		result = {}
+		try:
+			for m in re.finditer(r'"name"\s*:\s*"((?:\\\\.|[^"\\\\])*)"', objectsInfoJson):
+				rawName = m.group(1)
+				name = None
+				try:
+					name = json.loads('"' + rawName + '"')
+				except Exception:
+					name = rawName
+				try:
+					name = re.sub(r"\s*\(Instance\s+\d+\)\s*$", "", str(name))
+				except Exception:
+					pass
+				if (name == None or str(name).strip() == ""):
+					continue
+				result[name] = (result.get(name, 0) or 0) + 1
+			return result
+		except Exception:
+			return {}
+
+	def _storeObjectsInfoOnCurrentSheet(self):
+		printerNumber = self._getCurrentPrinterNumber()
+		if (printerNumber == None):
+			return
+
+		origin, path, name = self._getCurrentJobFile()
+		if (origin == None or path == None):
+			return
+		if (origin != "local"):
+			return
+
+		gcodePath = None
+		try:
+			gcodePath = self._file_manager.path_on_disk(origin, path)
+		except Exception:
+			try:
+				gcodePath = self._file_manager.pathOnDisk(origin, path)
+			except Exception:
+				gcodePath = None
+
+		if (gcodePath == None):
+			return
+
+		marker = "; objects_info ="
+		objectsInfoJson = None
+		maxBytes = 1024 * 1024
+		while maxBytes <= (32 * 1024 * 1024):
+			tailText = self._readFileTail(gcodePath, maxBytes)
+			if (tailText != None and marker in tailText):
+				objectsInfoJson = self._extractObjectsInfoJson(tailText)
+				if (objectsInfoJson != None):
+					break
+			maxBytes = maxBytes * 2
+
+		quantities = {}
+		if (objectsInfoJson != None):
+			quantities = self._aggregateObjectQuantities(objectsInfoJson)
+
+		objects = []
+		try:
+			for objectName in sorted(list(quantities.keys())):
+				objects.append({
+					"name": objectName,
+					"quantity": int(quantities.get(objectName) or 0)
+				})
+		except Exception:
+			pass
+
+		payload = {
+			"sourceFile": {
+				"origin": origin,
+				"path": path,
+				"name": name
+			},
+			"objects": objects
+		}
+
+		payloadJson = None
+		try:
+			payloadJson = json.dumps(payload, ensure_ascii=False)
+		except Exception:
+			payloadJson = json.dumps(payload)
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			self._databaseManager.setCurrentlyPrintingForPrinter(printerNumber, payloadJson, withReusedConnection=True)
+		finally:
+			self._databaseManager.closeDatabase()
+
+	def commitOdometerData(self, printStatus=None):
 		reload = False
 		selectedSpools = self.loadSelectedSpools()
 		for toolIndex, spoolModel in enumerate(selectedSpools):
@@ -492,13 +624,35 @@ class SpoolmanagerPlugin(
 			lastUsage = datetime.now()
 			spoolModel.lastUse = lastUsage
 			# - Used length
+			currentExtrusionLengthOdometer = None
 			try:
 				allExtrusions = self.myFilamentOdometer.getExtrusionAmount()
-				currentExtrusionLength = allExtrusions[toolIndex]
+				currentExtrusionLengthOdometer = allExtrusions[toolIndex]
 			except (KeyError, IndexError) as e:
+				pass
+
+			currentExtrusionLengthMeta = None
+			if printStatus == "success":
+				try:
+					self._readingFilamentMetaData()
+					if toolIndex < len(self.metaDataFilamentLengths):
+						currentExtrusionLengthMeta = self.metaDataFilamentLengths[toolIndex]
+				except Exception:
+					currentExtrusionLengthMeta = None
+
+			calculationSource = "odometer"
+			currentExtrusionLength = currentExtrusionLengthOdometer
+			if printStatus == "success" and currentExtrusionLengthMeta is not None and currentExtrusionLengthMeta > 0:
+				calculationSource = "metadata"
+				currentExtrusionLength = currentExtrusionLengthMeta
+
+			if currentExtrusionLength is None:
 				self._logger.info("Tool %d: No filament extruded" % toolIndex)
 				continue
-			self._logger.info("Tool %d: Extruded filament length: %s" % (toolIndex, str(currentExtrusionLength)))
+			self._logger.info(
+				"Tool %d: Extruded filament length: %s (source=%s, odometer=%s, metadata=%s)"
+				% (toolIndex, str(currentExtrusionLength), calculationSource, str(currentExtrusionLengthOdometer), str(currentExtrusionLengthMeta))
+			)
 			spoolUsedLength = 0.0 if StringUtils.isEmpty(spoolModel.usedLength) == True else spoolModel.usedLength
 			self._logger.info("Tool %d: Current Spool used filament length: %s" % (toolIndex, str(spoolUsedLength)))
 			newUsedLength = spoolUsedLength + currentExtrusionLength
@@ -507,6 +661,7 @@ class SpoolmanagerPlugin(
 			# - Used weight
 			diameter = spoolModel.diameter
 			density = spoolModel.density
+			usedWeight = None
 			if diameter is None or density is None:
 				self._logger.warning(
 					"Tool %d: Could not update spool weight, because diameter or density not set in spool '%s'" % (toolIndex, spoolModel.displayName)
@@ -527,7 +682,12 @@ class SpoolmanagerPlugin(
 				"spoolName": spoolModel.displayName,
 				"material": spoolModel.material,
 				"colorName": spoolModel.colorName,
-				"remainingWeight": spoolModel.remainingWeight
+				"remainingWeight": spoolModel.remainingWeight,
+				"usedLengthThisPrint": currentExtrusionLength,
+				"usedWeightThisPrint": usedWeight,
+				"calculationSource": calculationSource,
+				"odometerLengthThisPrint": currentExtrusionLengthOdometer,
+				"metadataLengthThisPrint": currentExtrusionLengthMeta
 			}
 			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_WEIGHT_UPDATED_AFTER_PRINT, eventPayload)
 
@@ -542,7 +702,7 @@ class SpoolmanagerPlugin(
 
 	#### print job finished
 	def _on_printJobFinished(self, printStatus, payload):
-		self.commitOdometerData()
+		self.commitOdometerData(printStatus)
 
 		# update remaining data in selected spools after a print
 		selectedSpools = self.loadSelectedSpools()

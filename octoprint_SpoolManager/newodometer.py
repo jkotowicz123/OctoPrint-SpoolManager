@@ -21,6 +21,7 @@ class NewFilamentOdometer(object):
 		self.currentE = [0.0]
 		self.totalExtrusion = [0.0]
 		self.maxExtrusion = [0.0]
+		self.extrusionFactor = [1.0]
 		self.currentExtruder = 0    # Tool Id
 		self.relativeE = False
 		self.relativeMode = False
@@ -72,13 +73,18 @@ class NewFilamentOdometer(object):
 					else:
 						e -= self.currentE[self.currentExtruder]
 
+					extrusionFactor = 1.0
+					if self.currentExtruder < len(self.extrusionFactor):
+						extrusionFactor = self.extrusionFactor[self.currentExtruder]
+					scaledE = e * extrusionFactor
+
 					# # If move with extrusion, calculate new min/max coordinates of model
 					# if e > 0.0 and move:
 					#     # extrusion and move -> oldPos & pos relevant for print area & dimensions
 					#     self._minMax.record(oldPos)
 					#     self._minMax.record(pos)
 
-					self.totalExtrusion[self.currentExtruder] += e
+					self.totalExtrusion[self.currentExtruder] += scaledE
 					self.currentE[self.currentExtruder] += e
 					self.maxExtrusion[self.currentExtruder] = max(
 						self.maxExtrusion[self.currentExtruder], self.totalExtrusion[self.currentExtruder]
@@ -87,7 +93,7 @@ class NewFilamentOdometer(object):
 					if self.currentExtruder == 0 and len(self.currentE) > 1 and self.duplicationMode:
 						# Copy first extruder length to other extruders
 						for i in range(1, len(self.currentE)):
-							self.totalExtrusion[i] += e
+							self.totalExtrusion[i] += scaledE
 							self.currentE[i] += e
 							self.maxExtrusion[i] = max(self.maxExtrusion[i], self.totalExtrusion[i])
 					self._fireExtrusionChangedEvent()
@@ -132,6 +138,17 @@ class NewFilamentOdometer(object):
 				self.relativeE = False
 			elif M == 83:  # Relative E
 				self.relativeE = True
+			elif M == 221:  # Flow percentage (Marlin et al): scales extrusion steps
+				s = self._getCodeFloat(line, "S")
+				if s is not None:
+					t = self._getCodeInt(line, "T")
+					toolIndex = self.currentExtruder if t is None else t
+					if toolIndex < 0:
+						toolIndex = 0
+					if len(self.extrusionFactor) <= toolIndex:
+						for _ in range(len(self.extrusionFactor), toolIndex + 1):
+							self.extrusionFactor.append(1.0)
+					self.extrusionFactor[toolIndex] = float(s) / 100.0
 			# elif M == 207 or M == 208:  # Firmware retract settings
 			#     s = self._getCodeFloat(line, "S")
 			#     f = self._getCodeFloat(line, "F")
@@ -194,6 +211,9 @@ class NewFilamentOdometer(object):
 				if len(self.totalExtrusion) <= self.currentExtruder:
 					for _ in range(len(self.totalExtrusion), self.currentExtruder + 1):
 						self.totalExtrusion.append(0.0)
+				if len(self.extrusionFactor) <= self.currentExtruder:
+					for _ in range(len(self.extrusionFactor), self.currentExtruder + 1):
+						self.extrusionFactor.append(1.0)
 
 	def getCurrentTool(self):
 		return self.currentExtruder
@@ -215,7 +235,11 @@ class NewFilamentOdometer(object):
 		n = line.find(code) + 1
 		if n < 1:
 			return None
-		m = line.find(" ", n)
+		m = -1
+		for delimiter in [" ", "\t", "\r", "\n", "*"]:
+			pos = line.find(delimiter, n)
+			if pos >= 0 and (m < 0 or pos < m):
+				m = pos
 		try:
 			if m < 0:
 				result = c(line[n:])

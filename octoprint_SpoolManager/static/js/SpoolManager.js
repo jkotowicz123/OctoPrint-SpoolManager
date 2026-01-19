@@ -1278,10 +1278,10 @@ $(function() {
                         proceed: gettext("Yes"),
                         onproceed: function() {
                             OctoPrint.files.select(data.origin, data.path, false).done(function () {
-                                                                                    if (print){
-                                                                                     newStartPrintFunction();
-                                                                                    }
-                                                                                });
+                                if (print){
+                                    newStartPrintFunction();
+                                }
+                            });
                         },
                         nofade: true
                     });
@@ -1307,18 +1307,19 @@ $(function() {
                 spoolItem = self.selectedSpoolsForSidebar()[i]();
                 if (spoolItem !== null) {
                     spoolData = {
-                        "toolIndex": i,
-                        "databaseId": spoolItem.databaseId(),
-                        "spoolName": spoolItem.displayName(),
-                        "vendor": spoolItem.vendor(),
-                        "material": spoolItem.material(),
-                        "diameter": spoolItem.diameter(),
-                        "density": spoolItem.density(),
-                        "colorName": spoolItem.colorName(),
-                        "color": spoolItem.color(),
-                        "cost": spoolItem.cost(),
-                        "weight": spoolItem.totalWeight()
-                    }
+                        toolIndex: i,
+                        databaseId: spoolItem.databaseId(),
+                        spoolName: spoolItem.displayName(),
+                        vendor: spoolItem.vendor ? spoolItem.vendor() : null,
+                        project: spoolItem.project ? spoolItem.project() : null,
+                        material: spoolItem.material ? spoolItem.material() : null,
+                        diameter: spoolItem.diameter ? spoolItem.diameter() : null,
+                        density: spoolItem.density ? spoolItem.density() : null,
+                        colorName: spoolItem.colorName ? spoolItem.colorName() : null,
+                        color: spoolItem.color ? spoolItem.color() : null,
+                        cost: spoolItem.cost ? spoolItem.cost() : null,
+                        weight: spoolItem.totalWeight ? spoolItem.totalWeight() : null
+                    };
                 }
                 result.push(spoolData);
             }
@@ -1497,6 +1498,51 @@ $(function() {
                 return;
             }
 
+        }
+
+        self.onEventplugin_spoolmanager_spool_weight_updated_after_print = function(payload) {
+            try {
+                if (!payload) {
+                    return;
+                }
+
+                console.info("[SpoolManager] spool_weight_updated_after_print", payload);
+
+                var showPopup = false;
+                try {
+                    showPopup = (
+                        self.pluginSettings &&
+                        self.pluginSettings.extrusionDebuggingEnabled &&
+                        self.pluginSettings.extrusionDebuggingEnabled() === true
+                    );
+                } catch (e) {
+                    showPopup = false;
+                }
+
+                if (!showPopup) {
+                    return;
+                }
+
+                var toolId = (payload.toolId != null) ? payload.toolId : "?";
+                var spoolName = payload.spoolName || "";
+                var source = payload.calculationSource || "unknown";
+                var usedLength = payload.usedLengthThisPrint;
+                var usedWeight = payload.usedWeightThisPrint;
+                var odometerLength = payload.odometerLengthThisPrint;
+                var metadataLength = payload.metadataLengthThisPrint;
+
+                var msg = "Tool " + toolId + ": " + spoolName + "<br/>";
+                msg += "Used length: " + (usedLength != null ? usedLength : "n/a") + " mm<br/>";
+                msg += "Used weight: " + (usedWeight != null ? usedWeight : "n/a") + " g<br/>";
+                msg += "Source: " + source + "<br/>";
+                msg += "Odometer length: " + (odometerLength != null ? odometerLength : "n/a") + " mm<br/>";
+                msg += "Metadata length: " + (metadataLength != null ? metadataLength : "n/a") + " mm";
+
+                if (toolId === 0 || toolId === "0") {
+                    self.showPopUp("info", "Filament usage (this print)", msg, true);
+                }
+            } catch (e) {
+            }
         }
 
         self.onTabChange = function(next, current){
