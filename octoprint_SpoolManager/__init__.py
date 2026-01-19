@@ -536,6 +536,10 @@ class SpoolmanagerPlugin(
 					name = re.sub(r"\s*\(Instance\s+\d+\)\s*$", "", str(name))
 				except Exception:
 					pass
+				try:
+					name = re.sub(r"\.{3,}\s*$", "", str(name)).strip()
+				except Exception:
+					pass
 				if (name == None or str(name).strip() == ""):
 					continue
 				result[name] = (result.get(name, 0) or 0) + 1
