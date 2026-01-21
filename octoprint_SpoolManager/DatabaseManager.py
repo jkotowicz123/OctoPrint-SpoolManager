@@ -1861,12 +1861,12 @@ class DatabaseManager(object):
 		def databaseCallMethode():
 			with self._database.atomic() as transaction:
 				try:
-					printerNumber = int(printerNumber)
+					printerNumberInt = int(printerNumber)
 
 					currentSheet = (SheetModel
 									.select()
 									.where(
-										(SheetModel.printerNumber == int(printerNumber)) &
+										(SheetModel.printerNumber == int(printerNumberInt)) &
 										(SheetModel.magazinePosition.is_null(True))
 									)
 									.limit(1)
@@ -1884,7 +1884,7 @@ class DatabaseManager(object):
 					nextSheet = (SheetModel
 								.select()
 								.where(
-									(SheetModel.printerNumber == int(printerNumber)) &
+									(SheetModel.printerNumber == int(printerNumberInt)) &
 									(SheetModel.magazinePosition.is_null(False))
 								)
 								.order_by(SheetModel.magazinePosition.asc(), SheetModel.databaseId.asc())
@@ -1904,7 +1904,7 @@ class DatabaseManager(object):
 							SheetModel.update({
 								SheetModel.magazinePosition: SheetModel.magazinePosition - 1
 							}).where(
-								(SheetModel.printerNumber == int(printerNumber)) &
+								(SheetModel.printerNumber == int(printerNumberInt)) &
 								(SheetModel.magazinePosition.is_null(False)) &
 								(SheetModel.magazinePosition > int(promotedPos))
 							).execute()
