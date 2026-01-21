@@ -64,7 +64,7 @@
                     <div>
                         <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
                         <span data-bind="visible: !sheetTypeName()">Unknown</span>
-                        <span class="pull-right"><small data-bind="visible: databaseId() != null, text: databaseId"></small></span>
+                        <span data-bind="visible: databaseId() != null"> (<span data-bind="text: databaseId"></span>)</span>
                     </div>
                     <div class="btn-group" style="margin-top: 2px;">
                         <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Unassign</button>
@@ -86,7 +86,7 @@
                         <span data-bind="text: magazinePosition"></span>.
                         <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
                         <span data-bind="visible: !sheetTypeName()">Unknown</span>
-                        <span class="pull-right"><small data-bind="visible: databaseId() != null, text: databaseId"></small></span>
+                        <span data-bind="visible: databaseId() != null"> (<span data-bind="text: databaseId"></span>)</span>
                         <div class="btn-group" style="margin-top: 2px;">
                             <button class="btn btn-mini" data-bind="click: $root.sidebarSetSheetFromMagazine.bind($data, $data)">Set</button>
                             <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Remove</button>
