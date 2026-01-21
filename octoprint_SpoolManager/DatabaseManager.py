@@ -1857,6 +1857,66 @@ class DatabaseManager(object):
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "getSheetsStateForPrinter")
 
+	def advanceSheetFromMagazineToCurrent(self, printerNumber, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					printerNumber = int(printerNumber)
+
+					currentSheet = (SheetModel
+									.select()
+									.where(
+										(SheetModel.printerNumber == int(printerNumber)) &
+										(SheetModel.magazinePosition.is_null(True))
+									)
+									.limit(1)
+									.first())
+
+					if (currentSheet != None):
+						currentSheet.printerNumber = None
+						currentSheet.magazinePosition = None
+						try:
+							currentSheet.currentlyPrinting = None
+						except Exception:
+							pass
+						currentSheet.save()
+
+					nextSheet = (SheetModel
+								.select()
+								.where(
+									(SheetModel.printerNumber == int(printerNumber)) &
+									(SheetModel.magazinePosition.is_null(False))
+								)
+								.order_by(SheetModel.magazinePosition.asc(), SheetModel.databaseId.asc())
+								.limit(1)
+								.first())
+
+					if (nextSheet != None):
+						promotedPos = nextSheet.magazinePosition
+						nextSheet.magazinePosition = None
+						try:
+							nextSheet.currentlyPrinting = None
+						except Exception:
+							pass
+						nextSheet.save()
+
+						if (promotedPos != None):
+							SheetModel.update({
+								SheetModel.magazinePosition: SheetModel.magazinePosition - 1
+							}).where(
+								(SheetModel.printerNumber == int(printerNumber)) &
+								(SheetModel.magazinePosition.is_null(False)) &
+								(SheetModel.magazinePosition > int(promotedPos))
+							).execute()
+
+					transaction.commit()
+					return currentSheet, nextSheet
+				except Exception:
+					transaction.rollback()
+					raise
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "advanceSheetFromMagazineToCurrent")
+
 	def setCurrentlyPrintingForPrinter(self, printerNumber, currentlyPrinting, withReusedConnection=False):
 		def databaseCallMethode():
 			with self._database.atomic() as transaction:

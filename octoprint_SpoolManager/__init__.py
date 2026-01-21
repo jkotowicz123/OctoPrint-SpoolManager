@@ -22,6 +22,7 @@ from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
 
 import json
 import re
+import threading
 from octoprint.settings import settings as octo_settings
 
 class SpoolmanagerPlugin(
@@ -823,10 +824,51 @@ class SpoolmanagerPlugin(
 		# TODO maybe later via a queue
 		# self._filamentOdometer.parse(gcode, cmd)
 		self.myFilamentOdometer.processGCodeLine(cmd)
+
+		try:
+			cmdUpper = str(cmd).upper() if cmd != None else ""
+			if ("SM_PLATE_LOADED" in cmdUpper):
+				threading.Thread(target=self._onPlateLoadedMarker, daemon=True).start()
+		except Exception:
+			pass
 		# if self.pauseEnabled and self.check_threshold():
 		# 	self._logger.info("Filament is running out, pausing print")
 		# 	self._printer.pause_print()
 		pass
+
+	def _onPlateLoadedMarker(self):
+		printerNumber = self._getCurrentPrinterNumber()
+		if (printerNumber == None):
+			return
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			oldCurrent, newCurrent = self._databaseManager.advanceSheetFromMagazineToCurrent(printerNumber, withReusedConnection=True)
+			oldPayload = None if oldCurrent == None else Transformer.transformSheetModelToDict(oldCurrent)
+			newPayload = None if newCurrent == None else Transformer.transformSheetModelToDict(newCurrent)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		try:
+			if (oldPayload != None):
+				self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_UNASSIGNED, {
+					"databaseId": oldPayload.get("databaseId"),
+					"nid": oldPayload.get("nid")
+				})
+			if (newPayload != None):
+				self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+					"databaseId": newPayload.get("databaseId"),
+					"nid": newPayload.get("nid"),
+					"printerNumber": newPayload.get("printerNumber"),
+					"magazinePosition": newPayload.get("magazinePosition")
+				})
+		except Exception:
+			pass
+
+		try:
+			self._sendDataToClient(dict(action="reloadSheets"))
+		except Exception:
+			pass
 
 	def on_event(self, event, payload):
 

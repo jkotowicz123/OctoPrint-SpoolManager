@@ -1464,6 +1464,11 @@ $(function() {
                 self.loadSpoolsForSidebar();
                 return;
             }
+            if ("reloadSheets" == data.action){
+                self.loadSheets();
+                self.loadSheetsStateForSidebar();
+                return;
+            }
             if ("csvImportStatus" == data.action){
                 self.csvImportDialog.updateText(data);
                 return;
