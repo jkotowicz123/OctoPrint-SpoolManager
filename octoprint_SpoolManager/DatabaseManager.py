@@ -1915,7 +1915,7 @@ class DatabaseManager(object):
 					transaction.rollback()
 					raise
 
-		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "advanceSheetFromMagazineToCurrent")
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "advanceSheetFromMagazineToCurrent", (None, None))
 
 	def setCurrentlyPrintingForPrinter(self, printerNumber, currentlyPrinting, withReusedConnection=False):
 		def databaseCallMethode():

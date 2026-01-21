@@ -471,10 +471,13 @@ class SpoolmanagerPlugin(
 			instanceName = octo_settings().get(["appearance", "name"])
 			if (instanceName == None):
 				return None
-			m = re.search(r"#?\s*(\d+)", str(instanceName))
-			if (m == None):
-				return None
-			return int(m.group(1))
+			m = re.search(r"#\s*(\d+)", str(instanceName))
+			if (m != None):
+				return int(m.group(1))
+			instanceNameStr = str(instanceName).strip()
+			if (instanceNameStr.isdigit()):
+				return int(instanceNameStr)
+			return None
 		except Exception:
 			return None
 
@@ -828,47 +831,66 @@ class SpoolmanagerPlugin(
 		try:
 			cmdUpper = str(cmd).upper() if cmd != None else ""
 			if ("SM_PLATE_LOADED" in cmdUpper):
+				self._logger.info("Detected SM_PLATE_LOADED marker in sent gcode: %s", str(cmd))
 				threading.Thread(target=self._onPlateLoadedMarker, daemon=True).start()
 		except Exception:
-			pass
+			self._logger.exception("Error while processing sent gcode hook")
 		# if self.pauseEnabled and self.check_threshold():
 		# 	self._logger.info("Filament is running out, pausing print")
 		# 	self._printer.pause_print()
 		pass
 
 	def _onPlateLoadedMarker(self):
-		printerNumber = self._getCurrentPrinterNumber()
-		if (printerNumber == None):
-			return
-
-		self._databaseManager.connectoToDatabase()
 		try:
-			oldCurrent, newCurrent = self._databaseManager.advanceSheetFromMagazineToCurrent(printerNumber, withReusedConnection=True)
-			oldPayload = None if oldCurrent == None else Transformer.transformSheetModelToDict(oldCurrent)
-			newPayload = None if newCurrent == None else Transformer.transformSheetModelToDict(newCurrent)
-		finally:
-			self._databaseManager.closeDatabase()
+			instanceName = None
+			try:
+				instanceName = octo_settings().get(["appearance", "name"])
+			except Exception:
+				instanceName = None
 
-		try:
-			if (oldPayload != None):
-				self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_UNASSIGNED, {
-					"databaseId": oldPayload.get("databaseId"),
-					"nid": oldPayload.get("nid")
-				})
-			if (newPayload != None):
-				self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
-					"databaseId": newPayload.get("databaseId"),
-					"nid": newPayload.get("nid"),
-					"printerNumber": newPayload.get("printerNumber"),
-					"magazinePosition": newPayload.get("magazinePosition")
-				})
+			printerNumber = self._getCurrentPrinterNumber()
+			if (printerNumber == None):
+				self._logger.warning("SM_PLATE_LOADED ignored because printerNumber could not be determined from appearance.name=%s", str(instanceName))
+				return
+
+			self._logger.info("Handling SM_PLATE_LOADED for printerNumber=%s (appearance.name=%s)", str(printerNumber), str(instanceName))
+
+			self._databaseManager.connectoToDatabase()
+			try:
+				oldCurrent, newCurrent = self._databaseManager.advanceSheetFromMagazineToCurrent(printerNumber, withReusedConnection=True)
+				oldPayload = None if oldCurrent == None else Transformer.transformSheetModelToDict(oldCurrent)
+				newPayload = None if newCurrent == None else Transformer.transformSheetModelToDict(newCurrent)
+			finally:
+				self._databaseManager.closeDatabase()
+
+			self._logger.info(
+				"SM_PLATE_LOADED advance result: oldCurrent=%s newCurrent=%s",
+				str(None if oldPayload == None else oldPayload.get("databaseId")),
+				str(None if newPayload == None else newPayload.get("databaseId"))
+			)
+
+			try:
+				if (oldPayload != None):
+					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_UNASSIGNED, {
+						"databaseId": oldPayload.get("databaseId"),
+						"nid": oldPayload.get("nid")
+					})
+				if (newPayload != None):
+					self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
+						"databaseId": newPayload.get("databaseId"),
+						"nid": newPayload.get("nid"),
+						"printerNumber": newPayload.get("printerNumber"),
+						"magazinePosition": newPayload.get("magazinePosition")
+					})
+			except Exception:
+				self._logger.exception("Failed sending sheet events after SM_PLATE_LOADED")
+
+			try:
+				self._sendDataToClient(dict(action="reloadSheets"))
+			except Exception:
+				self._logger.exception("Failed sending reloadSheets after SM_PLATE_LOADED")
 		except Exception:
-			pass
-
-		try:
-			self._sendDataToClient(dict(action="reloadSheets"))
-		except Exception:
-			pass
+			self._logger.exception("Unhandled error in _onPlateLoadedMarker")
 
 	def on_event(self, event, payload):
 
