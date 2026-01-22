@@ -1875,10 +1875,6 @@ class DatabaseManager(object):
 					if (currentSheet != None):
 						currentSheet.printerNumber = None
 						currentSheet.magazinePosition = None
-						try:
-							currentSheet.currentlyPrinting = None
-						except Exception:
-							pass
 						currentSheet.save()
 
 					nextSheet = (SheetModel
@@ -1894,10 +1890,6 @@ class DatabaseManager(object):
 					if (nextSheet != None):
 						promotedPos = nextSheet.magazinePosition
 						nextSheet.magazinePosition = None
-						try:
-							nextSheet.currentlyPrinting = None
-						except Exception:
-							pass
 						nextSheet.save()
 
 						if (promotedPos != None):
