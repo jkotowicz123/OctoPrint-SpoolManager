@@ -585,6 +585,9 @@ class SpoolmanagerPlugin(
 					break
 			maxBytes = maxBytes * 2
 
+		if (objectsInfoJson == None):
+			return
+
 		quantities = {}
 		if (objectsInfoJson != None):
 			quantities = self._aggregateObjectQuantities(objectsInfoJson)
