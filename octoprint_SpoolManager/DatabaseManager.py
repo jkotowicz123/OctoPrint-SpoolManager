@@ -184,6 +184,37 @@ class DatabaseManager(object):
 		except Exception as e:
 			self._logger.exception("Could not ensure consumables tables exist: " + str(e))
 		self._ensureConsumableTypeCategoryColumnExists()
+		self._ensureConsumableMinStockColumnExists()
+
+	def _ensureConsumableMinStockColumnExists(self):
+		try:
+			if (self._databaseSettings.useExternal == False):
+				connection = sqlite3.connect(self._databaseSettings.fileLocation)
+				cursor = connection.cursor()
+
+				columns = []
+				try:
+					cursor.execute("PRAGMA table_info('spo_consumable_types')")
+					columns = [row[1] for row in cursor.fetchall()]
+				except Exception:
+					columns = []
+
+				if ("minStockCount" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_consumable_types' ADD 'minStockCount' INTEGER")
+				connection.close()
+				return
+
+			databaseType = self._databaseSettings.type
+			self._logger.info("Ensuring consumable_types.minStockCount column exists (dbType=" + str(databaseType) + ")")
+			if (databaseType in ("postgres", "postgresql")):
+				self._database.execute_sql('ALTER TABLE "spo_consumable_types" ADD COLUMN IF NOT EXISTS "minStockCount" INTEGER')
+			else:
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_consumable_types` ADD COLUMN `minStockCount` INTEGER")
+				except Exception:
+					self._database.execute_sql("ALTER TABLE spo_consumable_types ADD COLUMN minStockCount INTEGER")
+		except Exception as e:
+			self._logger.exception("Could not ensure consumable type minStockCount column exists: " + str(e))
 
 	def _ensureConsumableTypeCategoryColumnExists(self):
 		try:
@@ -222,6 +253,44 @@ class DatabaseManager(object):
 			self._seedFilamentTypes()
 		except Exception as e:
 			self._logger.exception("Could not ensure filament types exist: " + str(e))
+		self._ensureFilamentTypeStockColumnsExist()
+
+	def _ensureFilamentTypeStockColumnsExist(self):
+		try:
+			if (self._databaseSettings.useExternal == False):
+				connection = sqlite3.connect(self._databaseSettings.fileLocation)
+				cursor = connection.cursor()
+
+				columns = []
+				try:
+					cursor.execute("PRAGMA table_info('spo_filament_types')")
+					columns = [row[1] for row in cursor.fetchall()]
+				except Exception:
+					columns = []
+
+				if ("minStockWeight" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_filament_types' ADD 'minStockWeight' REAL")
+				if ("ordered" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_filament_types' ADD 'ordered' TEXT")
+				connection.close()
+				return
+
+			databaseType = self._databaseSettings.type
+			self._logger.info("Ensuring filament_types stock columns exist (dbType=" + str(databaseType) + ")")
+			if (databaseType in ("postgres", "postgresql")):
+				self._database.execute_sql('ALTER TABLE "spo_filament_types" ADD COLUMN IF NOT EXISTS "minStockWeight" REAL')
+				self._database.execute_sql('ALTER TABLE "spo_filament_types" ADD COLUMN IF NOT EXISTS "ordered" TEXT')
+			else:
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_filament_types` ADD COLUMN `minStockWeight` REAL")
+				except Exception:
+					pass
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_filament_types` ADD COLUMN `ordered` TEXT")
+				except Exception:
+					pass
+		except Exception as e:
+			self._logger.exception("Could not ensure filament type stock columns exist: " + str(e))
 
 	def _ensureSheetTablesExist(self):
 		try:
@@ -2025,12 +2094,14 @@ class DatabaseManager(object):
 							return None
 						consumableTypeModel.version = versionFromUI + 1
 
+					consumableTypeModel.updated = datetime.datetime.now()
 					consumableTypeModel.save()
 					databaseId = consumableTypeModel.get_id()
 
 					stockModel, _created = ConsumableStockModel.get_or_create(consumableType=consumableTypeModel)
 					stockModel.count = count
 					stockModel.ordered = ordered
+					stockModel.updated = datetime.datetime.now()
 					stockModel.save()
 
 					transaction.commit()

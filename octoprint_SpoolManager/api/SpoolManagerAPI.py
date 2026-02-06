@@ -20,6 +20,7 @@ from octoprint_SpoolManager import DatabaseManager
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 from octoprint_SpoolManager.models.SheetModel import SheetModel
 from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
+from octoprint_SpoolManager.models.FilamentTypeModel import FilamentTypeModel
 from octoprint_SpoolManager.models.ConsumableTypeModel import ConsumableTypeModel
 from octoprint_SpoolManager.models.ConsumableStockModel import ConsumableStockModel
 from octoprint_SpoolManager.common import StringUtils, CSVExportImporter, ConsumablesCSVImporter
@@ -148,6 +149,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		consumableTypeModel.productCode = self._getValueFromJSONOrNone("productCode", jsonData)
 		consumableTypeModel.name = self._getValueFromJSONOrNone("name", jsonData)
 		consumableTypeModel.unitPrice = self._toFloatLooseFromJSONOrNone("unitPrice", jsonData)
+		consumableTypeModel.minStockCount = self._toIntFromJSONOrNone("minStockCount", jsonData)
 		pass
 
 	def _updateSheetModelFromJSONData(self, sheetModel, jsonData):
@@ -1262,6 +1264,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				stockModel = ConsumableStockModel(consumableType=consumableTypeModel)
 			stockModel.count = count
 			stockModel.ordered = ordered
+			stockModel.updated = datetime.datetime.now()
 			stockModel.save()
 		finally:
 			self._databaseManager.closeDatabase()
@@ -1299,6 +1302,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			except Exception:
 				current = 0
 			stockModel.count = current + int(delta)
+			stockModel.updated = datetime.datetime.now()
 			stockModel.save()
 			payload = Transformer.transformConsumableToDict(consumableTypeModel, stockModel)
 		finally:
@@ -1307,6 +1311,39 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		return flask.jsonify({
 			"consumable": payload
 		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/adjustConsumableOrdered", methods=["PUT"])
+	def adjustConsumableOrdered(self):
+		jsonData = request.json
+		if (jsonData == None):
+			return flask.jsonify(), 400
+
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		delta = self._toIntFromJSONOrNone("delta", jsonData)
+		if (databaseId == None or delta == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			consumableTypeModel = self._databaseManager.loadConsumableType(databaseId, withReusedConnection=True)
+			if (consumableTypeModel == None):
+				return flask.jsonify(), 404
+
+			stockModel = ConsumableStockModel.get_or_none(ConsumableStockModel.consumableType == consumableTypeModel)
+			if (stockModel == None):
+				stockModel = ConsumableStockModel(consumableType=consumableTypeModel)
+			current = 0
+			try:
+				current = int(stockModel.ordered or 0)
+			except Exception:
+				current = 0
+			stockModel.ordered = max(0, current + int(delta))
+			stockModel.updated = datetime.datetime.now()
+			stockModel.save()
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify()
 
 	@octoprint.plugin.BlueprintPlugin.route("/deleteConsumable/<int:databaseId>", methods=["DELETE"])
 	def deleteConsumable(self, databaseId):
@@ -1897,4 +1934,62 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		return flask.jsonify()
 
+	#################################################################################################   FILAMENT TYPES
+	@octoprint.plugin.BlueprintPlugin.route("/loadFilamentTypes", methods=["GET"])
+	def loadFilamentTypes(self):
+		self._databaseManager.connectoToDatabase()
+		try:
+			allTypes = list(FilamentTypeModel.select())
+			result = []
+			for ft in allTypes:
+				d = {
+					"databaseId": ft.databaseId,
+					"name": ft.name,
+					"minStockWeight": ft.minStockWeight,
+					"ordered": None
+				}
+				try:
+					if ft.ordered:
+						d["ordered"] = json.loads(ft.ordered)
+				except Exception:
+					pass
+				result.append(d)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"filamentTypes": result
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/saveFilamentTypeStock", methods=["PUT"])
+	def saveFilamentTypeStock(self):
+		jsonData = request.json
+		if jsonData is None:
+			return flask.jsonify(), 400
+
+		name = self._getValueFromJSONOrNone("name", jsonData)
+		if name is None or str(name).strip() == "":
+			return flask.jsonify(), 400
+
+		minStockWeight = self._toFloatFromJSONOrNone("minStockWeight", jsonData)
+		orderedRaw = self._getValueFromJSONOrNone("ordered", jsonData)
+		orderedJson = None
+		if orderedRaw is not None:
+			if isinstance(orderedRaw, dict):
+				orderedJson = json.dumps(orderedRaw, ensure_ascii=False)
+			elif isinstance(orderedRaw, str):
+				orderedJson = orderedRaw
+			else:
+				orderedJson = json.dumps(orderedRaw, ensure_ascii=False)
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			ft, created = FilamentTypeModel.get_or_create(name=name)
+			ft.minStockWeight = minStockWeight
+			ft.ordered = orderedJson
+			ft.save()
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify()
 

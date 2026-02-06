@@ -87,6 +87,10 @@ $(function() {
         self.currentConsumableEditItem = ko.observable(null);
         self.consumableScanBarcode = ko.observable("");
 
+        self.filamentTypes = ko.observableArray([]);
+        self.currentFilamentStockEditName = ko.observable("");
+        self.currentFilamentStockEdit = ko.observable(null);
+
         self.consumablesCsvFileUploadName = ko.observable();
         self.consumablesCsvImportInProgress = ko.observable(false);
         self.consumablesCsvImportStatus = ko.observable("");
@@ -101,6 +105,110 @@ $(function() {
 
         self.consumablesTotalCount = ko.pureComputed(function(){
             return self.consumables().length;
+        });
+
+        self.lowStockConsumables = ko.pureComputed(function(){
+            return ko.utils.arrayFilter(self.consumables(), function(c){
+                var min = parseInt(c.minStockCount());
+                if (isNaN(min) || min <= 0) return false;
+                var count = parseInt(c.count());
+                if (isNaN(count)) count = 0;
+                return count < min;
+            });
+        });
+
+        self.lowStockConsumablesByCategory = ko.pureComputed(function(){
+            var items = self.lowStockConsumables();
+            var catMap = {};
+            var catOrder = [];
+            for (var i = 0; i < items.length; i++){
+                var cat = ko.utils.unwrapObservable(items[i].category) || "Uncategorized";
+                if (!catMap[cat]){
+                    catMap[cat] = [];
+                    catOrder.push(cat);
+                }
+                catMap[cat].push(items[i]);
+            }
+            var result = [];
+            for (var j = 0; j < catOrder.length; j++){
+                result.push({ category: catOrder[j], items: catMap[catOrder[j]] });
+            }
+            return result;
+        });
+
+        self.consumableDeficit = function(item){
+            var min = parseInt(item.minStockCount());
+            var count = parseInt(item.count());
+            if (isNaN(min)) min = 0;
+            if (isNaN(count)) count = 0;
+            return Math.max(0, min - count);
+        }
+
+        self.lowStockSpoolGroups = ko.pureComputed(function(){
+            if (!self.spoolItemTableHelper) return [];
+            var groups = self.spoolItemTableHelper.groupedItemsByDisplayName();
+            var ftypes = self.filamentTypes();
+            var result = [];
+            for (var i = 0; i < groups.length; i++){
+                var g = groups[i];
+                var displayName = g.displayName;
+                var ft = null;
+                for (var j = 0; j < ftypes.length; j++){
+                    if (ftypes[j].name === displayName){ ft = ftypes[j]; break; }
+                }
+                if (!ft || !ft.minStockWeight) continue;
+                var minW = parseFloat(ft.minStockWeight);
+                if (isNaN(minW) || minW <= 0) continue;
+                var currentW = parseFloat(g.totalRemainingWeight) || 0;
+                if (currentW >= minW) continue;
+
+                var deficit = Math.round(minW - currentW);
+                var items = g.items || [];
+                var distinctWeights = {};
+                for (var k = 0; k < items.length; k++){
+                    var tw = parseFloat(ko.utils.unwrapObservable(items[k].totalWeight));
+                    if (!isNaN(tw) && tw > 0) distinctWeights[tw] = true;
+                }
+                var sizes = Object.keys(distinctWeights).map(function(s){ return parseFloat(s); });
+                sizes.sort(function(a, b){ return a - b; });
+
+                var spoolsToOrder = "?";
+                if (sizes.length === 1){
+                    spoolsToOrder = Math.ceil(deficit / sizes[0]) + " szpul " + sizes[0] + "g";
+                } else if (sizes.length > 1){
+                    var parts = [];
+                    for (var s = 0; s < sizes.length; s++){
+                        parts.push(Math.ceil(deficit / sizes[s]) + " szpul " + sizes[s] + "g");
+                    }
+                    spoolsToOrder = parts.join(" / ");
+                }
+
+                var orderedDict = (ft.ordered && typeof ft.ordered === "object") ? ft.ordered : {};
+                var orderedTotal = 0;
+                var orderedSizes = [];
+                for (var si = 0; si < sizes.length; si++){
+                    var wKey = String(sizes[si]);
+                    var cnt = parseInt(orderedDict[wKey]) || 0;
+                    orderedTotal += cnt;
+                    orderedSizes.push({ weight: sizes[si], count: cnt });
+                }
+
+                result.push({
+                    displayName: displayName,
+                    currentWeight: Math.round(currentW),
+                    minStockWeight: Math.round(minW),
+                    deficit: deficit,
+                    spoolsToOrder: spoolsToOrder,
+                    orderedTotal: orderedTotal,
+                    orderedSizes: orderedSizes,
+                    singleSize: sizes.length === 1
+                });
+            }
+            return result;
+        });
+
+        self.lowStockTotalCount = ko.pureComputed(function(){
+            return self.lowStockConsumables().length + self.lowStockSpoolGroups().length;
         });
 
         self.canSaveCurrentSheet = ko.pureComputed(function(){
@@ -174,7 +282,8 @@ $(function() {
                 packPriceGross: ko.observable(consumableData.packPriceGross),
                 unitPrice: ko.observable(consumableData.unitPrice),
                 count: ko.observable(consumableData.count),
-                ordered: ko.observable(consumableData.ordered)
+                ordered: ko.observable(consumableData.ordered),
+                minStockCount: ko.observable(consumableData.minStockCount)
             };
         }
 
@@ -295,6 +404,26 @@ $(function() {
             });
         }
 
+        self.isConsumableLowStock = function(item){
+            var min = parseInt(item.minStockCount());
+            var count = parseInt(item.count());
+            if (isNaN(min) || min <= 0) return false;
+            if (isNaN(count)) count = 0;
+            var ordered = parseInt(item.ordered());
+            if (isNaN(ordered)) ordered = 0;
+            return count < min && ordered <= 0;
+        }
+
+        self.isConsumableLowStockButOrdered = function(item){
+            var min = parseInt(item.minStockCount());
+            var count = parseInt(item.count());
+            if (isNaN(min) || min <= 0) return false;
+            if (isNaN(count)) count = 0;
+            var ordered = parseInt(item.ordered());
+            if (isNaN(ordered)) ordered = 0;
+            return count < min && ordered > 0;
+        }
+
         self.loadConsumables = function(){
             self.apiClient.callLoadConsumables(function(responseData){
                 var items = responseData.consumables || [];
@@ -302,6 +431,148 @@ $(function() {
                     return self._createConsumableItem(c);
                 }));
             });
+        }
+
+        self.loadFilamentTypes = function(){
+            self.apiClient.callLoadFilamentTypes(function(responseData){
+                var items = responseData.filamentTypes || [];
+                self.filamentTypes(items);
+            });
+        }
+
+        self.saveFilamentTypeStock = function(name, minStockWeight, ordered){
+            var payload = {
+                name: name,
+                minStockWeight: minStockWeight,
+                ordered: ordered
+            };
+            self.apiClient.callSaveFilamentTypeStock(payload, function(){
+                self.loadFilamentTypes();
+            });
+        }
+
+        self.getFilamentTypeByName = function(displayName){
+            var types = self.filamentTypes();
+            for (var i = 0; i < types.length; i++){
+                if (types[i].name === displayName) return types[i];
+            }
+            return null;
+        }
+
+        self.openFilamentStockEdit = function(displayName){
+            var ft = self.getFilamentTypeByName(displayName);
+            var minW = (ft && ft.minStockWeight) ? ft.minStockWeight : "";
+            var orderedDict = (ft && ft.ordered && typeof ft.ordered === "object") ? ft.ordered : {};
+
+            var entries = ko.observableArray([]);
+            for (var bc in orderedDict){
+                if (orderedDict.hasOwnProperty(bc)){
+                    entries.push({ barcode: bc, count: ko.observable(orderedDict[bc] || 0) });
+                }
+            }
+
+            var editObj = {
+                minStockWeight: ko.observable(minW),
+                orderedEntries: entries,
+                newOrderedBarcode: ko.observable(""),
+                addOrderedEntry: function(){
+                    var bc = editObj.newOrderedBarcode().trim();
+                    if (!bc) return;
+                    var existing = ko.utils.arrayFirst(entries(), function(e){ return e.barcode === bc; });
+                    if (existing) return;
+                    entries.push({ barcode: bc, count: ko.observable(0) });
+                    editObj.newOrderedBarcode("");
+                },
+                removeOrderedEntry: function(entry){
+                    entries.remove(entry);
+                }
+            };
+
+            self.currentFilamentStockEditName(displayName);
+            self.currentFilamentStockEdit(editObj);
+            $("#dialog_filamentStock_edit").modal({ keyboard: false });
+        }
+
+        self.saveFilamentStockEdit = function(){
+            var name = self.currentFilamentStockEditName();
+            var edit = self.currentFilamentStockEdit();
+            if (!edit) return;
+            var minW = parseFloat(edit.minStockWeight());
+            if (isNaN(minW)) minW = null;
+
+            var ordered = {};
+            var entries = edit.orderedEntries();
+            for (var i = 0; i < entries.length; i++){
+                var cnt = parseInt(entries[i].count()) || 0;
+                if (cnt > 0){
+                    ordered[entries[i].barcode] = cnt;
+                }
+            }
+
+            self.saveFilamentTypeStock(name, minW, Object.keys(ordered).length > 0 ? ordered : null);
+            $("#dialog_filamentStock_edit").modal("hide");
+        }
+
+        self.adjustFilamentOrdered = function(displayName, weightKey, delta){
+            var ft = self.getFilamentTypeByName(displayName);
+            var ordered = {};
+            if (ft && ft.ordered && typeof ft.ordered === "object"){
+                for (var k in ft.ordered){
+                    if (ft.ordered.hasOwnProperty(k)) ordered[k] = ft.ordered[k];
+                }
+            }
+            var wk = String(weightKey);
+            var current = parseInt(ordered[wk]) || 0;
+            var newVal = Math.max(0, current + delta);
+            if (newVal > 0){
+                ordered[wk] = newVal;
+            } else {
+                delete ordered[wk];
+            }
+            var minW = (ft && ft.minStockWeight) ? ft.minStockWeight : null;
+            self.saveFilamentTypeStock(displayName, minW, Object.keys(ordered).length > 0 ? ordered : null);
+        }
+
+        self.adjustConsumableOrdered = function(item, delta){
+            var payload = {
+                databaseId: item.databaseId(),
+                delta: delta
+            };
+            self.apiClient.callAdjustConsumableOrdered(payload, function(){
+                self.loadConsumables();
+            });
+        }
+
+        self.isSpoolGroupLowStock = function(displayName, totalRemainingWeight){
+            var ft = self.getFilamentTypeByName(displayName);
+            if (!ft || !ft.minStockWeight) return false;
+            var min = parseFloat(ft.minStockWeight);
+            if (isNaN(min) || min <= 0) return false;
+            var current = parseFloat(totalRemainingWeight);
+            if (isNaN(current)) current = 0;
+            return current < min;
+        }
+
+        self.isSpoolGroupOrdered = function(displayName){
+            var ft = self.getFilamentTypeByName(displayName);
+            if (!ft || !ft.ordered || typeof ft.ordered !== "object") return false;
+            for (var k in ft.ordered){
+                if (ft.ordered.hasOwnProperty(k) && parseInt(ft.ordered[k]) > 0) return true;
+            }
+            return false;
+        }
+
+        self.spoolGroupOrderedLabel = function(displayName){
+            var ft = self.getFilamentTypeByName(displayName);
+            if (!ft || !ft.ordered || typeof ft.ordered !== "object") return "";
+            var parts = [];
+            for (var k in ft.ordered){
+                if (ft.ordered.hasOwnProperty(k)){
+                    var cnt = parseInt(ft.ordered[k]) || 0;
+                    if (cnt > 0) parts.push(cnt + "x " + k + "g");
+                }
+            }
+            return parts.length > 0 ? "zamówiono: " + parts.join(", ") : "";
         }
 
         self._showConsumableDialog = function(){
@@ -323,7 +594,8 @@ $(function() {
                 packPriceGross: "",
                 unitPrice: "",
                 count: "",
-                ordered: ""
+                ordered: "",
+                minStockCount: ""
             }));
             self._showConsumableDialog();
         }
@@ -344,7 +616,8 @@ $(function() {
                 packPriceGross: consumableItem.packPriceGross(),
                 unitPrice: consumableItem.unitPrice(),
                 count: consumableItem.count(),
-                ordered: consumableItem.ordered()
+                ordered: consumableItem.ordered(),
+                minStockCount: consumableItem.minStockCount()
             }));
             self._showConsumableDialog();
         }
@@ -685,6 +958,7 @@ $(function() {
             }
             // Table visibility
             self.initTableVisibilities();
+            self.initLowStockVisibilities();
 
             self.spoolItemTableHelper.selectedPageSize("all");
         }
@@ -1296,6 +1570,40 @@ $(function() {
             self.spoolDialog.showDialog(null, closeDialogHandler);
         }
 
+        var LowStockColumnVisibility = function(){
+            this.lp = ko.observable(true);
+            this.name = ko.observable(true);
+            this.barcode = ko.observable(true);
+            this.min = ko.observable(true);
+            this.count = ko.observable(true);
+            this.ordered = ko.observable(true);
+            this.deficit = ko.observable(true);
+            // filament columns
+            this.filament = ko.observable(true);
+            this.currentWeight = ko.observable(true);
+            this.minWeight = ko.observable(true);
+            this.filDeficit = ko.observable(true);
+            this.spoolsToOrder = ko.observable(true);
+            this.filOrdered = ko.observable(true);
+        }
+        self.lowStockColVis = new LowStockColumnVisibility();
+
+        self.initLowStockVisibilities = function(){
+            if (!Modernizr.localstorage) return;
+            var assign = function(attr){
+                var key = "spoolmanager.lowstock.visible." + attr;
+                if (localStorage[key] == null){
+                    localStorage[key] = self.lowStockColVis[attr]();
+                } else {
+                    self.lowStockColVis[attr]("true" == localStorage[key]);
+                }
+                self.lowStockColVis[attr].subscribe(function(v){ localStorage[key] = v; });
+            };
+            var cols = ["lp","name","barcode","min","count","ordered","deficit",
+                        "filament","currentWeight","minWeight","filDeficit","spoolsToOrder","filOrdered"];
+            for (var i = 0; i < cols.length; i++) assign(cols[i]);
+        }
+
         var TableAttributeVisibility = function (){
             this.printer = ko.observable(true);
             this.shelf = ko.observable(true);
@@ -1702,6 +2010,7 @@ $(function() {
 			self.loadSheets();
 			self.loadSheetsStateForSidebar();
 			self.loadConsumables();
+			self.loadFilamentTypes();
 
 			// Consumables CSV Import - file upload wiring
 			var consumablesCsvUploadButton = $("#consumables-importcsv-upload");
@@ -1878,6 +2187,11 @@ $(function() {
                 if ($(next).find("#tab_consumablesOverview").length) {
                     self.loadConsumables();
                 }
+                if ($(next).find("#tab_lowStockOverview").length) {
+                    self.spoolItemTableHelper.reloadItems();
+                    self.loadConsumables();
+                    self.loadFilamentTypes();
+                }
             } catch (e) {
             }
             //alert("Next:"+next +" Current:"+current);
@@ -1951,6 +2265,7 @@ $(function() {
             document.getElementById("tab_spoolOverview"),
             document.getElementById("tab_sheetsOverview"),
             document.getElementById("tab_consumablesOverview"),
+            document.getElementById("tab_lowStockOverview"),
             document.getElementById("modal-dialogs-spoolManager"),
             document.getElementById("sidebar_spool_select")
         ]

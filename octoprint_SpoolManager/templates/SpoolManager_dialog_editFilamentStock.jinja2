@@ -1,0 +1,40 @@
+<div id="dialog_filamentStock_edit" class="modal hide fade" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3>Filament Stock Settings — <span data-bind="text: currentFilamentStockEditName"></span></h3>
+    </div>
+    <div class="modal-body" data-bind="with: currentFilamentStockEdit">
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Min stock weight (g)</label>
+                <div class="controls">
+                    <input class="input-block-level" type="number" step="any" data-bind="textInput: minStockWeight" placeholder="e.g. 5000" />
+                    <span class="help-inline">Total remaining weight across all spools of this type</span>
+                </div>
+            </div>
+            <hr/>
+            <h4>Ordered <small>(per barcode)</small></h4>
+            <!-- ko foreach: orderedEntries -->
+            <div class="control-group">
+                <label class="control-label" data-bind="text: barcode"></label>
+                <div class="controls">
+                    <input class="input-small" type="number" min="0" data-bind="textInput: count" />
+                    <button class="btn btn-mini btn-danger" data-bind="click: $parent.removeOrderedEntry"><i class="icon-trash"></i></button>
+                </div>
+            </div>
+            <!-- /ko -->
+            <div class="control-group">
+                <div class="controls">
+                    <div class="input-append">
+                        <input class="input-medium" type="text" data-bind="textInput: newOrderedBarcode" placeholder="Barcode" />
+                        <button class="btn" type="button" data-bind="click: addOrderedEntry"><i class="icon-plus"></i> Add</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" data-bind="click: saveFilamentStockEdit">Save</button>
+    </div>
+</div>

@@ -114,6 +114,18 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
         });
     }
 
+    this.callAdjustConsumableOrdered = function (payload, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/adjustConsumableOrdered",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
     //////////////////////////////////////////////////////////////////////////////// CONFIRM DatabaseConnectionPoblem
     this.confirmDatabaseProblemMessage = function (responseHandler){
         $.ajax({
@@ -161,6 +173,28 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
             type: "GET"
         }).always(function( data ){
             responseHandler(data)
+        });
+    }
+
+    this.callLoadFilamentTypes = function (responseHandler){
+        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadFilamentTypes";
+        $.ajax({
+            url: urlToCall,
+            type: "GET"
+        }).always(function( data ){
+            responseHandler(data)
+        });
+    }
+
+    this.callSaveFilamentTypeStock = function (payload, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/saveFilamentTypeStock",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
         });
     }
 

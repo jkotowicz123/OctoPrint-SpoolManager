@@ -481,7 +481,7 @@
             </thead>
 
             <tbody data-bind="foreach: spoolItemTableHelper.groupedItemsByDisplayName">
-                <tr class="spm-group-header" style="cursor: pointer;" data-bind="click: function() { expanded(!expanded()); }">
+                <tr class="spm-group-header" style="cursor: pointer;" data-bind="click: function() { expanded(!expanded()); }, css: { 'spm-low-stock': $root.isSpoolGroupLowStock(displayName, totalRemainingWeight) && !$root.isSpoolGroupOrdered(displayName), 'spm-low-stock-ordered': $root.isSpoolGroupLowStock(displayName, totalRemainingWeight) && $root.isSpoolGroupOrdered(displayName) }">
                     <td data-bind="visible: $root.tableAttributeVisibility.displayName, attr: { colspan: ($root.tableAttributeVisibility.printer() ? 1 : 0) + ($root.tableAttributeVisibility.shelf() ? 1 : 0) + ($root.tableAttributeVisibility.databaseId() ? 1 : 0) + 1 }" style="padding-left: 0;">
                         <i data-bind="css: expanded() ? 'icon-chevron-down' : 'icon-chevron-right'"></i>
                         <b><span data-bind="text: displayName"></span></b>
@@ -489,13 +489,18 @@
                     <td data-bind="visible: $root.tableAttributeVisibility.material" style="white-space: nowrap;">
                         <span>(<span data-bind="text: totalRemainingWeight"></span>g / <span data-bind="text: spoolCount"></span> szpule)</span>
                     </td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse"></td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.weight" style="text-align: center;">
+                    <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse" style="font-style: italic; font-size: 11px;">
+                        <!-- ko if: $root.isSpoolGroupOrdered(displayName) -->
+                        <span data-bind="text: $root.spoolGroupOrderedLabel(displayName)"></span>
+                        <!-- /ko -->
                     </td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.weight"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.used"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.note"></td>
                     <td data-bind="visible: $root.tableAttributeVisibility.serialNumber"></td>
-                    <td data-bind="visible: $root.tableAttributeVisibility.project"></td>
+                    <td data-bind="visible: $root.tableAttributeVisibility.project" style="text-align: right;">
+                        <button class="btn btn-mini" title="Edit stock settings" data-bind="click: function(data, event) { event.stopPropagation(); $root.openFilamentStockEdit(displayName); }"><i class="icon-cog"></i></button>
+                    </td>
                 </tr>
 
                 <!-- ko if: expanded -->

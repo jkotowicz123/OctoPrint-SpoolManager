@@ -16,6 +16,7 @@ class ConsumableTypeModel(BaseModel):
 	productCode = CharField(null=True, index=True)
 	name = CharField(null=True, index=True)
 	unitPrice = FloatField(null=True)
+	minStockCount = IntegerField(null=True)
 
 	class Meta:
 		table_name = "spo_consumable_types"

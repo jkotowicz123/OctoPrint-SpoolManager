@@ -145,6 +145,7 @@ def transformConsumableTypeModelToDict(consumableTypeModel):
 	consumableTypeAsDict["packPriceGross"] = StringUtils.formatFloat(consumableTypeModel.packPriceGross)
 	consumableTypeAsDict["unitPrice"] = StringUtils.formatFloat(consumableTypeModel.unitPrice)
 	consumableTypeAsDict["packUnits"] = StringUtils.formatInt(consumableTypeModel.packUnits)
+	consumableTypeAsDict["minStockCount"] = StringUtils.formatInt(consumableTypeModel.minStockCount)
 	return consumableTypeAsDict
 
 def transformConsumableStockModelToDict(consumableStockModel):

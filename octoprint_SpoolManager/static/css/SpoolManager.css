@@ -106,6 +106,19 @@
     padding-bottom: 6px;
 }
 
+.spm-low-stock > td {
+    background-color: #f2dede !important;
+}
+
+.spm-low-stock-ordered > td {
+    background-color: #fcf8e3 !important;
+}
+
+.spm-low-stock-icon {
+    color: #b94a48;
+    margin-left: 4px;
+}
+
 /*   use of own span elemenst so that no one can break it (e.g. UI Customizer) */
 .myspan12{width:940px}
 .myspan11{width:860px}

@@ -55,9 +55,9 @@
                     <th style="width: 12%">Product code</th>
                     <th style="width: 10%">Pack</th>
                     <th style="width: 8%">Pack price</th>
-                    <th style="width: 6%">Count</th>
-                    <th style="width: 6%">Ordered</th>
-                    <th style="width: 16%"></th>
+                    <th style="width: 5%">Min</th>
+                    <th style="width: 5%">Count</th>
+                    <th style="width: 5%">Ordered</th>
                 </tr>
             </thead>
 
@@ -72,19 +72,16 @@
 
                 <!-- ko if: expanded -->
                 <!-- ko foreach: items -->
-                <tr data-bind="click: function() { $root.editConsumable($data); }">
+                <tr data-bind="click: function() { $root.editConsumable($data); }, css: { 'spm-low-stock': $root.isConsumableLowStock($data), 'spm-low-stock-ordered': $root.isConsumableLowStockButOrdered($data) }">
                     <td><span data-bind="text: databaseId"></span></td>
                     <td><span data-bind="text: name"></span></td>
                     <td><span data-bind="text: barcode"></span></td>
                     <td><span data-bind="text: productCode"></span></td>
                     <td><span data-bind="text: packUnitsLabel"></span></td>
                     <td><span data-bind="text: packPriceGross"></span></td>
+                    <td><span data-bind="text: minStockCount"></span></td>
                     <td><span data-bind="text: count"></span></td>
                     <td><span data-bind="text: ordered"></span></td>
-                    <td style="white-space: nowrap; text-align: right;" data-bind="click: function(){}, clickBubble: false">
-                        <button class="btn btn-mini" data-bind="click: function(){ $root.adjustConsumableCount($data, -1); }">-1</button>
-                        <button class="btn btn-mini" data-bind="click: function(){ $root.adjustConsumableCount($data, 1); }">+1</button>
-                    </td>
                 </tr>
                 <!-- /ko -->
                 <!-- /ko -->
