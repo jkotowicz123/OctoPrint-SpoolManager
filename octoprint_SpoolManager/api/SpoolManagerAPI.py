@@ -20,7 +20,9 @@ from octoprint_SpoolManager import DatabaseManager
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 from octoprint_SpoolManager.models.SheetModel import SheetModel
 from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
-from octoprint_SpoolManager.common import StringUtils, CSVExportImporter
+from octoprint_SpoolManager.models.ConsumableTypeModel import ConsumableTypeModel
+from octoprint_SpoolManager.models.ConsumableStockModel import ConsumableStockModel
+from octoprint_SpoolManager.common import StringUtils, CSVExportImporter, ConsumablesCSVImporter
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.common.SettingsKeys import SettingsKeys
 from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
@@ -33,6 +35,16 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 									importStatus = importStatus,
 									currenLineNumber = currenLineNumber,
 									backupFilePath = backupFilePath,
+									successMessages=successMessages,
+									errorCollection = errorCollection
+									)
+							   )
+
+	def _sendConsumablesCSVUploadStatusToClient(self, importStatus, currenLineNumber, successMessages, errorCollection):
+
+		self._sendDataToClient(dict(action="consumablesCsvImportStatus",
+									importStatus = importStatus,
+									currenLineNumber = currenLineNumber,
 									successMessages=successMessages,
 									errorCollection = errorCollection
 									)
@@ -90,6 +102,52 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		spoolModel.noteText = self._getValueFromJSONOrNone("noteText", jsonData)
 		spoolModel.noteDeltaFormat = json.dumps(self._getValueFromJSONOrNone("noteDeltaFormat", jsonData))
 		spoolModel.noteHtml = self._getValueFromJSONOrNone("noteHtml", jsonData)
+		pass
+
+	def _toFloatLooseFromJSONOrNone(self, key, jsonData):
+		value = self._getValueFromJSONOrNone(key, jsonData)
+		if (value == None):
+			return None
+		try:
+			if (type(value) == int or type(value) == float):
+				return float(value)
+		except Exception:
+			pass
+		try:
+			text = str(value)
+			text = text.replace("\xa0", " ")
+			text = text.replace("zł", "")
+			text = text.replace("PLN", "")
+			text = text.replace(" ", "")
+			text = text.replace(",", ".")
+			if (text == ""):
+				return None
+			return float(text)
+		except Exception:
+			return None
+
+	def _updateConsumableTypeModelFromJSONData(self, consumableTypeModel, jsonData):
+		version = self._toIntFromJSONOrNone("version", jsonData)
+		if (version != None):
+			consumableTypeModel.version = version
+		if (self._getValueFromJSONOrNone("databaseId", jsonData) != None):
+			consumableTypeModel.databaseId = self._getValueFromJSONOrNone("databaseId", jsonData)
+
+		barcode = self._getValueFromJSONOrNone("barcode", jsonData)
+		if (barcode != None):
+			barcode = str(barcode).strip()
+			if (barcode == ""):
+				barcode = None
+		consumableTypeModel.barcode = barcode
+
+		if "category" in jsonData:
+			consumableTypeModel.category = jsonData["category"] or None
+		consumableTypeModel.packUnitsLabel = self._getValueFromJSONOrNone("packUnitsLabel", jsonData)
+		consumableTypeModel.packUnits = self._toIntFromJSONOrNone("packUnits", jsonData)
+		consumableTypeModel.packPriceGross = self._toFloatLooseFromJSONOrNone("packPriceGross", jsonData)
+		consumableTypeModel.productCode = self._getValueFromJSONOrNone("productCode", jsonData)
+		consumableTypeModel.name = self._getValueFromJSONOrNone("name", jsonData)
+		consumableTypeModel.unitPrice = self._toFloatLooseFromJSONOrNone("unitPrice", jsonData)
 		pass
 
 	def _updateSheetModelFromJSONData(self, sheetModel, jsonData):
@@ -1113,6 +1171,272 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"allSheets": allSheetsAsDict,
 			"sheetTypes": allSheetTypesAsDict
 		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/loadConsumables", methods=["GET"])
+	def loadAllConsumables(self):
+		self._logger.debug("API Load all consumables")
+		self._databaseManager.connectoToDatabase()
+		try:
+			allConsumables = self._databaseManager.loadAllConsumables(withReusedConnection=True)
+			allConsumablesAsDict = Transformer.transformAllConsumablesToDict(allConsumables)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"consumables": allConsumablesAsDict
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/consumableByBarcode/<string:barcode>", methods=["GET"])
+	def consumableByBarcode(self, barcode):
+		barcode = (barcode or "").strip()
+		if (barcode == ""):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			typeModel = self._databaseManager.loadConsumableTypeByBarcode(barcode, withReusedConnection=True)
+			if (typeModel == None):
+				return flask.jsonify(), 404
+			stockModel = self._databaseManager.loadConsumableStockForType(typeModel, withReusedConnection=True)
+			payload = Transformer.transformConsumableToDict(typeModel, stockModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"consumable": payload
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/saveConsumable", methods=["PUT"])
+	def saveConsumable(self):
+		self._logger.info("API Save consumable")
+		jsonData = request.json
+		if (jsonData == None):
+			return flask.jsonify(), 400
+
+		databaseId = self._getValueFromJSONOrNone("databaseId", jsonData)
+		count = self._toIntFromJSONOrNone("count", jsonData)
+		ordered = self._toIntFromJSONOrNone("ordered", jsonData)
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			if (databaseId != None):
+				consumableTypeModel = self._databaseManager.loadConsumableType(databaseId, withReusedConnection=True)
+				if (consumableTypeModel == None):
+					return flask.jsonify(), 404
+				self._updateConsumableTypeModelFromJSONData(consumableTypeModel, jsonData)
+			else:
+				consumableTypeModel = ConsumableTypeModel()
+				consumableTypeModel.version = 1
+				self._updateConsumableTypeModelFromJSONData(consumableTypeModel, jsonData)
+
+			newDatabaseId = self._databaseManager.saveConsumable(consumableTypeModel, count=count, ordered=ordered, withReusedConnection=True)
+			if (newDatabaseId == None):
+				return flask.jsonify(), 500
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"databaseId": newDatabaseId
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/updateConsumableStock", methods=["PUT"])
+	def updateConsumableStock(self):
+		jsonData = request.json
+		if (jsonData == None):
+			return flask.jsonify(), 400
+
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		if (databaseId == None):
+			return flask.jsonify(), 400
+
+		count = self._toIntFromJSONOrNone("count", jsonData)
+		ordered = self._toIntFromJSONOrNone("ordered", jsonData)
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			consumableTypeModel = self._databaseManager.loadConsumableType(databaseId, withReusedConnection=True)
+			if (consumableTypeModel == None):
+				return flask.jsonify(), 404
+			stockModel = ConsumableStockModel.get_or_none(ConsumableStockModel.consumableType == consumableTypeModel)
+			if (stockModel == None):
+				stockModel = ConsumableStockModel(consumableType=consumableTypeModel)
+			stockModel.count = count
+			stockModel.ordered = ordered
+			stockModel.save()
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify()
+
+	@octoprint.plugin.BlueprintPlugin.route("/adjustConsumableCount", methods=["PUT"])
+	def adjustConsumableCount(self):
+		jsonData = request.json
+		if (jsonData == None):
+			return flask.jsonify(), 400
+
+		databaseId = self._toIntFromJSONOrNone("databaseId", jsonData)
+		barcode = self._getValueFromJSONOrNone("barcode", jsonData)
+		delta = self._toIntFromJSONOrNone("delta", jsonData)
+		if (delta == None):
+			return flask.jsonify(), 400
+
+		self._databaseManager.connectoToDatabase()
+		try:
+			consumableTypeModel = None
+			if (databaseId != None):
+				consumableTypeModel = self._databaseManager.loadConsumableType(databaseId, withReusedConnection=True)
+			elif (barcode != None):
+				consumableTypeModel = self._databaseManager.loadConsumableTypeByBarcode(barcode, withReusedConnection=True)
+			if (consumableTypeModel == None):
+				return flask.jsonify(), 404
+
+			stockModel = ConsumableStockModel.get_or_none(ConsumableStockModel.consumableType == consumableTypeModel)
+			if (stockModel == None):
+				stockModel = ConsumableStockModel(consumableType=consumableTypeModel)
+			current = 0
+			try:
+				current = int(stockModel.count or 0)
+			except Exception:
+				current = 0
+			stockModel.count = current + int(delta)
+			stockModel.save()
+			payload = Transformer.transformConsumableToDict(consumableTypeModel, stockModel)
+		finally:
+			self._databaseManager.closeDatabase()
+
+		return flask.jsonify({
+			"consumable": payload
+		})
+
+	@octoprint.plugin.BlueprintPlugin.route("/deleteConsumable/<int:databaseId>", methods=["DELETE"])
+	def deleteConsumable(self, databaseId):
+		self._logger.info("API Delete consumable with database id '" + str(databaseId) + "'")
+		deletedId = self._databaseManager.deleteConsumable(databaseId)
+		if (deletedId == None):
+			return flask.jsonify(), 404
+		return flask.jsonify()
+
+	######################################################################################   UPLOAD CONSUMABLES CSV FILE (in Thread)
+
+	@octoprint.plugin.BlueprintPlugin.route("/importConsumablesCSV", methods=["POST"])
+	def importConsumablesData(self):
+
+		input_name = "file"
+		input_upload_path = input_name + "." + self._settings.global_get(["server", "uploads", "pathSuffix"])
+
+		if input_upload_path in flask.request.values:
+
+			sourceLocation = flask.request.values[input_upload_path]
+
+			archive = tempfile.NamedTemporaryFile(delete=False)
+			archive.close()
+			shutil.copy(sourceLocation, archive.name)
+			sourceLocation = archive.name
+
+			thread = threading.Thread(target=self._processConsumablesCSVUploadAsync,
+									  args=(sourceLocation,
+											self._databaseManager,
+											self._sendConsumablesCSVUploadStatusToClient,
+											self._logger))
+			thread.daemon = True
+			thread.start()
+
+		else:
+			return flask.make_response("Invalid request, neither a file nor a path of a file to restore provided", 400)
+
+		return flask.jsonify(started=True)
+
+
+	def _processConsumablesCSVUploadAsync(self, path, databaseManager, sendStatusToClient, logger):
+		errorCollection = list()
+
+		def updateParsingStatus(lineNumber):
+			sendStatusToClient("running", lineNumber, "", errorCollection)
+
+		parsedRows = ConsumablesCSVImporter.parseConsumablesCSV(path, updateParsingStatus, errorCollection, logger)
+
+		if (len(errorCollection) != 0):
+			successMessage = "Some error(s) occurred during parsing! No consumables imported!"
+			sendStatusToClient("finished", "", successMessage, errorCollection)
+			return
+
+		if (len(parsedRows) == 0):
+			errorCollection.append("Nothing to import!")
+			sendStatusToClient("finished", "", "Nothing to import!", errorCollection)
+			return
+
+		createdCount = 0
+		updatedCount = 0
+		databaseManager.connectoToDatabase()
+		try:
+			for idx, row in enumerate(parsedRows):
+				updateParsingStatus(str(idx + 1))
+				barcode = row.get("barcode")
+				productCode = row.get("productCode")
+				name = row.get("name")
+
+				consumableTypeModel = None
+				if barcode:
+					consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.barcode == barcode)
+					if consumableTypeModel is None and productCode:
+						consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.productCode == productCode)
+					if consumableTypeModel is None and name:
+						consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.name == name)
+				elif productCode:
+					consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.productCode == productCode)
+					if consumableTypeModel is None and name:
+						consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.name == name)
+				elif name:
+					consumableTypeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.name == name)
+
+				isNew = (consumableTypeModel is None)
+				if isNew:
+					consumableTypeModel = ConsumableTypeModel()
+					consumableTypeModel.version = 1
+					consumableTypeModel.originator = "csv_import"
+
+				if barcode is not None:
+					consumableTypeModel.barcode = barcode
+				if productCode is not None:
+					consumableTypeModel.productCode = productCode
+				if name is not None:
+					consumableTypeModel.name = name
+				if row.get("category") is not None:
+					consumableTypeModel.category = row["category"]
+				if row.get("packUnitsLabel") is not None:
+					consumableTypeModel.packUnitsLabel = row["packUnitsLabel"]
+				if row.get("packUnits") is not None:
+					consumableTypeModel.packUnits = row["packUnits"]
+				if row.get("packPriceGross") is not None:
+					consumableTypeModel.packPriceGross = row["packPriceGross"]
+				if row.get("unitPrice") is not None:
+					consumableTypeModel.unitPrice = row["unitPrice"]
+
+				try:
+					consumableTypeModel.save(force_insert=isNew)
+
+					stockModel, _created = ConsumableStockModel.get_or_create(consumableType=consumableTypeModel)
+					if row.get("count") is not None:
+						stockModel.count = row["count"]
+					if row.get("ordered") is not None:
+						stockModel.ordered = row["ordered"]
+					stockModel.save()
+
+					if isNew:
+						createdCount += 1
+					else:
+						updatedCount += 1
+				except Exception as e:
+					errorCollection.append("Row " + str(idx + 1) + ": " + str(e))
+					logger.exception("Error importing consumable row " + str(idx + 1))
+		finally:
+			databaseManager.closeDatabase()
+
+		successMessage = "Import finished. Created: " + str(createdCount) + ", Updated: " + str(updatedCount) + " consumables."
+		if (len(errorCollection) > 0):
+			successMessage += " Some rows had errors."
+		logger.info(successMessage)
+		sendStatusToClient("finished", "", successMessage, errorCollection)
 
 	#####################################################################################################   SAVE SHEET
 	@octoprint.plugin.BlueprintPlugin.route("/saveSheet", methods=["PUT"])

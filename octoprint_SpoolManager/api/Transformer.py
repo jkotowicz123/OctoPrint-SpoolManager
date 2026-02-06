@@ -4,6 +4,8 @@ from __future__ import absolute_import
 from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 from octoprint_SpoolManager.models.SheetModel import SheetModel
 from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
+from octoprint_SpoolManager.models.ConsumableTypeModel import ConsumableTypeModel
+from octoprint_SpoolManager.models.ConsumableStockModel import ConsumableStockModel
 from octoprint_SpoolManager.common import StringUtils
 
 def calculateRemainingWeight(usedWeight, totalWeight):
@@ -134,4 +136,44 @@ def transformAllSheetTypeModelsToDict(allSheetTypeModels):
 		for sheetType in allSheetTypeModels:
 			sheetTypeAsDict = transformSheetTypeModelToDict(sheetType)
 			result.append(sheetTypeAsDict)
+	return result
+
+def transformConsumableTypeModelToDict(consumableTypeModel):
+	consumableTypeAsDict = consumableTypeModel.__data__
+	consumableTypeAsDict["created"] = StringUtils.formatDateTime(consumableTypeModel.created)
+	consumableTypeAsDict["updated"] = StringUtils.formatDateTime(consumableTypeModel.updated)
+	consumableTypeAsDict["packPriceGross"] = StringUtils.formatFloat(consumableTypeModel.packPriceGross)
+	consumableTypeAsDict["unitPrice"] = StringUtils.formatFloat(consumableTypeModel.unitPrice)
+	consumableTypeAsDict["packUnits"] = StringUtils.formatInt(consumableTypeModel.packUnits)
+	return consumableTypeAsDict
+
+def transformConsumableStockModelToDict(consumableStockModel):
+	stockAsDict = consumableStockModel.__data__
+	stockAsDict["created"] = StringUtils.formatDateTime(consumableStockModel.created)
+	stockAsDict["updated"] = StringUtils.formatDateTime(consumableStockModel.updated)
+	stockAsDict["count"] = StringUtils.formatInt(consumableStockModel.count)
+	stockAsDict["ordered"] = StringUtils.formatInt(consumableStockModel.ordered)
+	return stockAsDict
+
+def transformConsumableToDict(consumableTypeModel, consumableStockModel):
+	result = transformConsumableTypeModelToDict(consumableTypeModel)
+	result["count"] = None
+	result["ordered"] = None
+	try:
+		if (consumableStockModel != None):
+			result["count"] = StringUtils.formatInt(consumableStockModel.count)
+			result["ordered"] = StringUtils.formatInt(consumableStockModel.ordered)
+	except Exception:
+		pass
+	return result
+
+def transformAllConsumablesToDict(allConsumables):
+	result = []
+	if (allConsumables != None):
+		for item in allConsumables:
+			try:
+				consumableTypeModel, consumableStockModel = item
+			except Exception:
+				continue
+			result.append(transformConsumableToDict(consumableTypeModel, consumableStockModel))
 	return result

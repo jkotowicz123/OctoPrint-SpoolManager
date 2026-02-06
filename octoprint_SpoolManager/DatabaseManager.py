@@ -21,6 +21,8 @@ from octoprint_SpoolManager.models.SpoolModel import SpoolModel
 from octoprint_SpoolManager.models.FilamentTypeModel import FilamentTypeModel
 from octoprint_SpoolManager.models.SheetTypeModel import SheetTypeModel
 from octoprint_SpoolManager.models.SheetModel import SheetModel
+from octoprint_SpoolManager.models.ConsumableTypeModel import ConsumableTypeModel
+from octoprint_SpoolManager.models.ConsumableStockModel import ConsumableStockModel
 
 # from octoprint_SpoolManager.models.MaterialModel import MaterialModel
 # from octoprint_SpoolManager.models.MaterialCharacteristicModel import MaterialCharacteristicModel
@@ -30,7 +32,7 @@ FORCE_CREATE_TABLES = False
 CURRENT_DATABASE_SCHEME_VERSION = 11
 
 # List all Models
-MODELS = [PluginMetaDataModel, SpoolModel, FilamentTypeModel, SheetTypeModel, SheetModel]
+MODELS = [PluginMetaDataModel, SpoolModel, FilamentTypeModel, SheetTypeModel, SheetModel, ConsumableTypeModel, ConsumableStockModel]
 
 class DatabaseManager(object):
 
@@ -172,7 +174,46 @@ class DatabaseManager(object):
 
 		self._ensureSheetTablesExist()
 		self._ensureFilamentTypesTableExists()
+		self._ensureConsumablesTablesExist()
 		pass
+
+	def _ensureConsumablesTablesExist(self):
+		try:
+			self._database.connect(reuse_if_open=True)
+			self._database.create_tables([ConsumableTypeModel, ConsumableStockModel], safe=True)
+		except Exception as e:
+			self._logger.exception("Could not ensure consumables tables exist: " + str(e))
+		self._ensureConsumableTypeCategoryColumnExists()
+
+	def _ensureConsumableTypeCategoryColumnExists(self):
+		try:
+			if (self._databaseSettings.useExternal == False):
+				connection = sqlite3.connect(self._databaseSettings.fileLocation)
+				cursor = connection.cursor()
+
+				columns = []
+				try:
+					cursor.execute("PRAGMA table_info('spo_consumable_types')")
+					columns = [row[1] for row in cursor.fetchall()]
+				except Exception:
+					columns = []
+
+				if ("category" not in columns):
+					self._executeSQLQuietly(cursor, "ALTER TABLE 'spo_consumable_types' ADD 'category' VARCHAR(255)")
+				connection.close()
+				return
+
+			databaseType = self._databaseSettings.type
+			self._logger.info("Ensuring consumable_types.category column exists (dbType=" + str(databaseType) + ")")
+			if (databaseType in ("postgres", "postgresql")):
+				self._database.execute_sql('ALTER TABLE "spo_consumable_types" ADD COLUMN IF NOT EXISTS "category" VARCHAR(255)')
+			else:
+				try:
+					self._database.execute_sql("ALTER TABLE `spo_consumable_types` ADD COLUMN `category` VARCHAR(255)")
+				except Exception:
+					self._database.execute_sql("ALTER TABLE spo_consumable_types ADD COLUMN category VARCHAR(255)")
+		except Exception as e:
+			self._logger.exception("Could not ensure consumable type category column exists: " + str(e))
 
 	def _ensureFilamentTypesTableExists(self):
 		try:
@@ -1926,4 +1967,102 @@ class DatabaseManager(object):
 					raise
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "setCurrentlyPrintingForPrinter", False)
+
+	def loadConsumableType(self, databaseId, withReusedConnection=False):
+		def databaseCallMethode():
+			return ConsumableTypeModel.get_or_none(ConsumableTypeModel.databaseId == int(databaseId))
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadConsumableType")
+
+	def loadConsumableTypeByBarcode(self, barcode, withReusedConnection=False):
+		def databaseCallMethode():
+			if (barcode == None):
+				return None
+			b = str(barcode).strip()
+			if (b == ""):
+				return None
+			return ConsumableTypeModel.get_or_none(ConsumableTypeModel.barcode == b)
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadConsumableTypeByBarcode")
+
+	def loadConsumableStockForType(self, consumableTypeModel, withReusedConnection=False):
+		def databaseCallMethode():
+			if (consumableTypeModel == None):
+				return None
+			return ConsumableStockModel.get_or_none(ConsumableStockModel.consumableType == consumableTypeModel)
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadConsumableStockForType")
+
+	def loadAllConsumables(self, withReusedConnection=False):
+		def databaseCallMethode():
+			result = []
+			query = (ConsumableTypeModel
+					 .select()
+					 .order_by(fn.Lower(ConsumableTypeModel.name).asc(), ConsumableTypeModel.databaseId.asc()))
+			for t in query:
+				s = ConsumableStockModel.get_or_none(ConsumableStockModel.consumableType == t)
+				result.append((t, s))
+			return result
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "loadAllConsumables", [])
+
+	def saveConsumable(self, consumableTypeModel, count=None, ordered=None, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					databaseId = consumableTypeModel.databaseId
+					if (databaseId != None):
+						current = self.loadConsumableType(databaseId, withReusedConnection)
+						if (current == None):
+							self._passMessageToClient("error", "DatabaseManager",
+								"Could not update the Consumable, because it is already deleted!")
+							return None
+						versionFromUI = consumableTypeModel.version if consumableTypeModel.version != None else 1
+						versionFromDatabase = current.version if current.version != None else 1
+						if (versionFromUI != versionFromDatabase):
+							self._passMessageToClient("error", "DatabaseManager",
+								"Could not update the Consumable, because someone already modified it. Do a manuel reload!")
+							return None
+						consumableTypeModel.version = versionFromUI + 1
+
+					consumableTypeModel.save()
+					databaseId = consumableTypeModel.get_id()
+
+					stockModel, _created = ConsumableStockModel.get_or_create(consumableType=consumableTypeModel)
+					stockModel.count = count
+					stockModel.ordered = ordered
+					stockModel.save()
+
+					transaction.commit()
+					return databaseId
+				except Exception as e:
+					transaction.rollback()
+					self._logger.exception("Could not save consumable")
+					self._passMessageToClient("error", "DatabaseManager",
+						"Could not save the consumable into the database. See OctoPrint.log for details!")
+					return None
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "saveConsumable")
+
+	def deleteConsumable(self, databaseId, withReusedConnection=False):
+		def databaseCallMethode():
+			with self._database.atomic() as transaction:
+				try:
+					typeModel = ConsumableTypeModel.get_or_none(ConsumableTypeModel.databaseId == int(databaseId))
+					if (typeModel == None):
+						return None
+					ConsumableStockModel.delete().where(ConsumableStockModel.consumableType == typeModel).execute()
+					deleteResult = ConsumableTypeModel.delete_by_id(int(databaseId))
+					if (deleteResult == 0):
+						return None
+					transaction.commit()
+					return int(databaseId)
+				except Exception as e:
+					transaction.rollback()
+					self._logger.exception("Could not delete consumable from database:" + str(e))
+					self._passMessageToClient("error", "DatabaseManager",
+						"Could not delete the consumable ('" + str(databaseId) + "') from the database. See OctoPrint.log for details!")
+					return None
+
+		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "deleteConsumable")
 

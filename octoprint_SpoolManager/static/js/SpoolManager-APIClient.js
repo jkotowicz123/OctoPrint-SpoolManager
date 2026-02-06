@@ -76,6 +76,44 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
         });
     }
 
+    this.callSaveConsumable = function (consumableItem, responseHandler){
+        jsonPayload = ko.toJSON(consumableItem)
+
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/saveConsumable",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: jsonPayload,
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callUpdateConsumableStock = function (payload, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/updateConsumableStock",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callAdjustConsumableCount = function (payload, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/adjustConsumableCount",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload),
+            type: "PUT"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
     //////////////////////////////////////////////////////////////////////////////// CONFIRM DatabaseConnectionPoblem
     this.confirmDatabaseProblemMessage = function (responseHandler){
         $.ajax({
@@ -108,6 +146,27 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
 
     this.callLoadSheets = function (responseHandler){
         urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadSheets";
+        $.ajax({
+            url: urlToCall,
+            type: "GET"
+        }).always(function( data ){
+            responseHandler(data)
+        });
+    }
+
+    this.callLoadConsumables = function (responseHandler){
+        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadConsumables";
+        $.ajax({
+            url: urlToCall,
+            type: "GET"
+        }).always(function( data ){
+            responseHandler(data)
+        });
+    }
+
+    this.callConsumableByBarcode = function (barcode, responseHandler){
+        var b = (barcode || "").trim();
+        urlToCall = this.baseUrl + "plugin/" + this.pluginId + "/consumableByBarcode/" + encodeURIComponent(b);
         $.ajax({
             url: urlToCall,
             type: "GET"
@@ -161,6 +220,15 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
     this.callDeleteSheet = function (databaseId, responseHandler){
         $.ajax({
             url: this.baseUrl + "plugin/" + this.pluginId + "/deleteSheet/" + databaseId,
+            type: "DELETE"
+        }).always(function( data ){
+            responseHandler(data);
+        });
+    }
+
+    this.callDeleteConsumable = function (databaseId, responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/deleteConsumable/" + databaseId,
             type: "DELETE"
         }).always(function( data ){
             responseHandler(data);

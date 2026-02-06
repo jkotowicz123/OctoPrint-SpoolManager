@@ -1074,6 +1074,7 @@ class SpoolmanagerPlugin(
 		return [
 			dict(type="tab", name="Spools"),
 			dict(type="tab", name="Sheets", template="SpoolManager_tab_sheets.jinja2"),
+			dict(type="tab", name="Consumables", template="SpoolManager_tab_consumables.jinja2"),
 			dict(type="sidebar", template="SpoolManager_sidebar.jinja2"),
 			dict(type="settings", custom_bindings=True, name="Spool Manager")
 		]

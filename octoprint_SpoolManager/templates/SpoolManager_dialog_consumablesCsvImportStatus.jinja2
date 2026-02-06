@@ -1,0 +1,22 @@
+
+<!--###############################################################  Consumables CSV Import Status-Dialog -->
+<div id="dialog_spoolManager_consumablesCsvImportStatus" class="modal hide fade">
+    <div class="modal-header">
+        <h3 class="modal-title">Consumables CSV Import <i class="fa fa-spinner fa-spin" data-bind="visible: consumablesCsvImportInProgress"></i></h3>
+    </div>
+    <div class="modal-body">
+        <div>Status: <b data-bind="text: consumablesCsvImportStatus"></b></div>
+        <div data-bind="visible:consumablesCsvImportLineNumber">Parsing/Importing line: <b data-bind="text: consumablesCsvImportLineNumber"></b></div>
+        <br/>
+        <div data-bind="visible:consumablesCsvImportSuccessMessage"><b data-bind="html: consumablesCsvImportSuccessMessage"></b></div>
+        <br/>
+        <div data-bind="visible:consumablesCsvImportErrorMessage"><b style="color:red" data-bind="html: consumablesCsvImportErrorMessage"></b></div>
+    </div>
+    <div class="modal-footer">
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-info" data-bind="disable: consumablesCsvImportInProgress, click: closeConsumablesCsvImportDialog" style="text-align:right">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

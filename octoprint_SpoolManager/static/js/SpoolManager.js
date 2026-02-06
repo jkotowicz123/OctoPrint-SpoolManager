@@ -82,8 +82,25 @@ $(function() {
         self.sheetFilterQuery = ko.observable("");
         self.currentSheetEditItem = ko.observable(null);
 
+        self.consumables = ko.observableArray([]);
+        self.consumableFilterQuery = ko.observable("");
+        self.currentConsumableEditItem = ko.observable(null);
+        self.consumableScanBarcode = ko.observable("");
+
+        self.consumablesCsvFileUploadName = ko.observable();
+        self.consumablesCsvImportInProgress = ko.observable(false);
+        self.consumablesCsvImportStatus = ko.observable("");
+        self.consumablesCsvImportLineNumber = ko.observable("");
+        self.consumablesCsvImportSuccessMessage = ko.observable("");
+        self.consumablesCsvImportErrorMessage = ko.observable("");
+        self.consumablesCsvImportUploadData = undefined;
+
         self.sheetsTotalCount = ko.pureComputed(function(){
             return self.sheets().length;
+        });
+
+        self.consumablesTotalCount = ko.pureComputed(function(){
+            return self.consumables().length;
         });
 
         self.canSaveCurrentSheet = ko.pureComputed(function(){
@@ -143,8 +160,30 @@ $(function() {
             return item;
         }
 
+        self._createConsumableItem = function(consumableData){
+            consumableData = consumableData || {};
+            return {
+                databaseId: ko.observable(consumableData.databaseId),
+                version: ko.observable(consumableData.version),
+                name: ko.observable(consumableData.name),
+                barcode: ko.observable(consumableData.barcode),
+                category: ko.observable(consumableData.category),
+                productCode: ko.observable(consumableData.productCode),
+                packUnitsLabel: ko.observable(consumableData.packUnitsLabel),
+                packUnits: ko.observable(consumableData.packUnits),
+                packPriceGross: ko.observable(consumableData.packPriceGross),
+                unitPrice: ko.observable(consumableData.unitPrice),
+                count: ko.observable(consumableData.count),
+                ordered: ko.observable(consumableData.ordered)
+            };
+        }
+
         self.clearSheetFilterQuery = function(){
             self.sheetFilterQuery("");
+        }
+
+        self.clearConsumableFilterQuery = function(){
+            self.consumableFilterQuery("");
         }
 
         self.filteredSheets = ko.pureComputed(function(){
@@ -163,6 +202,54 @@ $(function() {
                 ).toLowerCase();
                 return text.indexOf(q) !== -1;
             });
+        });
+
+        self.filteredConsumables = ko.pureComputed(function(){
+            var q = (self.consumableFilterQuery() || "").toLowerCase();
+            if (!q){
+                return self.consumables();
+            }
+
+            return ko.utils.arrayFilter(self.consumables(), function(c){
+                var text = (
+                    (c.databaseId() != null ? ("" + c.databaseId()) : "") + " " +
+                    (c.name() || "") + " " +
+                    (c.barcode() || "") + " " +
+                    (c.category() || "") + " " +
+                    (c.productCode() || "") + " " +
+                    (c.packUnitsLabel() || "")
+                ).toLowerCase();
+                return text.indexOf(q) !== -1;
+            });
+        });
+
+        self.groupedConsumables = ko.pureComputed(function(){
+            var items = self.filteredConsumables() || [];
+            var copy = items.slice(0);
+            copy.sort(function(a, b){
+                var ac = (a.category() || "").toLowerCase();
+                var bc = (b.category() || "").toLowerCase();
+                if (ac < bc) return -1;
+                if (ac > bc) return 1;
+                var an = (a.name() || "").toLowerCase();
+                var bn = (b.name() || "").toLowerCase();
+                if (an < bn) return -1;
+                if (an > bn) return 1;
+                return (a.databaseId() || 0) - (b.databaseId() || 0);
+            });
+
+            var groups = [];
+            var current = null;
+            for (var i = 0; i < copy.length; i++){
+                var c = copy[i];
+                var cat = c.category() || "Uncategorized";
+                if (!current || current.category !== cat){
+                    current = { category: cat, expanded: ko.observable(true), items: [] };
+                    groups.push(current);
+                }
+                current.items.push(c);
+            }
+            return groups;
         });
 
         self.groupedSheets = ko.pureComputed(function(){
@@ -207,6 +294,215 @@ $(function() {
                 }));
             });
         }
+
+        self.loadConsumables = function(){
+            self.apiClient.callLoadConsumables(function(responseData){
+                var items = responseData.consumables || [];
+                self.consumables(ko.utils.arrayMap(items, function(c){
+                    return self._createConsumableItem(c);
+                }));
+            });
+        }
+
+        self._showConsumableDialog = function(){
+            $("#dialog_consumable_edit").modal({
+                keyboard: false
+            });
+        }
+
+        self.addNewConsumable = function(){
+            self.currentConsumableEditItem(self._createConsumableItem({
+                databaseId: null,
+                version: null,
+                name: "",
+                barcode: "",
+                category: "",
+                productCode: "",
+                packUnitsLabel: "",
+                packUnits: "",
+                packPriceGross: "",
+                unitPrice: "",
+                count: "",
+                ordered: ""
+            }));
+            self._showConsumableDialog();
+        }
+
+        self.editConsumable = function(consumableItem){
+            if (!consumableItem){
+                return;
+            }
+            self.currentConsumableEditItem(self._createConsumableItem({
+                databaseId: consumableItem.databaseId(),
+                version: consumableItem.version(),
+                name: consumableItem.name(),
+                barcode: consumableItem.barcode(),
+                category: consumableItem.category(),
+                productCode: consumableItem.productCode(),
+                packUnitsLabel: consumableItem.packUnitsLabel(),
+                packUnits: consumableItem.packUnits(),
+                packPriceGross: consumableItem.packPriceGross(),
+                unitPrice: consumableItem.unitPrice(),
+                count: consumableItem.count(),
+                ordered: consumableItem.ordered()
+            }));
+            self._showConsumableDialog();
+        }
+
+        self.saveCurrentConsumable = function(){
+            var item = self.currentConsumableEditItem();
+            if (!item){
+                return;
+            }
+            self.apiClient.callSaveConsumable(item, function(){
+                $("#dialog_consumable_edit").modal("hide");
+                self.loadConsumables();
+            });
+        }
+
+        self.deleteConsumable = function(consumableItem){
+            if (!consumableItem || consumableItem.databaseId() == null){
+                return;
+            }
+            if (!confirm("Delete consumable " + (consumableItem.name() || consumableItem.databaseId()) + "?")){
+                return;
+            }
+            self.apiClient.callDeleteConsumable(consumableItem.databaseId(), function(){
+                self.loadConsumables();
+            });
+        }
+
+        self.deleteCurrentConsumable = function(){
+            var item = self.currentConsumableEditItem();
+            if (!item || item.databaseId() == null){
+                return;
+            }
+            if (!confirm("Delete consumable " + (item.name() || item.databaseId()) + "?")){
+                return;
+            }
+            self.apiClient.callDeleteConsumable(item.databaseId(), function(){
+                $("#dialog_consumable_edit").modal("hide");
+                self.loadConsumables();
+            });
+        }
+
+        self.adjustConsumableCount = function(consumableItem, delta){
+            if (!consumableItem){
+                return;
+            }
+            var payload = {
+                databaseId: consumableItem.databaseId(),
+                delta: delta
+            };
+            self.apiClient.callAdjustConsumableCount(payload, function(){
+                self.loadConsumables();
+            });
+        }
+
+        self.onConsumableScanKeyUp = function(_data, event){
+            try {
+                var code = event && (event.keyCode || event.which);
+                if (code === 13) {
+                    self.consumableScanAdjustPlus();
+                    return false;
+                }
+            } catch (e) {
+            }
+            return true;
+        }
+
+        self.consumableScanAdjustPlus = function(){
+            var barcode = (self.consumableScanBarcode() || "").trim();
+            if (!barcode){
+                return;
+            }
+            self.apiClient.callAdjustConsumableCount({ barcode: barcode, delta: 1 }, function(responseData){
+                try {
+                    var c = responseData && responseData.consumable;
+                    if (c && c.name) {
+                        self.showPopUp("info", "Consumable", (c.name + ": +1 (count=" + (c.count || "") + ")"), true);
+                    }
+                } catch (e) {
+                }
+                self.consumableScanBarcode("");
+                self.loadConsumables();
+            });
+        }
+
+        self.consumableScanAdjustMinus = function(){
+            var barcode = (self.consumableScanBarcode() || "").trim();
+            if (!barcode){
+                return;
+            }
+            self.apiClient.callAdjustConsumableCount({ barcode: barcode, delta: -1 }, function(responseData){
+                try {
+                    var c = responseData && responseData.consumable;
+                    if (c && c.name) {
+                        self.showPopUp("info", "Consumable", (c.name + ": -1 (count=" + (c.count || "") + ")"), true);
+                    }
+                } catch (e) {
+                }
+                self.consumableScanBarcode("");
+                self.loadConsumables();
+            });
+        }
+
+        self.consumableScanLookup = function(){
+            var barcode = (self.consumableScanBarcode() || "").trim();
+            if (!barcode){
+                return;
+            }
+            self.apiClient.callConsumableByBarcode(barcode, function(responseData){
+                var c = responseData && responseData.consumable;
+                if (!c){
+                    return;
+                }
+                self.currentConsumableEditItem(self._createConsumableItem(c));
+                self._showConsumableDialog();
+            });
+        }
+
+        self.performConsumablesCsvImport = function(){
+            if (self.consumablesCsvImportUploadData === undefined) return;
+
+            self.consumablesCsvImportInProgress(true);
+            self.consumablesCsvImportStatus("");
+            self.consumablesCsvImportLineNumber("");
+            self.consumablesCsvImportSuccessMessage("");
+            self.consumablesCsvImportErrorMessage("");
+
+            $("#dialog_spoolManager_consumablesCsvImportStatus").modal({
+                keyboard: false,
+                clickClose: false,
+                showClose: false,
+                backdrop: "static"
+            });
+
+            self.consumablesCsvImportUploadData.submit();
+        };
+
+        self.closeConsumablesCsvImportDialog = function(){
+            $("#dialog_spoolManager_consumablesCsvImportStatus").modal("hide");
+            self.loadConsumables();
+        };
+
+        self._handleConsumablesCsvImportStatus = function(data){
+            if (data.importStatus) {
+                self.consumablesCsvImportStatus(data.importStatus);
+                switch (data.importStatus){
+                    case "running":
+                        self.consumablesCsvImportLineNumber(data.currenLineNumber);
+                        self.consumablesCsvImportInProgress(true);
+                        break;
+                    case "finished":
+                        self.consumablesCsvImportInProgress(false);
+                        self.consumablesCsvImportSuccessMessage(data.successMessages);
+                        var errorMessage = (data.errorCollection || []).join(" <br> ");
+                        self.consumablesCsvImportErrorMessage(errorMessage);
+                        break;
+                }
+            }
+        };
 
         self.loadSheetsStateForSidebar = function(){
             if (self.currentPrinterNumber() == null){
@@ -390,15 +686,7 @@ $(function() {
             // Table visibility
             self.initTableVisibilities();
 
-            var storageKey = "spoolmanager.table.selectedPageSize";
-            if (localStorage[storageKey] == null){
-                localStorage[storageKey] = "25"; // default page size
-            } else {
-                self.spoolItemTableHelper.selectedPageSize(localStorage[storageKey]);
-            }
-            self.spoolItemTableHelper.selectedPageSize.subscribe(function(newValue){
-                localStorage[storageKey] = newValue;
-            });
+            self.spoolItemTableHelper.selectedPageSize("all");
         }
 
         // Typs: error
@@ -1413,6 +1701,31 @@ $(function() {
 
 			self.loadSheets();
 			self.loadSheetsStateForSidebar();
+			self.loadConsumables();
+
+			// Consumables CSV Import - file upload wiring
+			var consumablesCsvUploadButton = $("#consumables-importcsv-upload");
+			consumablesCsvUploadButton.fileupload({
+				dataType: "json",
+				maxNumberOfFiles: 1,
+				autoUpload: false,
+				headers: OctoPrint.getRequestHeaders(),
+				add: function(e, data) {
+					if (data.files.length === 0) {
+						return false;
+					}
+					self.consumablesCsvFileUploadName(data.files[0].name);
+					self.consumablesCsvImportUploadData = data;
+				},
+				done: function(e, data) {
+					self.consumablesCsvImportInProgress(false);
+					self.consumablesCsvFileUploadName(undefined);
+					self.consumablesCsvImportUploadData = undefined;
+				},
+				error: function(response, data, errorMessage){
+					self.consumablesCsvImportInProgress(false);
+				}
+			});
         }
 
         self.onAfterBinding = function() {
@@ -1471,6 +1784,10 @@ $(function() {
             }
             if ("csvImportStatus" == data.action){
                 self.csvImportDialog.updateText(data);
+                return;
+            }
+            if ("consumablesCsvImportStatus" == data.action){
+                self._handleConsumablesCsvImportStatus(data);
                 return;
             }
             if ("errorPopUp" == data.action){
@@ -1558,6 +1875,9 @@ $(function() {
                 if ($(next).find("#tab_sheetsOverview").length) {
                     self.loadSheets();
                 }
+                if ($(next).find("#tab_consumablesOverview").length) {
+                    self.loadConsumables();
+                }
             } catch (e) {
             }
             //alert("Next:"+next +" Current:"+current);
@@ -1630,6 +1950,7 @@ $(function() {
             document.getElementById("settings_spoolmanager"),
             document.getElementById("tab_spoolOverview"),
             document.getElementById("tab_sheetsOverview"),
+            document.getElementById("tab_consumablesOverview"),
             document.getElementById("modal-dialogs-spoolManager"),
             document.getElementById("sidebar_spool_select")
         ]

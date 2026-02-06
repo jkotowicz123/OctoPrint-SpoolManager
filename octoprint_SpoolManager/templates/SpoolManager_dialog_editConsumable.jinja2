@@ -1,0 +1,75 @@
+<div class="modal hide fade" id="dialog_consumable_edit" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Consumable</h3>
+    </div>
+    <div class="modal-body">
+        <div class="row-fluid" data-bind="with: currentConsumableEditItem">
+            <div class="control-group">
+                <label class="control-label">Name</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: name" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Barcode</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: barcode" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Category</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: category" placeholder="e.g. karton, folia" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Product code</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: productCode" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Pack units label</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: packUnitsLabel" placeholder="e.g. 50szt" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Pack units</label>
+                <div class="controls">
+                    <input class="input-block-level" type="number" data-bind="textInput: packUnits" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Pack price gross</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: packPriceGross" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Unit price</label>
+                <div class="controls">
+                    <input class="input-block-level" type="text" data-bind="textInput: unitPrice" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Count</label>
+                <div class="controls">
+                    <input class="input-block-level" type="number" data-bind="textInput: count" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Ordered</label>
+                <div class="controls">
+                    <input class="input-block-level" type="number" data-bind="textInput: ordered" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger pull-left" data-bind="visible: currentConsumableEditItem() && currentConsumableEditItem().databaseId(), click: deleteCurrentConsumable">Delete</button>
+        <button class="btn" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" data-bind="click: saveCurrentConsumable">Save</button>
+    </div>
+</div>
