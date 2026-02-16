@@ -488,6 +488,11 @@
                     </td>
                     <td data-bind="visible: $root.tableAttributeVisibility.material" style="white-space: nowrap;">
                         <span>(<span data-bind="text: totalRemainingWeight"></span>g / <span data-bind="text: spoolCount"></span> szpule)</span>
+                        <!-- ko with: $root.spoolGroupStockInfo(displayName, totalRemainingWeight) -->
+                        <!-- ko if: $data -->
+                        <span style="margin-left: 6px; font-size: 11px; color: #888;" data-bind="text: $data"></span>
+                        <!-- /ko -->
+                        <!-- /ko -->
                     </td>
                     <td data-bind="visible: $root.tableAttributeVisibility.lastFirstUse" style="font-style: italic; font-size: 11px;">
                         <!-- ko if: $root.isSpoolGroupOrdered(displayName) -->

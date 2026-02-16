@@ -1670,6 +1670,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		})
 
 	@octoprint.plugin.BlueprintPlugin.route("/sheetsState/<int:printerNumber>", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/selectedSheets/<int:printerNumber>", methods=["GET"])
 	def sheetsState(self, printerNumber):
 		self._databaseManager.connectoToDatabase()
 		try:
@@ -1681,11 +1682,13 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		return flask.jsonify({
 			"printerNumber": printerNumber,
+			"assignedSheet": currentSheetDict,
 			"currentSheet": currentSheetDict,
 			"magazineSheets": magazineSheetsDict
 		})
 
 	@octoprint.plugin.BlueprintPlugin.route("/sheetsState", methods=["GET"])
+	@octoprint.plugin.BlueprintPlugin.route("/selectedSheets", methods=["GET"])
 	def sheetsStateLocal(self):
 		printerNumber = None
 		printerLabel = None
@@ -1715,6 +1718,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		return flask.jsonify({
 			"printerNumber": printerNumber,
 			"printerLabel": printerLabel,
+			"assignedSheet": currentSheetDict,
 			"currentSheet": currentSheetDict,
 			"magazineSheets": magazineSheetsDict
 		})

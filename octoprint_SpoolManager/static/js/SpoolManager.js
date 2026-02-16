@@ -562,6 +562,45 @@ $(function() {
             return false;
         }
 
+        self.spoolGroupStockInfo = function(displayName, totalRemainingWeight){
+            var ft = self.getFilamentTypeByName(displayName);
+            if (!ft || !ft.minStockWeight) return "";
+            var min = parseFloat(ft.minStockWeight);
+            if (isNaN(min) || min <= 0) return "";
+            var current = parseFloat(totalRemainingWeight);
+            if (isNaN(current)) current = 0;
+            var label = "min: " + Math.round(min) + "g";
+            if (current >= min) return label;
+            var deficit = Math.round(min - current);
+            label += ", brak: " + deficit + "g";
+            // find distinct spool sizes from the group
+            var groups = self.spoolItemTableHelper.groupedItemsByDisplayName();
+            var g = null;
+            for (var i = 0; i < groups.length; i++){
+                if (groups[i].displayName === displayName){ g = groups[i]; break; }
+            }
+            if (g){
+                var items = g.items || [];
+                var dw = {};
+                for (var k = 0; k < items.length; k++){
+                    var tw = parseFloat(ko.utils.unwrapObservable(items[k].totalWeight));
+                    if (!isNaN(tw) && tw > 0) dw[tw] = true;
+                }
+                var sizes = Object.keys(dw).map(function(s){ return parseFloat(s); });
+                sizes.sort(function(a,b){ return a - b; });
+                if (sizes.length === 1){
+                    label += " (" + Math.ceil(deficit / sizes[0]) + " szpul " + sizes[0] + "g)";
+                } else if (sizes.length > 1){
+                    var parts = [];
+                    for (var s = 0; s < sizes.length; s++){
+                        parts.push(Math.ceil(deficit / sizes[s]) + "x" + sizes[s] + "g");
+                    }
+                    label += " (" + parts.join(" / ") + ")";
+                }
+            }
+            return label;
+        }
+
         self.spoolGroupOrderedLabel = function(displayName){
             var ft = self.getFilamentTypeByName(displayName);
             if (!ft || !ft.ordered || typeof ft.ordered !== "object") return "";
