@@ -106,6 +106,20 @@
     padding-bottom: 6px;
 }
 
+.spm-low-stock-details > td {
+    background-color: #f9f9f9 !important;
+    padding: 0 !important;
+}
+
+.spm-low-stock-details .table {
+    margin-bottom: 0;
+}
+
+.spm-low-stock-details .table th,
+.spm-low-stock-details .table td {
+    background-color: transparent !important;
+}
+
 .spm-low-stock > td {
     background-color: #f2dede !important;
 }

@@ -144,10 +144,23 @@ $(function() {
             return Math.max(0, min - count);
         }
 
+        self.lowStockExpandedSpoolGroups = ko.observable({});
+
+        self.toggleLowStockSpoolGroup = function(group){
+            if (!group || !group.displayName){
+                return;
+            }
+
+            var expandedMap = $.extend({}, self.lowStockExpandedSpoolGroups());
+            expandedMap[group.displayName] = !expandedMap[group.displayName];
+            self.lowStockExpandedSpoolGroups(expandedMap);
+        }
+
         self.lowStockSpoolGroups = ko.pureComputed(function(){
             if (!self.spoolItemTableHelper) return [];
             var groups = self.spoolItemTableHelper.groupedItemsByDisplayName();
             var ftypes = self.filamentTypes();
+            var expandedMap = self.lowStockExpandedSpoolGroups();
             var result = [];
             for (var i = 0; i < groups.length; i++){
                 var g = groups[i];
@@ -201,7 +214,9 @@ $(function() {
                     spoolsToOrder: spoolsToOrder,
                     orderedTotal: orderedTotal,
                     orderedSizes: orderedSizes,
-                    singleSize: sizes.length === 1
+                    singleSize: sizes.length === 1,
+                    items: items,
+                    expanded: !!expandedMap[displayName]
                 });
             }
             return result;

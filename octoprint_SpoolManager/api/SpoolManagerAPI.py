@@ -951,6 +951,27 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						# headers={'Content-Disposition': 'attachment; filename='+reportType+'PrintJobReport-Template.jinja2'}
 						)
 
+	@octoprint.plugin.BlueprintPlugin.route("/spoolWeight/<int:databaseId>", methods=["GET"])
+	def spoolWeight(self, databaseId):
+		spoolModel = self._databaseManager.loadSpool(databaseId)
+		if (spoolModel is None):
+			abort(404)
+
+		spoolWeight = None
+		try:
+			if (spoolModel.spoolWeight is not None):
+				spoolWeight = float(spoolModel.spoolWeight)
+		except Exception:
+			spoolWeight = None
+
+		labelQuantity = 6 if spoolWeight is not None and int(round(spoolWeight)) == 690 else 2
+
+		return flask.jsonify({
+			"databaseId": spoolModel.databaseId,
+			"spoolWeight": spoolWeight,
+			"labelQuantity": labelQuantity
+		})
+
 
 	######################################################################################   UPLOAD CSV FILE (in Thread)
 
@@ -1996,4 +2017,3 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			self._databaseManager.closeDatabase()
 
 		return flask.jsonify()
-

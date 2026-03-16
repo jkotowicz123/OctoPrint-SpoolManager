@@ -556,6 +556,12 @@ class SpoolmanagerPlugin(
 		if (printerNumber == None):
 			return
 
+		printerName = None
+		try:
+			printerName = octo_settings().get(["appearance", "name"])
+		except Exception:
+			printerName = None
+
 		origin, path, name = self._getCurrentJobFile()
 		if (origin == None or path == None):
 			return
@@ -602,7 +608,19 @@ class SpoolmanagerPlugin(
 		except Exception:
 			pass
 
+		selectedSpoolIds = []
+		try:
+			selectedSpoolIds = self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS]) or []
+		except Exception:
+			selectedSpoolIds = []
+
 		payload = {
+			"printer": {
+				"name": printerName,
+				"number": printerNumber
+			},
+			"sheet": None,
+			"spools": [],
 			"sourceFile": {
 				"origin": origin,
 				"path": path,
@@ -611,14 +629,46 @@ class SpoolmanagerPlugin(
 			"objects": objects
 		}
 
-		payloadJson = None
-		try:
-			payloadJson = json.dumps(payload, ensure_ascii=False)
-		except Exception:
-			payloadJson = json.dumps(payload)
-
 		self._databaseManager.connectoToDatabase()
 		try:
+			selectedSpools = []
+			for toolIndex, spoolId in enumerate(selectedSpoolIds):
+				if (spoolId == None):
+					continue
+				try:
+					spoolDatabaseId = int(spoolId)
+				except Exception:
+					continue
+
+				spoolModel = self._databaseManager.loadSpool(spoolDatabaseId, withReusedConnection=True)
+				selectedSpools.append({
+					"toolIndex": int(toolIndex),
+					"databaseId": spoolDatabaseId,
+					"displayName": (None if spoolModel == None else spoolModel.displayName)
+				})
+			payload["spools"] = selectedSpools
+
+			currentSheet, _ = self._databaseManager.getSheetsStateForPrinter(printerNumber, withReusedConnection=True)
+			if (currentSheet != None):
+				sheetTypeName = None
+				try:
+					if (currentSheet.sheetType != None):
+						sheetTypeName = currentSheet.sheetType.name
+				except Exception:
+					sheetTypeName = None
+
+				payload["sheet"] = {
+					"databaseId": currentSheet.databaseId,
+					"nid": currentSheet.nid,
+					"sheetTypeName": sheetTypeName
+				}
+
+			payloadJson = None
+			try:
+				payloadJson = json.dumps(payload, ensure_ascii=False)
+			except Exception:
+				payloadJson = json.dumps(payload)
+
 			self._databaseManager.setCurrentlyPrintingForPrinter(printerNumber, payloadJson, withReusedConnection=True)
 		finally:
 			self._databaseManager.closeDatabase()
@@ -1196,4 +1246,3 @@ def __plugin_load__():
 		# "octoprint.comm.protocol.scripts": __plugin_implementation__.message_on_connect
 		"octoprint.events.register_custom_events":  __plugin_implementation__.register_custom_events
 	}
-
