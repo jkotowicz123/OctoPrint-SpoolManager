@@ -1087,6 +1087,9 @@ class SpoolmanagerPlugin(
 			if pluginInfo == None or not pluginInfo.enabled:
 				return None
 			implementation = pluginInfo.implementation
+			# ContinuousPrint 2.4.x exposes an OctoPrint-facing wrapper here; its
+			# queue, driver and API state live on the wrapped CPQPlugin instance.
+			implementation = getattr(implementation, "_plugin", implementation)
 			if implementation == None or not hasattr(implementation, "_state_json"):
 				return None
 			activeSetId = None

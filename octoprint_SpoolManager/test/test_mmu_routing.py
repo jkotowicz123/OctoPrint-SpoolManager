@@ -201,11 +201,21 @@ G4 ; wait
         session.configure(True, False, self.contract, decision, STATE_UNLOADED, unload_at_end=True)
         session.handle_marker("END_SEQUENCE_BEGIN")
         self.assertEqual(session.rewrite("M104 S160 ; jobox"), (None,))
+        self.assertEqual(session.rewrite("M104 S0 ; turn off temperature"), (None,))
         rewritten = session.rewrite("G4 ; wait")
         self.assertEqual(rewritten[0][0], "M702")
         self.assertIn("spoolmanager:mmu_unload", rewritten[0][2])
-        self.assertEqual(rewritten[1], "G4")
+        self.assertEqual(rewritten[1][0], "M104 S0")
+        self.assertIn("spoolmanager:mmu_unload_shutdown", rewritten[1][2])
+        self.assertEqual(rewritten[2], "G4")
         self.assertIsNone(session.rewrite("G4 ; wait"))
+
+    def test_retained_filament_does_not_defer_hotend_shutdown(self):
+        decision = select_slot(self.contract, self.slots)
+        session = MmuRoutingSession()
+        session.configure(True, False, self.contract, decision, STATE_LOADED, loaded_slot=2, unload_at_end=False)
+        session.handle_marker("END_SEQUENCE_BEGIN")
+        self.assertIsNone(session.rewrite("M104 S0 ; turn off temperature"))
 
     def test_continuousprint_repeated_set_is_its_own_next_path(self):
         state = {

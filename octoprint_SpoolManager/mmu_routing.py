@@ -498,6 +498,7 @@ class MmuRoutingSession(object):
         self.recovery_injected = False
         self.restore_bed_wait = None
         self.restore_hotend_wait = None
+        self.deferred_hotend_off = None
         self.bypass = False
         self.bypass_reason = None
         self.contract = None
@@ -623,9 +624,19 @@ class MmuRoutingSession(object):
                 return (None,)
             if re.match(r"^\s*M104\s+S160\b", upper):
                 return (None,)
+            if self.unload_at_end and re.match(r"^\s*M104(?:\s+T\d+)?\s+S0(?:\.0+)?\b", upper):
+                # Keep the hotend at its print target while the firmware forms
+                # the tip and retracts through the extruder. Shut it down only
+                # after M702 has completed successfully.
+                self.deferred_hotend_off = _without_inline_comment(command)
+                return (None,)
             if self.unload_at_end and not self.unload_injected and re.match(r"^\s*G4(?:\s|;|$)", upper):
                 self.unload_injected = True
-                return [("M702", None, {"spoolmanager:mmu_unload"}), _without_inline_comment(command)]
+                result = [("M702", None, {"spoolmanager:mmu_unload"})]
+                if self.deferred_hotend_off:
+                    result.append((self.deferred_hotend_off, None, {"spoolmanager:mmu_unload_shutdown"}))
+                result.append(_without_inline_comment(command))
+                return result
 
         return None
 
