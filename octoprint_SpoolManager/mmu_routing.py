@@ -17,6 +17,7 @@ DEFAULT_MAINTENANCE_BYPASS_FILES = (
     "Swap Plate with Doors.gcode",
     "Swap Plate with Doors-2.gcode",
 )
+CONTINUOUSPRINT_AUTOMATION_DIR = "continuousprint/tmp/"
 
 REGION_NONE = None
 REGION_PURGE_AREA = "PURGE_AREA"
@@ -48,7 +49,10 @@ def parse_routing_bypass_text(text):
 
 def routing_bypass_reason(name, text=None, allowed_names=None):
     """Return a safe explicit bypass reason, or None when routing is required."""
-    filename = str(name or "").replace("\\", "/").rsplit("/", 1)[-1].lower()
+    normalized = str(name or "").replace("\\", "/").strip().lower().lstrip("/")
+    filename = normalized.rsplit("/", 1)[-1]
+    if normalized.startswith(CONTINUOUSPRINT_AUTOMATION_DIR) and filename.endswith(".gcode"):
+        return "continuousprint_automation"
     configured = allowed_names if allowed_names is not None else DEFAULT_MAINTENANCE_BYPASS_FILES
     allowed = set(str(value or "").strip().lower() for value in configured if str(value or "").strip())
     if filename and filename in allowed:
@@ -337,9 +341,9 @@ def select_slot(requirement, slots, loaded_slot=None, reserve_g=0.0):
     }
 
 
-def continuousprint_next_path(state_raw):
+def continuousprint_next_path(state_raw, active_set_id=None, active_queue_name=None, current_path=None):
     state = state_raw or {}
-    if not isinstance(state, dict) or not state.get("active"):
+    if not isinstance(state, dict) or (not state.get("active") and active_set_id is None and not current_path):
         return None
     queues = list(state.get("queues") or [])
     queues.sort(key=lambda queue: float(queue.get("rank") or 0))
@@ -359,6 +363,10 @@ def continuousprint_next_path(state_raw):
     active_set_index = None
     for queue_index, queue in enumerate(queues):
         active_set = queue.get("active_set")
+        if active_set_id is not None:
+            queue_name = str(queue.get("name") or "")
+            if active_queue_name is None or queue_name == str(active_queue_name):
+                active_set = active_set_id
         if active_set is None:
             continue
         for job_index, job in enumerate(queue.get("jobs") or []):
@@ -372,6 +380,20 @@ def continuousprint_next_path(state_raw):
                 break
         if active_set_index is not None:
             break
+    if active_set_index is None and current_path:
+        normalized_current_path = str(current_path).replace("\\", "/").lstrip("/")
+        candidates = []
+        for queue_index, queue in enumerate(queues):
+            if active_queue_name is not None and str(queue.get("name") or "") != str(active_queue_name):
+                continue
+            for job_index, job in enumerate(queue.get("jobs") or []):
+                for set_index, set_data in enumerate(job.get("sets") or []):
+                    set_path = str(set_data.get("path") or "").replace("\\", "/").lstrip("/")
+                    if set_path == normalized_current_path:
+                        # Prefer the acquired job when duplicate paths are queued.
+                        candidates.append((0 if job.get("acquired") else 1, queue_index, job_index, set_index))
+        if candidates:
+            _, active_queue_index, active_job_index, active_set_index = sorted(candidates)[0]
     if active_set_index is None:
         return None
 

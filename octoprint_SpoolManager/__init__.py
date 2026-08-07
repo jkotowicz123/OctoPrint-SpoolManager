@@ -1089,10 +1089,27 @@ class SpoolmanagerPlugin(
 			implementation = pluginInfo.implementation
 			if implementation == None or not hasattr(implementation, "_state_json"):
 				return None
+			activeSetId = None
+			activeQueueName = None
+			currentPath = None
+			queueManager = getattr(implementation, "q", None)
+			if (queueManager != None):
+				activeSet = queueManager.get_set() if hasattr(queueManager, "get_set") else None
+				if (activeSet != None):
+					activeSetId = getattr(activeSet, "id", None)
+					currentPath = getattr(activeSet, "path", None)
+				activeQueue = getattr(queueManager, "active_queue", None)
+				if (activeQueue != None):
+					activeQueueName = getattr(activeQueue, "ns", None) or getattr(activeQueue, "name", None)
 			state = implementation._state_json()
 			if not isinstance(state, dict):
 				state = json.loads(state)
-			return continuousprint_next_path(state)
+			return continuousprint_next_path(
+				state,
+				active_set_id=activeSetId,
+				active_queue_name=activeQueueName,
+				current_path=currentPath
+			)
 		except Exception as e:
 			self._logger.warning("ContinuousPrint lookahead unavailable; MMU will unload: %s", str(e))
 			return None
@@ -1121,7 +1138,10 @@ class SpoolmanagerPlugin(
 					gcodePath = None
 
 		bypassFiles = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES]) or list(DEFAULT_MAINTENANCE_BYPASS_FILES)
-		bypassReason = routing_bypass_reason(name or path, allowed_names=bypassFiles)
+		# ContinuousPrint automation scripts are temporary real print jobs, not
+		# material-bearing models. Check the storage path before the basename so
+		# its private automation directory can be recognized safely.
+		bypassReason = routing_bypass_reason(path or name, allowed_names=bypassFiles)
 		if (bypassReason == None and gcodePath != None):
 			try:
 				bypassReason = routing_bypass_reason_file(

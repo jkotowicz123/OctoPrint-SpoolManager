@@ -166,6 +166,17 @@ G4 ; wait
         self.assertFalse(session.active)
         self.assertIsNone(session.rewrite("T0"))
 
+    def test_continuousprint_automation_files_bypass_routing(self):
+        self.assertEqual(
+            routing_bypass_reason("ContinuousPrint/tmp/continuousprint_success.gcode"),
+            "continuousprint_automation",
+        )
+        self.assertEqual(
+            routing_bypass_reason("ContinuousPrint/tmp/continuousprint_start_print.gcode"),
+            "continuousprint_automation",
+        )
+        self.assertIsNone(routing_bypass_reason("uploads/continuousprint_success.gcode"))
+
     def test_mk4_serial_progress_is_classified_without_prusammu_dependency(self):
         self.assertEqual(classify_mmu_serial_line("MMU2:Feeding to FSensor"), "LOADING")
         self.assertEqual(classify_mmu_serial_line("MMU2:Retract from FINDA"), "UNLOADING")
@@ -230,6 +241,37 @@ G4 ; wait
         self.assertEqual(continuousprint_next_path(state), "white.gcode")
         state["queues"][0]["jobs"][0]["sets"][1]["remaining"] = 0
         self.assertEqual(continuousprint_next_path(state), "later.gcode")
+
+    def test_continuousprint_lookahead_repairs_missing_active_set_from_live_queue(self):
+        state = {
+            "active": True,
+            "profile": "mk4",
+            "queues": [{
+                "name": "local", "rank": 1, "active_set": None,
+                "jobs": [
+                    {"id": 1, "remaining": 1, "draft": False, "acquired": True, "sets": [
+                        {"id": 101, "path": "first.gcode", "remaining": 1, "count": 1, "profiles": []},
+                    ]},
+                    {"id": 2, "remaining": 1, "draft": False, "acquired": False, "sets": [
+                        {"id": 201, "path": "second.gcode", "remaining": 1, "count": 1, "profiles": []},
+                    ]},
+                ],
+            }],
+        }
+        self.assertEqual(
+            continuousprint_next_path(state, active_set_id=101, active_queue_name="local"),
+            "second.gcode",
+        )
+        self.assertEqual(
+            continuousprint_next_path(state, current_path="first.gcode"),
+            "second.gcode",
+        )
+        state["active"] = False
+        state["queues"][0]["active_set"] = 999
+        self.assertEqual(
+            continuousprint_next_path(state, active_set_id=101, active_queue_name="local"),
+            "second.gcode",
+        )
 
     def test_retention_requires_same_physical_spool_and_combined_weight(self):
         decision = select_slot(self.contract, self.slots)
