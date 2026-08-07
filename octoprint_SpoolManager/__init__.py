@@ -13,6 +13,19 @@ from octoprint_SpoolManager.DatabaseManager import DatabaseManager
 # from octoprint_SpoolManager.Odometer import FilamentOdometer
 
 from octoprint_SpoolManager.newodometer import NewFilamentOdometer
+from octoprint_SpoolManager.mmu_routing import (
+	MmuRoutingSession,
+	STATE_LOADED,
+	STATE_UNKNOWN,
+	STATE_UNLOADED,
+	build_slot,
+	continuousprint_next_path,
+	parse_contract_file,
+	runtime_template_errors_file,
+	select_slot,
+	should_retain_for_next,
+	should_count_for_odometer,
+)
 
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.api.SpoolManagerAPI import SpoolManagerAPI
@@ -65,6 +78,12 @@ class SpoolmanagerPlugin(
 		self.metaDataFilamentLengths = []
 
 		self.alreadyCanceled = False
+
+		# MMU state is intentionally not restored after restart. Hardware routing must
+		# be explicitly reconciled before it may move filament again.
+		self._mmuRoutingSession = MmuRoutingSession()
+		self._mmuLoadedState = STATE_UNKNOWN
+		self._mmuLoadedSlot = None
 
 		self._logger.info("Done initializing")
 		pass
@@ -698,6 +717,12 @@ class SpoolmanagerPlugin(
 					self._readingFilamentMetaData()
 					if toolIndex < len(self.metaDataFilamentLengths):
 						currentExtrusionLengthMeta = self.metaDataFilamentLengths[toolIndex]
+						if (
+							toolIndex == 0
+							and self._mmuRoutingSession.active
+							and not self._mmuRoutingSession.dry_run
+						):
+							currentExtrusionLengthMeta += self._mmuRoutingSession.extra_purge_mm
 				except Exception:
 					currentExtrusionLengthMeta = None
 
@@ -765,6 +790,21 @@ class SpoolmanagerPlugin(
 	def _on_printJobFinished(self, printStatus, payload):
 		self.commitOdometerData(printStatus)
 
+		if (self._mmuRoutingSession.active and not self._mmuRoutingSession.dry_run):
+			if (printStatus == "success"):
+				if (self._mmuRoutingSession.unload_at_end and self._mmuRoutingSession.unload_injected):
+					self._mmuLoadedState = STATE_UNLOADED
+					self._mmuLoadedSlot = None
+				elif (not self._mmuRoutingSession.unload_at_end):
+					self._mmuLoadedState = STATE_LOADED
+					self._mmuLoadedSlot = self._mmuRoutingSession.slot
+				else:
+					self._mmuLoadedState = STATE_UNKNOWN
+					self._mmuLoadedSlot = None
+			elif (printStatus != "paused"):
+				self._mmuLoadedState = STATE_UNKNOWN
+				self._mmuLoadedSlot = None
+
 		# update remaining data in selected spools after a print
 		selectedSpools = self.loadSelectedSpools()
 		requiredWeightResult = self._evaluateRequiredWeight(selectedSpools, None, False)
@@ -820,6 +860,10 @@ class SpoolmanagerPlugin(
 		self.databaseConnectionProblemConfirmed = False
 
 	def _on_file_selectionChanged(self, payload):
+		try:
+			self._prepareMmuRoutingForCurrentJob(enforceGuard=False)
+		except Exception:
+			self._logger.exception("Could not prepare MMU routing after file selection change")
 		self.checkRemainingFilament()
 	pass
 
@@ -874,15 +918,173 @@ class SpoolmanagerPlugin(
 		self._checkForMissingPluginInfos()
 		pass
 
+	def _getContinuousPrintNextPath(self):
+		try:
+			pluginInfo = None
+			for pluginId in ("continuousprint", "ContinuousPrint"):
+				pluginInfo = self._plugin_manager.plugins.get(pluginId)
+				if pluginInfo != None:
+					break
+			if pluginInfo == None or not pluginInfo.enabled:
+				return None
+			implementation = pluginInfo.implementation
+			if implementation == None or not hasattr(implementation, "_state_json"):
+				return None
+			state = implementation._state_json()
+			if not isinstance(state, dict):
+				state = json.loads(state)
+			return continuousprint_next_path(state)
+		except Exception as e:
+			self._logger.warning("ContinuousPrint lookahead unavailable; MMU will unload: %s", str(e))
+			return None
+
+	def _prepareMmuRoutingForCurrentJob(self, enforceGuard=False):
+		self._mmuRoutingSession.reset()
+		enabled = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED])
+		dryRun = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN])
+		try:
+			configuredPrinter = int(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER]) or 5)
+		except Exception:
+			configuredPrinter = 5
+		currentPrinter = self._getCurrentPrinterNumber()
+		if (not enabled or currentPrinter != configuredPrinter):
+			return
+
+		origin, path, name = self._getCurrentJobFile()
+		gcodePath = None
+		if (origin == "local" and path != None):
+			try:
+				gcodePath = self._file_manager.path_on_disk(origin, path)
+			except Exception:
+				try:
+					gcodePath = self._file_manager.pathOnDisk(origin, path)
+				except Exception:
+					gcodePath = None
+
+		contract = None
+		if (gcodePath != None):
+			try:
+				contract = parse_contract_file(gcodePath)
+				templateErrors = runtime_template_errors_file(gcodePath)
+				if (contract.get("valid") and len(templateErrors) > 0):
+					contract["valid"] = False
+					contract["error"] = "unsupported runtime template: " + ", ".join(templateErrors)
+			except Exception as e:
+				self._logger.warning("Could not read SpoolManager contract from %s: %s", str(name or path), str(e))
+		if (contract == None):
+			contract = {"valid": False, "error": "contract_not_found"}
+
+		slotIds = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS]) or []
+		slots = []
+		self._databaseManager.connectoToDatabase()
+		try:
+			for slotIndex in range(5):
+				spool = None
+				spoolId = slotIds[slotIndex] if slotIndex < len(slotIds) else None
+				if (spoolId != None):
+					try:
+						spool = self._databaseManager.loadSpool(spoolId, withReusedConnection=True)
+					except Exception:
+						spool = None
+				slots.append(build_slot(slotIndex, spool))
+		finally:
+			self._databaseManager.closeDatabase()
+
+		try:
+			reserveWeight = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT]) or 0)
+		except Exception:
+			reserveWeight = 0.0
+		loadedSlot = self._mmuLoadedSlot if self._mmuLoadedState == STATE_LOADED else None
+		decision = select_slot(contract, slots, loaded_slot=loadedSlot, reserve_g=reserveWeight)
+		try:
+			loadDistance = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]) or 75.0)
+		except Exception:
+			loadDistance = 75.0
+
+		unloadAtEnd = True
+		nextPath = self._getContinuousPrintNextPath()
+		if (nextPath != None):
+			nextGcodePath = None
+			try:
+				nextGcodePath = self._file_manager.path_on_disk("local", nextPath)
+			except Exception:
+				try:
+					nextGcodePath = self._file_manager.pathOnDisk("local", nextPath)
+				except Exception:
+					nextGcodePath = None
+			if (nextGcodePath != None):
+				try:
+					nextContract = parse_contract_file(nextGcodePath)
+					nextTemplateErrors = runtime_template_errors_file(nextGcodePath)
+					if (len(nextTemplateErrors) == 0):
+						unloadAtEnd = not should_retain_for_next(
+							contract,
+							decision,
+							nextContract,
+							slots,
+							reserve_g=reserveWeight
+						)
+				except Exception as e:
+					self._logger.warning("Could not verify next ContinuousPrint contract; MMU will unload: %s", str(e))
+		self._mmuRoutingSession.configure(
+			enabled,
+			dryRun,
+			contract,
+			decision,
+			loaded_state=self._mmuLoadedState,
+			loaded_slot=self._mmuLoadedSlot,
+			unload_at_end=unloadAtEnd,
+			load_distance_mm=loadDistance
+		)
+
+		self._logger.info(
+			"MMU routing decision: file=%s dryRun=%s contract=%s decision=%s nextPath=%s unloadAtEnd=%s state=%s loadedSlot=%s active=%s error=%s",
+			str(name or path), str(dryRun), str(contract), str(decision), str(nextPath),
+			str(unloadAtEnd), str(self._mmuLoadedState), str(self._mmuLoadedSlot), str(self._mmuRoutingSession.active), str(self._mmuRoutingSession.error)
+		)
+
+		if (self._mmuRoutingSession.active and not dryRun):
+			selectedIds = list(self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS]) or [])
+			while len(selectedIds) < 1:
+				selectedIds.append(None)
+			selectedIds[0] = decision.get("spool_id")
+			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], selectedIds)
+			self._settings.save()
+		elif (not dryRun and enforceGuard):
+			self._logger.error("MMU hardware routing guard rejected print: %s", str(self._mmuRoutingSession.error))
+			try:
+				self._printer.cancel_print()
+			except Exception:
+				self._logger.exception("Could not cancel print rejected by MMU routing guard")
+
+	def on_atcommand_queuing(self, comm_instance, phase, command, parameters, tags=None, *args, **kwargs):
+		if (str(command or "").strip().upper() == "SPOOLMANAGER"):
+			self._mmuRoutingSession.handle_marker(parameters)
+
+	def on_queuingGCodeHook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		return self._mmuRoutingSession.rewrite(cmd)
+
 	# Listen to all  g-code which where already sent to the printer (thread: comm.sending_thread)
 	def on_sentGCodeHook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 
 		# TODO maybe later via a queue
 		# self._filamentOdometer.parse(gcode, cmd)
-		self.myFilamentOdometer.processGCodeLine(cmd)
+		cmdUpper = str(cmd).upper() if cmd != None else ""
+		tags = kwargs.get("tags")
+		if tags == None:
+			for arg in reversed(args):
+				if isinstance(arg, (set, list, tuple)):
+					tags = arg
+					break
+		tags = set(tags or [])
+		isMmuTransport = "spoolmanager:mmu_transport" in tags or "SM_PURPOSE=MMU_TRANSPORT" in cmdUpper
+		if (isMmuTransport and self._mmuRoutingSession.active):
+			self._mmuLoadedState = STATE_LOADED
+			self._mmuLoadedSlot = self._mmuRoutingSession.slot
+		if (should_count_for_odometer(cmd, tags)):
+			self.myFilamentOdometer.processGCodeLine(cmd)
 
 		try:
-			cmdUpper = str(cmd).upper() if cmd != None else ""
 			if ("SM_PLATE_LOADED" in cmdUpper):
 				self._logger.info("Detected SM_PLATE_LOADED marker in sent gcode: %s", str(cmd))
 				threading.Thread(target=self._onPlateLoadedMarker, daemon=True).start()
@@ -963,6 +1165,7 @@ class SpoolmanagerPlugin(
 
 		elif (Events.PRINT_STARTED == event):
 			self.alreadyCanceled = False
+			self._prepareMmuRoutingForCurrentJob(enforceGuard=True)
 			self._on_printJobStarted()
 
 		elif (Events.PRINT_PAUSED == event):
@@ -1093,6 +1296,14 @@ class SpoolmanagerPlugin(
 		## Debugging
 		settings[SettingsKeys.SETTINGS_KEY_SQL_LOGGING_ENABLED] = False
 		settings[SettingsKeys.SETTINGS_KEY_EXTRUSION_DEBUGGING_ENABLED] = False
+
+		## MMU single-nozzle routing. Hardware movement stays opt-in and dry-run by default.
+		settings[SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED] = False
+		settings[SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN] = True
+		settings[SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER] = 5
+		settings[SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS] = [None, None, None, None, None]
+		settings[SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT] = 0.0
+		settings[SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE] = 75.0
 
 		## Database
 		## nested settings are not working, because if only a few attributes are changed it only returns these few attribuets, instead the default values + adjusted values
@@ -1242,6 +1453,8 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+		"octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.on_atcommand_queuing,
+		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.on_queuingGCodeHook,
 		"octoprint.comm.protocol.gcode.sent": __plugin_implementation__.on_sentGCodeHook,
 		# "octoprint.comm.protocol.scripts": __plugin_implementation__.message_on_connect
 		"octoprint.events.register_custom_events":  __plugin_implementation__.register_custom_events
