@@ -11,6 +11,13 @@ STATE_UNKNOWN = "UNKNOWN"
 STATE_UNLOADED = "UNLOADED"
 STATE_LOADED = "LOADED"
 
+DEFAULT_LOAD_DISTANCE_MM = 17.0
+LEGACY_LOAD_DISTANCE_MM = 75.0
+DEFAULT_MAINTENANCE_BYPASS_FILES = (
+    "Swap Plate with Doors.gcode",
+    "Swap Plate with Doors-2.gcode",
+)
+
 REGION_NONE = None
 REGION_PURGE_AREA = "PURGE_AREA"
 REGION_START = "START_SEQUENCE"
@@ -24,6 +31,71 @@ REQUIRED_RUNTIME_MARKERS = (
     "@SPOOLMANAGER END_SEQUENCE_BEGIN",
     "@SPOOLMANAGER END_SEQUENCE_END",
 )
+
+
+def parse_routing_bypass_text(text):
+    """Return the optional routing-bypass reason embedded in a G-code header."""
+    for raw_line in str(text or "").splitlines():
+        match = re.match(
+            r"^;\s*SPOOLMANAGER_ROUTING_BYPASS\s*=\s*([a-z0-9_-]+)\s*$",
+            raw_line.strip(),
+            re.I,
+        )
+        if match:
+            return match.group(1).lower()
+    return None
+
+
+def routing_bypass_reason(name, text=None, allowed_names=None):
+    """Return a safe explicit bypass reason, or None when routing is required."""
+    filename = str(name or "").replace("\\", "/").rsplit("/", 1)[-1].lower()
+    configured = allowed_names if allowed_names is not None else DEFAULT_MAINTENANCE_BYPASS_FILES
+    allowed = set(str(value or "").strip().lower() for value in configured if str(value or "").strip())
+    if filename and filename in allowed:
+        return "maintenance_filename"
+    marker = parse_routing_bypass_text(text)
+    if marker:
+        return "marker:%s" % marker
+    return None
+
+
+def routing_bypass_reason_file(path, name=None, allowed_names=None, max_bytes=65536):
+    filename_reason = routing_bypass_reason(name or path, allowed_names=allowed_names)
+    if filename_reason:
+        return filename_reason
+    with open(path, "rb") as handle:
+        raw = handle.read(int(max_bytes))
+    try:
+        text = raw.decode("utf-8", errors="replace")
+    except TypeError:
+        text = raw.decode("utf-8", "replace")
+    return routing_bypass_reason(name or path, text=text, allowed_names=allowed_names)
+
+
+def classify_mmu_serial_line(line):
+    """Classify the MK4 MMU progress messages also used by Prusa MMU."""
+    text = str(line or "")
+    if any(value in text for value in (
+        "MMU2:Command Error",
+        "MMU2:ERR Help filament",
+        "MMU2:ERR Internal",
+        "MMU2:ERR TMC failed",
+    )):
+        return "ERROR"
+    if any(value in text for value in (
+        "MMU2:Feeding to FINDA",
+        "MMU2:Feeding to extruder",
+        "MMU2:Feeding to FSensor",
+    )):
+        return "LOADING"
+    if any(value in text for value in (
+        "MMU2:Unloading to FINDA",
+        "MMU2:Retract from FINDA",
+    )):
+        return "UNLOADING"
+    if "MMU2:Disengaging idler" in text:
+        return "ACTION_DONE"
+    return None
 
 
 def normalize_key(value):
@@ -163,6 +235,10 @@ def runtime_template_errors(lines):
             found.add("end_end")
             continue
         upper = line.upper()
+        if "start_m569" not in found and re.match(r"^M190\s+S[-+]?[0-9]+(?:\.[0-9]+)?\b", upper):
+            found.add("recovery_m190")
+        if "start_m569" not in found and re.match(r"^M109(?:\s+T\d+)?\s+S[-+]?[0-9]+(?:\.[0-9]+)?\b", upper):
+            found.add("recovery_m109")
         if region == REGION_PURGE_AREA and re.match(r"^G29\s+P1\s+X0\s+Y0\s+W50\s+H20\s+C\b", upper):
             found.add("purge_w50")
         elif region == REGION_START:
@@ -181,7 +257,8 @@ def runtime_template_errors(lines):
             found.add("end_wait")
     required = set([
         "purge_begin", "purge_end", "start_begin", "start_end", "end_begin", "end_end",
-        "purge_w50", "start_m569", "purge_x25", "purge_x35", "purge_x45", "wipe_x48", "wipe_x51", "end_wait",
+        "recovery_m190", "recovery_m109", "purge_w50", "start_m569",
+        "purge_x25", "purge_x35", "purge_x45", "wipe_x48", "wipe_x51", "end_wait",
     ])
     return sorted(required - found)
 
@@ -391,23 +468,29 @@ class MmuRoutingSession(object):
         self.region = REGION_NONE
         self.slot = None
         self.fresh_load = False
+        self.recovery_required = False
         self.unload_at_end = True
-        self.load_distance_mm = 75.0
+        self.load_distance_mm = DEFAULT_LOAD_DISTANCE_MM
         self.extra_purge_mm = 0.0
         self.unload_injected = False
+        self.recovery_injected = False
+        self.restore_bed_wait = None
+        self.restore_hotend_wait = None
+        self.bypass = False
+        self.bypass_reason = None
         self.contract = None
         self.decision = None
         self.error = None
 
     def configure(self, enabled, dry_run, contract, decision, loaded_state=STATE_UNKNOWN,
-                  loaded_slot=None, unload_at_end=True, load_distance_mm=75.0):
+                  loaded_slot=None, unload_at_end=True, load_distance_mm=DEFAULT_LOAD_DISTANCE_MM):
         self.reset()
         self.enabled = bool(enabled)
         self.dry_run = bool(dry_run)
         self.contract = contract
         self.decision = decision
         self.unload_at_end = bool(unload_at_end)
-        self.load_distance_mm = float(load_distance_mm or 75.0)
+        self.load_distance_mm = float(load_distance_mm or DEFAULT_LOAD_DISTANCE_MM)
         if not self.enabled:
             return
         if not contract or not contract.get("valid"):
@@ -419,15 +502,25 @@ class MmuRoutingSession(object):
         self.slot = int(decision.get("slot"))
         retained = loaded_state == STATE_LOADED and loaded_slot == self.slot
         self.fresh_load = not retained
-        if not self.dry_run and loaded_state == STATE_UNKNOWN:
-            self.error = "loaded_state_unknown"
-            return
+        self.recovery_required = bool(not self.dry_run and loaded_state == STATE_UNKNOWN)
         if self.fresh_load:
-            self.extra_purge_mm = 32.0
+            # The full-width fresh-load purge adds 72 mm over the regular MK4 line.
+            self.extra_purge_mm = 72.0
+
+    def configure_bypass(self, enabled, dry_run, reason):
+        self.reset()
+        self.enabled = bool(enabled)
+        self.dry_run = bool(dry_run)
+        self.bypass = True
+        self.bypass_reason = str(reason or "maintenance")
 
     @property
     def active(self):
         return self.enabled and self.error is None and self.slot is not None
+
+    @property
+    def allow_print(self):
+        return self.active or self.bypass
 
     def handle_marker(self, parameters):
         marker = str(parameters or "").strip().upper()
@@ -450,9 +543,14 @@ class MmuRoutingSession(object):
         command = str(cmd or "")
         upper = command.upper()
 
+        if re.match(r"^\s*M190\s+S[-+]?[0-9]+(?:\.[0-9]+)?\b", upper):
+            self.restore_bed_wait = _without_inline_comment(command)
+        if re.match(r"^\s*M109(?:\s+T\d+)?\s+S[-+]?[0-9]+(?:\.[0-9]+)?\b", upper):
+            self.restore_hotend_wait = _without_inline_comment(command)
+
         if self.region == REGION_PURGE_AREA and self.fresh_load:
             if re.match(r"^\s*G29\s+P1\s+X0\s+Y0\s+W50\s+H20\s+C\b", upper):
-                return (_without_inline_comment(re.sub(r"\bW50\b", "W130", command, count=1, flags=re.I)),)
+                return (_without_inline_comment(re.sub(r"\bW50\b", "W235", command, count=1, flags=re.I)),)
 
         if self.region == REGION_START and self.fresh_load:
             if re.match(r"^\s*M569\s+S0\s+E\b", upper):
@@ -463,16 +561,32 @@ class MmuRoutingSession(object):
                     ("M708 A0x11 X140", None, {"spoolmanager:mmu_setup"}),
                     ("M708 A0x14 X20", None, {"spoolmanager:mmu_setup"}),
                     ("M708 A0x1e X12", None, {"spoolmanager:mmu_setup"}),
+                ]
+                if self.recovery_required:
+                    self.recovery_injected = True
+                    setup.append(("M702 W2", None, {"spoolmanager:mmu_recovery"}))
+                    # M702 W2 can clear both temperature targets. Restore them before
+                    # asking the MMU to feed filament into the hotend.
+                    setup.extend([
+                        (_wait_to_set_command(self.restore_bed_wait), None, {"spoolmanager:mmu_recovery_restore"}),
+                        (_wait_to_set_command(self.restore_hotend_wait), None, {"spoolmanager:mmu_recovery_restore"}),
+                        (self.restore_bed_wait, None, {"spoolmanager:mmu_recovery_restore"}),
+                        (self.restore_hotend_wait, None, {"spoolmanager:mmu_recovery_restore"}),
+                        ("M83", None, {"spoolmanager:mmu_recovery_restore"}),
+                        ("G92 E0", None, {"spoolmanager:mmu_recovery_restore"}),
+                        (_without_inline_comment(command), None, {"spoolmanager:mmu_recovery_restore"}),
+                    ])
+                setup.extend([
                     ("T%d" % self.slot, None, {"spoolmanager:mmu_select"}),
                     ("G1 E%s F1000" % _format_number(self.load_distance_mm), None, {"spoolmanager:mmu_transport"}),
-                ]
+                ])
                 return setup
             replacements = (
-                (r"^\s*G0\s+X25\s+E4\s+F500\b", "G0 X105 E36 F500"),
-                (r"^\s*G0\s+X35\s+E4\s+F650\b", "G0 X115 E4 F650"),
-                (r"^\s*G0\s+X45\s+E4\s+F800\b", "G0 X125 E4 F800"),
-                (r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", "G0 X128 Z0.05 F8000"),
-                (r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", "G0 X131 Z0.2 F8000"),
+                (r"^\s*G0\s+X25\s+E4\s+F500\b", "G0 X205 E76 F500"),
+                (r"^\s*G0\s+X35\s+E4\s+F650\b", "G0 X215 E4 F650"),
+                (r"^\s*G0\s+X45\s+E4\s+F800\b", "G0 X225 E4 F800"),
+                (r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", "G0 X228 Z0.05 F8000"),
+                (r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", "G0 X231 Z0.2 F8000"),
             )
             for pattern, replacement in replacements:
                 if re.match(pattern, upper):
@@ -501,6 +615,13 @@ def _format_number(value):
     if value.is_integer():
         return str(int(value))
     return ("%.3f" % value).rstrip("0").rstrip(".")
+
+
+def _wait_to_set_command(command):
+    value = str(command or "")
+    value = re.sub(r"^\s*M190\b", "M140", value, count=1, flags=re.I)
+    value = re.sub(r"^\s*M109\b", "M104", value, count=1, flags=re.I)
+    return value
 
 
 def should_count_for_odometer(cmd, tags=None):

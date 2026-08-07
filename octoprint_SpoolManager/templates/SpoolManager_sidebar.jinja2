@@ -52,6 +52,24 @@
         </div>
     </div>
 
+    <div style="margin-top: 10px;" data-bind="visible: mmuRoutingAppliesHere">
+        <div>
+            <b>MMU Routing</b>
+            <span class="label"
+                  data-bind="text: mmuRoutingEnabled() ? 'ON' : 'OFF', css: {'label-success': mmuRoutingEnabled()}"></span>
+        </div>
+        <div style="margin-top: 3px;">
+            <span data-bind="text: mmuRoutingStateText"></span>
+            <span data-bind="visible: mmuRoutingDryRun" class="label label-warning">DRY RUN</span>
+        </div>
+        <div style="margin-top: 4px;">
+            <button class="btn btn-mini"
+                    data-bind="click: toggleMmuRouting, enable: mmuRoutingCanToggle, text: mmuRoutingEnabled() ? 'Disable routing' : 'Enable routing'">
+            </button>
+            <span data-bind="visible: mmuRoutingBusy"><i class="icon-spinner icon-spin"></i></span>
+        </div>
+    </div>
+
     <div style="margin-top: 10px;" data-bind="visible: pluginNotWorking()==false">
         <div data-bind="visible: currentPrinterNumber() != null">
             <div>

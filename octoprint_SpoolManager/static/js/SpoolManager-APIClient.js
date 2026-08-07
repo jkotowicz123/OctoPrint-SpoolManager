@@ -51,6 +51,32 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
             responseHandler(data)
         });
     }
+
+    this.callGetMmuRouting = function (successHandler, errorHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/mmuRouting",
+            dataType: "json",
+            type: "GET"
+        }).done(function(data){
+            successHandler(data);
+        }).fail(function(xhr){
+            if (errorHandler) errorHandler(xhr);
+        });
+    }
+
+    this.callUpdateMmuRouting = function (payload, successHandler, errorHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/" + this.pluginId + "/mmuRouting",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(payload || {}),
+            type: "PUT"
+        }).done(function(data){
+            successHandler(data);
+        }).fail(function(xhr){
+            if (errorHandler) errorHandler(xhr);
+        });
+    }
     //////////////////////////////////////////////////////////////////////////////// LOAD DatabaseMetaData
     this.loadDatabaseMetaData = function (responseHandler){
         var urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadDatabaseMetaData";

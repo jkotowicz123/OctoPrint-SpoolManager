@@ -14,13 +14,19 @@ from octoprint_SpoolManager.DatabaseManager import DatabaseManager
 
 from octoprint_SpoolManager.newodometer import NewFilamentOdometer
 from octoprint_SpoolManager.mmu_routing import (
+	DEFAULT_LOAD_DISTANCE_MM,
+	DEFAULT_MAINTENANCE_BYPASS_FILES,
+	LEGACY_LOAD_DISTANCE_MM,
 	MmuRoutingSession,
 	STATE_LOADED,
 	STATE_UNKNOWN,
 	STATE_UNLOADED,
 	build_slot,
+	classify_mmu_serial_line,
 	continuousprint_next_path,
 	parse_contract_file,
+	routing_bypass_reason,
+	routing_bypass_reason_file,
 	runtime_template_errors_file,
 	select_slot,
 	spool_accounting_targets,
@@ -85,6 +91,11 @@ class SpoolmanagerPlugin(
 		self._mmuRoutingSession = MmuRoutingSession()
 		self._mmuLoadedState = STATE_UNKNOWN
 		self._mmuLoadedSlot = None
+		self._mmuPendingAction = None
+		self._mmuPendingSlot = None
+		self._mmuStateSource = "startup"
+		self._mmuStateUpdatedAt = datetime.now()
+		self._migrateMmuRoutingSettings()
 
 		self._logger.info("Done initializing")
 		pass
@@ -826,17 +837,15 @@ class SpoolmanagerPlugin(
 		if (self._mmuRoutingSession.active and not self._mmuRoutingSession.dry_run):
 			if (printStatus == "success"):
 				if (self._mmuRoutingSession.unload_at_end and self._mmuRoutingSession.unload_injected):
-					self._mmuLoadedState = STATE_UNLOADED
-					self._mmuLoadedSlot = None
+					if self._mmuLoadedState != STATE_UNLOADED:
+						self._setMmuLoadedState(STATE_UNKNOWN, None, "print_done_unload_unconfirmed")
 				elif (not self._mmuRoutingSession.unload_at_end):
-					self._mmuLoadedState = STATE_LOADED
-					self._mmuLoadedSlot = self._mmuRoutingSession.slot
+					if not (self._mmuLoadedState == STATE_LOADED and self._mmuLoadedSlot == self._mmuRoutingSession.slot):
+						self._setMmuLoadedState(STATE_UNKNOWN, None, "print_done_load_unconfirmed")
 				else:
-					self._mmuLoadedState = STATE_UNKNOWN
-					self._mmuLoadedSlot = None
+					self._setMmuLoadedState(STATE_UNKNOWN, None, "print_done_ambiguous")
 			elif (printStatus != "paused"):
-				self._mmuLoadedState = STATE_UNKNOWN
-				self._mmuLoadedSlot = None
+				self._setMmuLoadedState(STATE_UNKNOWN, None, "print_%s" % str(printStatus))
 
 		# update remaining data in selected spools after a print
 		selectedSpools = self.loadSelectedSpools()
@@ -951,6 +960,123 @@ class SpoolmanagerPlugin(
 		self._checkForMissingPluginInfos()
 		pass
 
+	def _migrateMmuRoutingSettings(self):
+		"""Correct the unsafe legacy prototype distance without touching custom values."""
+		try:
+			configured = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]) or LEGACY_LOAD_DISTANCE_MM)
+			if abs(configured - LEGACY_LOAD_DISTANCE_MM) < 0.0001:
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE], DEFAULT_LOAD_DISTANCE_MM)
+				self._settings.save()
+				self._logger.warning(
+					"Migrated MMU load distance from unsafe prototype value %.1f mm to MK4 MMU3 profile value %.1f mm",
+					LEGACY_LOAD_DISTANCE_MM,
+					DEFAULT_LOAD_DISTANCE_MM
+				)
+		except Exception:
+			self._logger.exception("Could not migrate MMU routing settings")
+
+	def _setMmuPendingAction(self, action, slot=None, source="unknown"):
+		action = str(action or "").upper() or None
+		if action not in ("LOADING", "UNLOADING"):
+			action = None
+		try:
+			slot = None if slot is None else int(slot)
+		except Exception:
+			slot = None
+		if action == "LOADING" and slot is None:
+			slot = self._mmuRoutingSession.slot
+		if self._mmuPendingAction != action or self._mmuPendingSlot != slot:
+			self._logger.info(
+				"MMU action transition: action=%s slot=%s source=%s",
+				str(action), str(slot), str(source)
+			)
+		self._mmuPendingAction = action
+		self._mmuPendingSlot = slot
+
+	def _setMmuLoadedState(self, state, slot=None, source="unknown"):
+		state = str(state or STATE_UNKNOWN).upper()
+		if state not in (STATE_UNKNOWN, STATE_UNLOADED, STATE_LOADED):
+			state = STATE_UNKNOWN
+		try:
+			slot = None if slot is None else int(slot)
+		except Exception:
+			slot = None
+		if state != STATE_LOADED or slot is None or slot < 0 or slot > 4:
+			if state == STATE_LOADED:
+				state = STATE_UNKNOWN
+			slot = None
+		oldState = self._mmuLoadedState
+		oldSlot = self._mmuLoadedSlot
+		self._mmuLoadedState = state
+		self._mmuLoadedSlot = slot
+		self._mmuPendingAction = None
+		self._mmuPendingSlot = None
+		self._mmuStateSource = str(source or "unknown")
+		self._mmuStateUpdatedAt = datetime.now()
+		if oldState != state or oldSlot != slot:
+			self._logger.info(
+				"MMU loaded-state transition: %s/%s -> %s/%s source=%s",
+				str(oldState), str(oldSlot), str(state), str(slot), str(source)
+			)
+			try:
+				self._sendDataToClient(dict(
+					action="mmuRoutingStateChanged",
+					loadedState=state,
+					loadedSlot=slot,
+					loadedStateSource=self._mmuStateSource
+				))
+			except Exception:
+				self._logger.debug("Could not publish MMU state transition to clients", exc_info=True)
+
+	def _parseMmuTool(self, value):
+		try:
+			text = str(value).strip().upper()
+			if text.startswith("T"):
+				text = text[1:]
+			tool = int(text, 16)
+			return tool if 0 <= tool <= 4 else None
+		except Exception:
+			return None
+
+	def _handlePrusaMmuEvent(self, payload):
+		data = payload if isinstance(payload, dict) else {}
+		state = str(data.get("state") or "").upper()
+		tool = self._parseMmuTool(data.get("tool"))
+		if state == "LOADING":
+			self._setMmuPendingAction("LOADING", tool, "prusammu_event")
+		elif state == "LOADED":
+			confirmedSlot = tool if tool is not None else self._mmuPendingSlot
+			self._setMmuLoadedState(STATE_LOADED, confirmedSlot, "prusammu_event")
+		elif state in ("UNLOADING", "UNLOADING_FINAL"):
+			self._setMmuPendingAction("UNLOADING", self._mmuLoadedSlot, "prusammu_event")
+		elif (state == "OK" and self._mmuPendingAction == "UNLOADING"
+				and str(data.get("responseData") or "").lower() == "2"):
+			self._setMmuLoadedState(STATE_UNLOADED, None, "prusammu_event")
+		elif state in ("ATTENTION", "PAUSED_USER") and self._mmuPendingAction is not None:
+			self._setMmuLoadedState(STATE_UNKNOWN, None, "prusammu_event_error")
+
+	def _handleMmuSerialLine(self, line):
+		transition = classify_mmu_serial_line(line)
+		if transition == "LOADING":
+			targetSlot = self._mmuRoutingSession.slot if self._mmuRoutingSession.active else self._mmuPendingSlot
+			self._setMmuPendingAction("LOADING", targetSlot, "serial")
+		elif transition == "UNLOADING":
+			self._setMmuPendingAction("UNLOADING", self._mmuLoadedSlot, "serial")
+		elif transition == "ACTION_DONE":
+			if self._mmuPendingAction == "LOADING":
+				self._setMmuLoadedState(STATE_LOADED, self._mmuPendingSlot, "serial")
+			elif self._mmuPendingAction == "UNLOADING":
+				self._setMmuLoadedState(STATE_UNLOADED, None, "serial")
+		elif transition == "ERROR" and self._mmuPendingAction is not None:
+			self._setMmuLoadedState(STATE_UNKNOWN, None, "serial_error")
+
+	def on_receivedGCodeHook(self, comm_instance, line, *args, **kwargs):
+		try:
+			self._handleMmuSerialLine(line)
+		except Exception:
+			self._logger.exception("Could not process MMU serial response")
+		return line
+
 	def _getContinuousPrintNextPath(self):
 		try:
 			pluginInfo = None
@@ -994,6 +1120,25 @@ class SpoolmanagerPlugin(
 				except Exception:
 					gcodePath = None
 
+		bypassFiles = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES]) or list(DEFAULT_MAINTENANCE_BYPASS_FILES)
+		bypassReason = routing_bypass_reason(name or path, allowed_names=bypassFiles)
+		if (bypassReason == None and gcodePath != None):
+			try:
+				bypassReason = routing_bypass_reason_file(
+					gcodePath,
+					name=name or path,
+					allowed_names=bypassFiles
+				)
+			except Exception as e:
+				self._logger.warning("Could not inspect routing bypass marker in %s: %s", str(name or path), str(e))
+		if (bypassReason != None):
+			self._mmuRoutingSession.configure_bypass(enabled, dryRun, bypassReason)
+			self._logger.info(
+				"MMU routing bypass: file=%s reason=%s state=%s loadedSlot=%s",
+				str(name or path), str(bypassReason), str(self._mmuLoadedState), str(self._mmuLoadedSlot)
+			)
+			return
+
 		contract = None
 		if (gcodePath != None):
 			try:
@@ -1030,9 +1175,9 @@ class SpoolmanagerPlugin(
 		loadedSlot = self._mmuLoadedSlot if self._mmuLoadedState == STATE_LOADED else None
 		decision = select_slot(contract, slots, loaded_slot=loadedSlot, reserve_g=reserveWeight)
 		try:
-			loadDistance = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]) or 75.0)
+			loadDistance = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]) or DEFAULT_LOAD_DISTANCE_MM)
 		except Exception:
-			loadDistance = 75.0
+			loadDistance = DEFAULT_LOAD_DISTANCE_MM
 
 		unloadAtEnd = True
 		nextPath = self._getContinuousPrintNextPath()
@@ -1076,7 +1221,7 @@ class SpoolmanagerPlugin(
 			str(unloadAtEnd), str(self._mmuLoadedState), str(self._mmuLoadedSlot), str(self._mmuRoutingSession.active), str(self._mmuRoutingSession.error)
 		)
 
-		if (not dryRun and enforceGuard and not self._mmuRoutingSession.active):
+		if (not dryRun and enforceGuard and not self._mmuRoutingSession.allow_print):
 			self._logger.error("MMU hardware routing guard rejected print: %s", str(self._mmuRoutingSession.error))
 			try:
 				self._printer.cancel_print()
@@ -1104,9 +1249,15 @@ class SpoolmanagerPlugin(
 					break
 		tags = set(tags or [])
 		isMmuTransport = "spoolmanager:mmu_transport" in tags or "SM_PURPOSE=MMU_TRANSPORT" in cmdUpper
-		if (isMmuTransport and self._mmuRoutingSession.active):
-			self._mmuLoadedState = STATE_LOADED
-			self._mmuLoadedSlot = self._mmuRoutingSession.slot
+		isMmuSelect = "spoolmanager:mmu_select" in tags or "SM_PURPOSE=MMU_SELECT" in cmdUpper
+		isMmuRecovery = "spoolmanager:mmu_recovery" in tags or "SM_PURPOSE=MMU_RECOVERY" in cmdUpper
+		isMmuUnload = "spoolmanager:mmu_unload" in tags or "SM_PURPOSE=MMU_UNLOAD" in cmdUpper
+		if (self._mmuRoutingSession.active and isMmuSelect):
+			self._setMmuPendingAction("LOADING", self._mmuRoutingSession.slot, "gcode_sent")
+		elif (self._mmuRoutingSession.active and (isMmuRecovery or isMmuUnload)):
+			self._setMmuPendingAction("UNLOADING", self._mmuLoadedSlot, "gcode_sent")
+		elif (isMmuTransport and self._mmuRoutingSession.active):
+			self._logger.debug("MMU transport sent; waiting for firmware confirmation before marking slot loaded")
 		if (should_count_for_odometer(cmd, tags)):
 			self.myFilamentOdometer.processGCodeLine(cmd)
 
@@ -1174,6 +1325,13 @@ class SpoolmanagerPlugin(
 			self._logger.exception("Unhandled error in _onPlateLoadedMarker")
 
 	def on_event(self, event, payload):
+		if event in ("plugin_prusammu_mmu_change", "plugin_prusammu_mmu_changed"):
+			self._handlePrusaMmuEvent(payload)
+			return
+
+		if event in (getattr(Events, "DISCONNECTED", "Disconnected"), getattr(Events, "ERROR", "Error")):
+			self._setMmuLoadedState(STATE_UNKNOWN, None, "printer_%s" % str(event).lower())
+			return
 
 		# if (event != "RegisteredMessageReceived"):
 		# 	print("*** EVENT: " + event)
@@ -1328,7 +1486,8 @@ class SpoolmanagerPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN] = True
 		settings[SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER] = 5
 		settings[SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT] = 0.0
-		settings[SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE] = 75.0
+		settings[SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE] = DEFAULT_LOAD_DISTANCE_MM
+		settings[SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES] = list(DEFAULT_MAINTENANCE_BYPASS_FILES)
 
 		## Database
 		## nested settings are not working, because if only a few attributes are changed it only returns these few attribuets, instead the default values + adjusted values
@@ -1481,6 +1640,7 @@ def __plugin_load__():
 		"octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.on_atcommand_queuing,
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.on_queuingGCodeHook,
 		"octoprint.comm.protocol.gcode.sent": __plugin_implementation__.on_sentGCodeHook,
+		"octoprint.comm.protocol.gcode.received": __plugin_implementation__.on_receivedGCodeHook,
 		# "octoprint.comm.protocol.scripts": __plugin_implementation__.message_on_connect
 		"octoprint.events.register_custom_events":  __plugin_implementation__.register_custom_events
 	}

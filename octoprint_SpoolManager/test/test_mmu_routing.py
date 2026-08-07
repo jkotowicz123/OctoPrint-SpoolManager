@@ -8,11 +8,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from mmu_routing import (
     MmuRoutingSession,
     STATE_LOADED,
+    STATE_UNKNOWN,
     STATE_UNLOADED,
     build_slot,
+    classify_mmu_serial_line,
     continuousprint_next_path,
     missing_runtime_markers,
     parse_contract_text,
+    routing_bypass_reason,
     select_slot,
     spool_accounting_targets,
     should_retain_for_next,
@@ -75,7 +78,9 @@ class MmuRoutingTests(unittest.TestCase):
         self.assertIn("@SPOOLMANAGER END_SEQUENCE_END", missing_runtime_markers(all_markers.replace("@SPOOLMANAGER END_SEQUENCE_END", "")))
 
     def test_live_template_requires_every_command_that_fresh_mode_rewrites(self):
-        template = """@SPOOLMANAGER PURGE_AREA_BEGIN
+        template = """M190 S60
+M109 S230
+@SPOOLMANAGER PURGE_AREA_BEGIN
 G29 P1 X0 Y0 W50 H20 C
 @SPOOLMANAGER PURGE_AREA_END
 @SPOOLMANAGER START_SEQUENCE_BEGIN
@@ -110,9 +115,11 @@ G4 ; wait
         session = MmuRoutingSession()
         session.configure(True, False, self.contract, decision, STATE_UNLOADED)
 
+        session.rewrite("M190 S60")
+        session.rewrite("M109 S230")
         self.assertIsNone(session.rewrite("G29 P1 X0 Y0 W50 H20 C"))
         session.handle_marker("PURGE_AREA_BEGIN")
-        self.assertEqual(session.rewrite("G29 P1 X0 Y0 W50 H20 C")[0], "G29 P1 X0 Y0 W130 H20 C")
+        self.assertEqual(session.rewrite("G29 P1 X0 Y0 W50 H20 C")[0], "G29 P1 X0 Y0 W235 H20 C")
         session.handle_marker("PURGE_AREA_END")
 
         session.handle_marker("START_SEQUENCE_BEGIN")
@@ -120,11 +127,51 @@ G4 ; wait
         self.assertEqual(expanded[0], "M569 S0 E")
         self.assertEqual(expanded[-2][0], "T2")
         self.assertIn("spoolmanager:mmu_select", expanded[-2][2])
-        self.assertEqual(expanded[-1][0], "G1 E75 F1000")
+        self.assertEqual(expanded[-1][0], "G1 E17 F1000")
         self.assertIn("spoolmanager:mmu_transport", expanded[-1][2])
-        self.assertIn("X105 E36", session.rewrite("G0 X25 E4 F500 ; purge")[0])
+        self.assertIn("X205 E76", session.rewrite("G0 X25 E4 F500 ; purge")[0])
+        self.assertEqual(session.extra_purge_mm, 72.0)
         for injected in expanded[1:]:
             self.assertNotIn(";", injected[0])
+
+    def test_unknown_state_injects_sensor_aware_recovery_before_select(self):
+        decision = select_slot(self.contract, self.slots)
+        session = MmuRoutingSession()
+        session.configure(True, False, self.contract, decision, STATE_UNKNOWN)
+        self.assertTrue(session.active)
+        self.assertTrue(session.recovery_required)
+        session.rewrite("M190 S60")
+        session.rewrite("M109 S230")
+        session.handle_marker("START_SEQUENCE_BEGIN")
+        expanded = session.rewrite("M569 S0 E")
+        commands = [entry if isinstance(entry, str) else entry[0] for entry in expanded]
+        self.assertLess(commands.index("M702 W2"), commands.index("T2"))
+        self.assertEqual(commands[commands.index("M702 W2") + 1:commands.index("T2")], [
+            "M140 S60", "M104 S230", "M190 S60", "M109 S230", "M83", "G92 E0", "M569 S0 E",
+        ])
+        recovery = expanded[commands.index("M702 W2")]
+        self.assertIn("spoolmanager:mmu_recovery", recovery[2])
+
+    def test_maintenance_files_and_explicit_marker_bypass_routing(self):
+        self.assertEqual(routing_bypass_reason("Swap Plate with Doors.gcode"), "maintenance_filename")
+        self.assertEqual(
+            routing_bypass_reason("custom.gcode", "; SPOOLMANAGER_ROUTING_BYPASS = maintenance"),
+            "marker:maintenance",
+        )
+        self.assertIsNone(routing_bypass_reason("ordinary.gcode"))
+
+        session = MmuRoutingSession()
+        session.configure_bypass(True, False, "maintenance_filename")
+        self.assertTrue(session.allow_print)
+        self.assertFalse(session.active)
+        self.assertIsNone(session.rewrite("T0"))
+
+    def test_mk4_serial_progress_is_classified_without_prusammu_dependency(self):
+        self.assertEqual(classify_mmu_serial_line("MMU2:Feeding to FSensor"), "LOADING")
+        self.assertEqual(classify_mmu_serial_line("MMU2:Retract from FINDA"), "UNLOADING")
+        self.assertEqual(classify_mmu_serial_line("MMU2:Disengaging idler"), "ACTION_DONE")
+        self.assertEqual(classify_mmu_serial_line("MMU2:ERR Help filament"), "ERROR")
+        self.assertIsNone(classify_mmu_serial_line("ok"))
 
     def test_retained_load_keeps_start_purge_and_skips_unload(self):
         decision = select_slot(self.contract, self.slots)
@@ -192,8 +239,8 @@ G4 ; wait
 
     def test_odometer_ignores_runtime_tool_and_transport_but_counts_extra_purge(self):
         self.assertFalse(should_count_for_odometer("T2", {"spoolmanager:mmu_select"}))
-        self.assertFalse(should_count_for_odometer("G1 E75 F1000", {"spoolmanager:mmu_transport"}))
-        self.assertTrue(should_count_for_odometer("G0 X105 E36 F500", {"spoolmanager:mmu_extra_purge"}))
+        self.assertFalse(should_count_for_odometer("G1 E17 F1000", {"spoolmanager:mmu_transport"}))
+        self.assertTrue(should_count_for_odometer("G0 X205 E76 F500", {"spoolmanager:mmu_extra_purge"}))
 
     def test_live_single_nozzle_usage_is_charged_to_selected_mmu_position(self):
         self.assertEqual(spool_accounting_targets(5, True, False, 1), [(0, 1)])

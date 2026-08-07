@@ -77,6 +77,67 @@ $(function() {
         self.sidebarCurrentSheet = ko.observable(null);
         self.sidebarMagazineSheets = ko.observableArray([]);
 
+        self.mmuRoutingAvailable = ko.observable(false);
+        self.mmuRoutingEnabled = ko.observable(false);
+        self.mmuRoutingDryRun = ko.observable(true);
+        self.mmuRoutingLoadedState = ko.observable("UNKNOWN");
+        self.mmuRoutingLoadedSlot = ko.observable(null);
+        self.mmuRoutingStateSource = ko.observable("unknown");
+        self.mmuRoutingBusy = ko.observable(false);
+        self.mmuRoutingPrinterNumber = ko.observable(null);
+
+        self.mmuRoutingStateText = ko.pureComputed(function(){
+            if (self.mmuRoutingLoadedState() === "LOADED" && self.mmuRoutingLoadedSlot() != null){
+                return "Loaded: position " + (parseInt(self.mmuRoutingLoadedSlot(), 10) + 1);
+            }
+            if (self.mmuRoutingLoadedState() === "UNLOADED") return "Nozzle empty";
+            return "Filament state unknown";
+        });
+
+        self.mmuRoutingCanToggle = ko.pureComputed(function(){
+            var printing = self.printerStateViewModel.isPrinting && self.printerStateViewModel.isPrinting();
+            var paused = self.printerStateViewModel.isPaused && self.printerStateViewModel.isPaused();
+            return self.mmuRoutingAvailable() && !self.mmuRoutingBusy() && !printing && !paused;
+        });
+
+        self.mmuRoutingAppliesHere = ko.pureComputed(function(){
+            return self.mmuRoutingAvailable() && self.currentPrinterNumber() != null &&
+                self.mmuRoutingPrinterNumber() === self.currentPrinterNumber();
+        });
+
+        self._applyMmuRoutingData = function(data){
+            if (!data || typeof data.enabled === "undefined") return;
+            self.mmuRoutingAvailable(true);
+            self.mmuRoutingEnabled(!!data.enabled);
+            self.mmuRoutingDryRun(!!data.dryRun);
+            self.mmuRoutingLoadedState(data.loadedState || "UNKNOWN");
+            self.mmuRoutingLoadedSlot(data.loadedSlot == null ? null : data.loadedSlot);
+            self.mmuRoutingStateSource(data.loadedStateSource || "unknown");
+            self.mmuRoutingPrinterNumber(data.printerNumber == null ? null : parseInt(data.printerNumber, 10));
+        };
+
+        self.loadMmuRouting = function(){
+            self.apiClient.callGetMmuRouting(function(data){
+                self._applyMmuRoutingData(data);
+            }, function(){
+                self.mmuRoutingAvailable(false);
+            });
+        };
+
+        self.toggleMmuRouting = function(){
+            if (!self.mmuRoutingCanToggle()) return;
+            self.mmuRoutingBusy(true);
+            self.apiClient.callUpdateMmuRouting({enabled: !self.mmuRoutingEnabled()}, function(data){
+                self._applyMmuRoutingData(data);
+                self.mmuRoutingBusy(false);
+            }, function(xhr){
+                self.mmuRoutingBusy(false);
+                var message = "Could not change MMU routing.";
+                if (xhr && xhr.responseJSON && xhr.responseJSON.error) message = xhr.responseJSON.error;
+                self.showPopUp("error", "MMU routing", message, true);
+            });
+        };
+
         self.sheets = ko.observableArray([]);
         self.sheetTypes = ko.observableArray([]);
         self.sheetFilterQuery = ko.observable("");
@@ -1998,6 +2059,7 @@ $(function() {
 
             // Load all Spools
             self.loadSpoolsForSidebar();
+            self.loadMmuRouting();
             // Edit Spool Dialog Binding
             self.spoolDialog.initBinding(self.apiClient, self.pluginSettings, self.printerProfilesViewModel);
             // Import Dialog
@@ -2143,6 +2205,12 @@ $(function() {
             if ("reloadSheets" == data.action){
                 self.loadSheets();
                 self.loadSheetsStateForSidebar();
+                return;
+            }
+            if ("mmuRoutingStateChanged" == data.action){
+                self.mmuRoutingLoadedState(data.loadedState || "UNKNOWN");
+                self.mmuRoutingLoadedSlot(data.loadedSlot == null ? null : data.loadedSlot);
+                self.mmuRoutingStateSource(data.loadedStateSource || "unknown");
                 return;
             }
             if ("csvImportStatus" == data.action){

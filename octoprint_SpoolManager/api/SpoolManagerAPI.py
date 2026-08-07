@@ -1752,6 +1752,15 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 	def mmuRouting(self):
 		if (request.method == "PUT"):
 			data = request.get_json(silent=True) or {}
+			routingChanged = any(key in data for key in (
+				"enabled", "dryRun", "printerNumber", "reserveWeight", "loadDistanceMm",
+				"slotSpoolIds", "loadedState"
+			))
+			try:
+				if ((self._printer.is_printing() or self._printer.is_paused()) and len(data) > 0):
+					return jsonify({"error": "MMU routing settings cannot be changed during a print"}), 409
+			except Exception:
+				pass
 			if ("enabled" in data):
 				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED], bool(data.get("enabled")))
 			if ("dryRun" in data):
@@ -1774,11 +1783,6 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], slotIds)
 
 			if ("loadedState" in data):
-				try:
-					if (self._printer.is_printing() or self._printer.is_paused()):
-						return jsonify({"error": "MMU loaded state cannot be reconciled during a print"}), 409
-				except Exception:
-					pass
 				state = str(data.get("loadedState") or "").strip().upper()
 				if state not in ("UNKNOWN", "UNLOADED", "LOADED"):
 					return jsonify({"error": "loadedState must be UNKNOWN, UNLOADED, or LOADED"}), 400
@@ -1792,9 +1796,13 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						return jsonify({"error": "loadedSlot must be between 0 and 4"}), 400
 				else:
 					loadedSlot = None
-				self._mmuLoadedState = state
-				self._mmuLoadedSlot = loadedSlot
+				self._setMmuLoadedState(state, loadedSlot, "manual_api")
 			self._settings.save()
+			if routingChanged:
+				try:
+					self._prepareMmuRoutingForCurrentJob(enforceGuard=False)
+				except Exception:
+					self._logger.exception("Could not refresh MMU routing after API update")
 
 		slotIds = self._getMmuSlotSpoolIds()
 		slots = []
@@ -1826,6 +1834,9 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"loadDistanceMm": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]),
 			"loadedState": self._mmuLoadedState,
 			"loadedSlot": self._mmuLoadedSlot,
+			"loadedStateSource": getattr(self, "_mmuStateSource", "unknown"),
+			"pendingAction": getattr(self, "_mmuPendingAction", None),
+			"pendingSlot": getattr(self, "_mmuPendingSlot", None),
 			"slotSource": SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS,
 			"slots": slots,
 			"session": {
@@ -1833,7 +1844,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				"dryRun": session.dry_run,
 				"slot": session.slot,
 				"freshLoad": session.fresh_load,
+				"recoveryRequired": session.recovery_required,
 				"unloadAtEnd": session.unload_at_end,
+				"bypass": session.bypass,
+				"bypassReason": session.bypass_reason,
 				"error": session.error,
 				"contract": session.contract,
 				"decision": session.decision

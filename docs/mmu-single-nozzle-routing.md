@@ -7,7 +7,7 @@ Hardware movement is disabled by default. The defaults are:
 - `mmuRoutingEnabled: false`
 - `mmuRoutingDryRun: true`
 - `mmuPrinterNumber: 5`
-- `mmuLoadDistanceMm: 75`
+- `mmuLoadDistanceMm: 17`
 - MMU positions reuse the existing SpoolManager Tool 0-4 sidebar assignments
 
 ## Safety model
@@ -16,12 +16,14 @@ Hardware movement is disabled by default. The defaults are:
 - Contracts with anything other than one used logical tool are rejected.
 - Material and color must both match a configured active spool.
 - The spool must have enough remaining weight, including the configured reserve.
-- Live mode refuses to route while loaded state is `UNKNOWN`.
+- Live mode recovers `UNKNOWN` state with firmware-supported `M702 W2` before selecting a slot.
 - Loaded state deliberately returns to `UNKNOWN` after every OctoPrint/plugin restart.
-- Failed or cancelled prints return state to `UNKNOWN`.
+- Prusa MMU events and MK4 MMU progress messages confirm completed loads and unloads; sending an extrusion command alone never marks a load successful.
+- Failed, cancelled, disconnected, or ambiguous prints return state to `UNKNOWN`.
 - Standalone prints unload by default.
 - ContinuousPrint retains filament only when its verified next path has the same material/color, resolves to the same physical spool, and that spool has enough weight for both prints.
-- The separate Prusa MMU plugin should be disabled on printer #5 so only one plugin owns tool selection and unload behavior.
+- The Prusa MMU plugin may remain installed for its navbar and supplies action-completion events. Its single-filament rewrite/prompt must remain disabled so SpoolManager alone owns routing.
+- Exact maintenance filenames `Swap Plate with Doors.gcode` and `Swap Plate with Doors-2.gcode`, or files containing `; SPOOLMANAGER_ROUTING_BYPASS = maintenance`, bypass routing without changing the remembered loaded state.
 
 ## Configuration API
 
@@ -38,11 +40,11 @@ same visible assignments and enable decision logging without hardware movement:
   "printerNumber": 5,
   "slotSpoolIds": [101, 205, null, 330, 441],
   "reserveWeight": 10,
-  "loadDistanceMm": 75
+  "loadDistanceMm": 17
 }
 ```
 
-Before the first live test, physically verify that the nozzle is empty and reconcile state:
+Loaded state may still be reconciled manually while idle, but it is no longer required after an OctoPrint restart. An unknown state triggers the safe recovery unload:
 
 ```json
 {
@@ -63,7 +65,7 @@ State cannot be reconciled while printing or paused.
 
 ## Runtime behavior
 
-Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W130, then injects the Prusa MMU3 setup, runtime `Tn`, 75 mm nozzle load, and long purge. The 75 mm transport is excluded from consumption; the 32 mm purge delta is charged to logical tool 0 and the selected physical spool.
+Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W235, then injects the Prusa MMU3 setup, optional `M702 W2` recovery, restores the bed/nozzle targets cleared by recovery, selects runtime `Tn`, performs the profile-accurate 17 mm nozzle load, and purges through X231. The 17 mm transport is excluded from consumption; the 72 mm purge delta is charged to logical tool 0 and the selected physical spool.
 
 Retained mode keeps the original W50 probe and short purge. JoBox's `E-6`, fan cooling, and 160 °C prelude are removed from the bounded end sequence in both live MMU modes. Unload mode inserts one `M702` before the end wait command.
 
@@ -71,9 +73,9 @@ OctoPrint `@SPOOLMANAGER` boundary commands are consumed by OctoPrint and are no
 
 ## Printer #5 rollout
 
-1. Install this feature branch and disable the Prusa MMU plugin.
+1. Install this feature branch. Keep the Prusa MMU navbar enabled, but disable its single-filament prompt/rewrite.
 2. Assign the five physical slots with the existing SpoolManager sidebar selectors.
 3. Enable routing with `dryRun: true` and run both standalone and ContinuousPrint selections. Confirm the returned session decision and logs.
 4. Test a virtual printer or disconnected serial capture and compare the emitted fresh/retained sequences.
-5. With an empty nozzle, reconcile `UNLOADED`, switch `dryRun` off, and run a supervised purge-only test.
+5. Switch `dryRun` off and run a supervised recovery/load/full-width-purge test.
 6. Run one supervised standalone print, a same-material two-item queue, and a material-change queue before production use.
