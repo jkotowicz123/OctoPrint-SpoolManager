@@ -102,6 +102,23 @@ def classify_mmu_serial_line(line):
     return None
 
 
+def mmu_completion_state(pending_action, pending_slot=None, action_uncertain=False):
+    """Return a trusted physical state only when the whole action was error-free."""
+    if action_uncertain:
+        return STATE_UNKNOWN, None
+    action = str(pending_action or "").upper()
+    if action == "UNLOADING":
+        return STATE_UNLOADED, None
+    if action == "LOADING":
+        try:
+            slot = int(pending_slot)
+        except Exception:
+            return STATE_UNKNOWN, None
+        if 0 <= slot <= 4:
+            return STATE_LOADED, slot
+    return STATE_UNKNOWN, None
+
+
 def normalize_key(value):
     text = value if isinstance(value, str) else str(value or "")
     text = unicodedata.normalize("NFKD", text)

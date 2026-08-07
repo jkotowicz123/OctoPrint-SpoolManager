@@ -1837,6 +1837,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"loadedStateSource": getattr(self, "_mmuStateSource", "unknown"),
 			"pendingAction": getattr(self, "_mmuPendingAction", None),
 			"pendingSlot": getattr(self, "_mmuPendingSlot", None),
+			"actionUncertain": getattr(self, "_mmuActionUncertain", False),
 			"slotSource": SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS,
 			"slots": slots,
 			"session": {

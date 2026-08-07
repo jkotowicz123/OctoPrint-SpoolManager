@@ -23,6 +23,7 @@ from octoprint_SpoolManager.mmu_routing import (
 	STATE_UNLOADED,
 	build_slot,
 	classify_mmu_serial_line,
+	mmu_completion_state,
 	continuousprint_next_path,
 	parse_contract_file,
 	routing_bypass_reason,
@@ -93,6 +94,7 @@ class SpoolmanagerPlugin(
 		self._mmuLoadedSlot = None
 		self._mmuPendingAction = None
 		self._mmuPendingSlot = None
+		self._mmuActionUncertain = False
 		self._mmuStateSource = "startup"
 		self._mmuStateUpdatedAt = datetime.now()
 		self._migrateMmuRoutingSettings()
@@ -985,6 +987,11 @@ class SpoolmanagerPlugin(
 			slot = None
 		if action == "LOADING" and slot is None:
 			slot = self._mmuRoutingSession.slot
+		# Only a command deliberately sent by this plugin starts a new action
+		# whose result may become trusted. Progress lines after an MMU error are
+		# retries of the uncertain action and must not clear that uncertainty.
+		if source == "gcode_sent":
+			self._mmuActionUncertain = False
 		if self._mmuPendingAction != action or self._mmuPendingSlot != slot:
 			self._logger.info(
 				"MMU action transition: action=%s slot=%s source=%s",
@@ -1013,6 +1020,8 @@ class SpoolmanagerPlugin(
 		self._mmuPendingSlot = None
 		self._mmuStateSource = str(source or "unknown")
 		self._mmuStateUpdatedAt = datetime.now()
+		if state != STATE_UNKNOWN:
+			self._mmuActionUncertain = False
 		if oldState != state or oldSlot != slot:
 			self._logger.info(
 				"MMU loaded-state transition: %s/%s -> %s/%s source=%s",
@@ -1046,13 +1055,20 @@ class SpoolmanagerPlugin(
 			self._setMmuPendingAction("LOADING", tool, "prusammu_event")
 		elif state == "LOADED":
 			confirmedSlot = tool if tool is not None else self._mmuPendingSlot
-			self._setMmuLoadedState(STATE_LOADED, confirmedSlot, "prusammu_event")
+			completedState, completedSlot = mmu_completion_state(
+				"LOADING", confirmedSlot, self._mmuActionUncertain
+			)
+			self._setMmuLoadedState(completedState, completedSlot, "prusammu_event")
 		elif state in ("UNLOADING", "UNLOADING_FINAL"):
 			self._setMmuPendingAction("UNLOADING", self._mmuLoadedSlot, "prusammu_event")
 		elif (state == "OK" and self._mmuPendingAction == "UNLOADING"
 				and str(data.get("responseData") or "").lower() == "2"):
-			self._setMmuLoadedState(STATE_UNLOADED, None, "prusammu_event")
+			completedState, completedSlot = mmu_completion_state(
+				"UNLOADING", None, self._mmuActionUncertain
+			)
+			self._setMmuLoadedState(completedState, completedSlot, "prusammu_event")
 		elif state in ("ATTENTION", "PAUSED_USER") and self._mmuPendingAction is not None:
+			self._mmuActionUncertain = True
 			self._setMmuLoadedState(STATE_UNKNOWN, None, "prusammu_event_error")
 
 	def _handleMmuSerialLine(self, line):
@@ -1063,11 +1079,14 @@ class SpoolmanagerPlugin(
 		elif transition == "UNLOADING":
 			self._setMmuPendingAction("UNLOADING", self._mmuLoadedSlot, "serial")
 		elif transition == "ACTION_DONE":
-			if self._mmuPendingAction == "LOADING":
-				self._setMmuLoadedState(STATE_LOADED, self._mmuPendingSlot, "serial")
-			elif self._mmuPendingAction == "UNLOADING":
-				self._setMmuLoadedState(STATE_UNLOADED, None, "serial")
+			if self._mmuPendingAction in ("LOADING", "UNLOADING"):
+				completedState, completedSlot = mmu_completion_state(
+					self._mmuPendingAction, self._mmuPendingSlot, self._mmuActionUncertain
+				)
+				completionSource = "serial_after_error" if self._mmuActionUncertain else "serial"
+				self._setMmuLoadedState(completedState, completedSlot, completionSource)
 		elif transition == "ERROR" and self._mmuPendingAction is not None:
+			self._mmuActionUncertain = True
 			self._setMmuLoadedState(STATE_UNKNOWN, None, "serial_error")
 
 	def on_receivedGCodeHook(self, comm_instance, line, *args, **kwargs):

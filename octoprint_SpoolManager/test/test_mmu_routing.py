@@ -12,6 +12,7 @@ from mmu_routing import (
     STATE_UNLOADED,
     build_slot,
     classify_mmu_serial_line,
+    mmu_completion_state,
     continuousprint_next_path,
     missing_runtime_markers,
     parse_contract_text,
@@ -183,6 +184,18 @@ G4 ; wait
         self.assertEqual(classify_mmu_serial_line("MMU2:Disengaging idler"), "ACTION_DONE")
         self.assertEqual(classify_mmu_serial_line("MMU2:ERR Help filament"), "ERROR")
         self.assertIsNone(classify_mmu_serial_line("ok"))
+
+    def test_mmu_completion_after_an_error_stays_unknown(self):
+        self.assertEqual(mmu_completion_state("LOADING", 2), (STATE_LOADED, 2))
+        self.assertEqual(mmu_completion_state("UNLOADING", 2), (STATE_UNLOADED, None))
+        self.assertEqual(
+            mmu_completion_state("LOADING", 2, action_uncertain=True),
+            (STATE_UNKNOWN, None),
+        )
+        self.assertEqual(
+            mmu_completion_state("UNLOADING", 2, action_uncertain=True),
+            (STATE_UNKNOWN, None),
+        )
 
     def test_retained_load_keeps_start_purge_and_skips_unload(self):
         decision = select_slot(self.contract, self.slots)
