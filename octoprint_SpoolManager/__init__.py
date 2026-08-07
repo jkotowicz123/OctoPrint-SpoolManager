@@ -1191,7 +1191,7 @@ class SpoolmanagerPlugin(
 
 		elif (Events.PRINT_STARTED == event):
 			self.alreadyCanceled = False
-			self._prepareMmuRoutingForCurrentJob(enforceGuard=True)
+			self._prepareMmuRoutingForCurrentJob(enforceGuard=True, selectedFile=payload)
 			self._on_printJobStarted()
 
 		elif (Events.PRINT_PAUSED == event):
