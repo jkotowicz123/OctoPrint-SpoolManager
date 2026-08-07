@@ -47,3 +47,11 @@ class SettingsKeys():
 	## Debugging
 	SETTINGS_KEY_SQL_LOGGING_ENABLED = "sqlLoggingEnabled"
 	SETTINGS_KEY_EXTRUSION_DEBUGGING_ENABLED = "extrusionDebuggingEnabled"
+
+	## MMU single-nozzle routing (hardware path is disabled by default)
+	SETTINGS_KEY_MMU_ROUTING_ENABLED = "mmuRoutingEnabled"
+	SETTINGS_KEY_MMU_ROUTING_DRY_RUN = "mmuRoutingDryRun"
+	SETTINGS_KEY_MMU_PRINTER_NUMBER = "mmuPrinterNumber"
+	SETTINGS_KEY_MMU_SLOT_SPOOL_IDS = "mmuSlotSpoolIds"
+	SETTINGS_KEY_MMU_RESERVE_WEIGHT = "mmuReserveWeight"
+	SETTINGS_KEY_MMU_LOAD_DISTANCE = "mmuLoadDistanceMm"

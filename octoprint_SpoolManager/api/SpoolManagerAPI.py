@@ -1744,6 +1744,96 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"magazineSheets": magazineSheetsDict
 		})
 
+	@octoprint.plugin.BlueprintPlugin.route("/mmuRouting", methods=["GET", "PUT"])
+	def mmuRouting(self):
+		if (request.method == "PUT"):
+			data = request.get_json(silent=True) or {}
+			if ("enabled" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED], bool(data.get("enabled")))
+			if ("dryRun" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN], bool(data.get("dryRun")))
+			if ("printerNumber" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER], int(data.get("printerNumber")))
+			if ("reserveWeight" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT], max(0.0, float(data.get("reserveWeight"))))
+			if ("loadDistanceMm" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE], max(0.0, float(data.get("loadDistanceMm"))))
+			if ("slotSpoolIds" in data):
+				rawSlots = data.get("slotSpoolIds")
+				if (not isinstance(rawSlots, list) or len(rawSlots) > 5):
+					return jsonify({"error": "slotSpoolIds must be a list with at most five entries"}), 400
+				slotIds = []
+				for slotIndex in range(5):
+					rawId = rawSlots[slotIndex] if slotIndex < len(rawSlots) else None
+					slotIds.append(None if rawId in (None, "") else int(rawId))
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS], slotIds)
+
+			if ("loadedState" in data):
+				try:
+					if (self._printer.is_printing() or self._printer.is_paused()):
+						return jsonify({"error": "MMU loaded state cannot be reconciled during a print"}), 409
+				except Exception:
+					pass
+				state = str(data.get("loadedState") or "").strip().upper()
+				if state not in ("UNKNOWN", "UNLOADED", "LOADED"):
+					return jsonify({"error": "loadedState must be UNKNOWN, UNLOADED, or LOADED"}), 400
+				loadedSlot = data.get("loadedSlot")
+				if state == "LOADED":
+					try:
+						loadedSlot = int(loadedSlot)
+					except Exception:
+						return jsonify({"error": "loadedSlot is required for LOADED state"}), 400
+					if loadedSlot < 0 or loadedSlot > 4:
+						return jsonify({"error": "loadedSlot must be between 0 and 4"}), 400
+				else:
+					loadedSlot = None
+				self._mmuLoadedState = state
+				self._mmuLoadedSlot = loadedSlot
+			self._settings.save()
+
+		slotIds = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS]) or []
+		slots = []
+		self._databaseManager.connectoToDatabase()
+		try:
+			for slotIndex in range(5):
+				spoolId = slotIds[slotIndex] if slotIndex < len(slotIds) else None
+				spool = None
+				if spoolId != None:
+					spool = self._databaseManager.loadSpool(spoolId, withReusedConnection=True)
+				slots.append({
+					"slot": slotIndex,
+					"spoolId": spoolId,
+					"displayName": None if spool == None else spool.displayName,
+					"material": None if spool == None else spool.material,
+					"colorName": None if spool == None else spool.colorName,
+					"color": None if spool == None else spool.color,
+					"remainingWeight": None if spool == None else spool.remainingWeight
+				})
+		finally:
+			self._databaseManager.closeDatabase()
+
+		session = self._mmuRoutingSession
+		return jsonify({
+			"enabled": self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED]),
+			"dryRun": self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN]),
+			"printerNumber": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER]),
+			"reserveWeight": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT]),
+			"loadDistanceMm": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]),
+			"loadedState": self._mmuLoadedState,
+			"loadedSlot": self._mmuLoadedSlot,
+			"slots": slots,
+			"session": {
+				"active": session.active,
+				"dryRun": session.dry_run,
+				"slot": session.slot,
+				"freshLoad": session.fresh_load,
+				"unloadAtEnd": session.unload_at_end,
+				"error": session.error,
+				"contract": session.contract,
+				"decision": session.decision
+			}
+		})
+
 	###########################################################################################   EXPORT DATABASE as CSV
 	@octoprint.plugin.BlueprintPlugin.route("/exportSpools/<string:exportType>", methods=["GET"])
 	def exportSpoolsData(self, exportType):
