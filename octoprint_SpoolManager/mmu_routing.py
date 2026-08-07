@@ -564,8 +564,10 @@ class MmuRoutingSession(object):
                 ]
                 if self.recovery_required:
                     self.recovery_injected = True
-                    setup.append(("M702 W2", None, {"spoolmanager:mmu_recovery"}))
-                    # M702 W2 can clear both temperature targets. Restore them before
+                    # W255 explicitly skips the interactive material/preheat dialog.
+                    # The nozzle is already at the sliced first-layer temperature here.
+                    setup.append(("M702 W255", None, {"spoolmanager:mmu_recovery"}))
+                    # M702 can clear both temperature targets. Restore them before
                     # asking the MMU to feed filament into the hotend.
                     setup.extend([
                         (_wait_to_set_command(self.restore_bed_wait), None, {"spoolmanager:mmu_recovery_restore"}),

@@ -16,7 +16,7 @@ Hardware movement is disabled by default. The defaults are:
 - Contracts with anything other than one used logical tool are rejected.
 - Material and color must both match a configured active spool.
 - The spool must have enough remaining weight, including the configured reserve.
-- Live mode recovers `UNKNOWN` state with firmware-supported `M702 W2` before selecting a slot.
+- Live mode recovers `UNKNOWN` state with non-interactive `M702 W255` after the nozzle reaches the sliced first-layer temperature and before selecting a slot.
 - Loaded state deliberately returns to `UNKNOWN` after every OctoPrint/plugin restart.
 - Prusa MMU events and MK4 MMU progress messages confirm completed loads and unloads; sending an extrusion command alone never marks a load successful.
 - Failed, cancelled, disconnected, or ambiguous prints return state to `UNKNOWN`.
@@ -65,7 +65,7 @@ State cannot be reconciled while printing or paused.
 
 ## Runtime behavior
 
-Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W235, then injects the Prusa MMU3 setup, optional `M702 W2` recovery, restores the bed/nozzle targets cleared by recovery, selects runtime `Tn`, performs the profile-accurate 17 mm nozzle load, and purges through X231. The 17 mm transport is excluded from consumption; the 72 mm purge delta is charged to logical tool 0 and the selected physical spool.
+Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W235, then injects the Prusa MMU3 setup, optional non-interactive `M702 W255` recovery, restores the bed/nozzle targets cleared by recovery, selects runtime `Tn`, performs the profile-accurate 17 mm nozzle load, and purges through X231. The 17 mm transport is excluded from consumption; the 72 mm purge delta is charged to logical tool 0 and the selected physical spool.
 
 Retained mode keeps the original W50 probe and short purge. JoBox's `E-6`, fan cooling, and 160 °C prelude are removed from the bounded end sequence in both live MMU modes. Unload mode inserts one `M702` before the end wait command.
 

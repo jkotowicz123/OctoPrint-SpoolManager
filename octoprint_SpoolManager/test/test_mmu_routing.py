@@ -145,11 +145,11 @@ G4 ; wait
         session.handle_marker("START_SEQUENCE_BEGIN")
         expanded = session.rewrite("M569 S0 E")
         commands = [entry if isinstance(entry, str) else entry[0] for entry in expanded]
-        self.assertLess(commands.index("M702 W2"), commands.index("T2"))
-        self.assertEqual(commands[commands.index("M702 W2") + 1:commands.index("T2")], [
+        self.assertLess(commands.index("M702 W255"), commands.index("T2"))
+        self.assertEqual(commands[commands.index("M702 W255") + 1:commands.index("T2")], [
             "M140 S60", "M104 S230", "M190 S60", "M109 S230", "M83", "G92 E0", "M569 S0 E",
         ])
-        recovery = expanded[commands.index("M702 W2")]
+        recovery = expanded[commands.index("M702 W255")]
         self.assertIn("spoolmanager:mmu_recovery", recovery[2])
 
     def test_maintenance_files_and_explicit_marker_bypass_routing(self):
