@@ -8,7 +8,7 @@ Hardware movement is disabled by default. The defaults are:
 - `mmuRoutingDryRun: true`
 - `mmuPrinterNumber: 5`
 - `mmuLoadDistanceMm: 75`
-- five empty slot assignments
+- MMU positions reuse the existing SpoolManager Tool 0-4 sidebar assignments
 
 ## Safety model
 
@@ -27,7 +27,9 @@ Hardware movement is disabled by default. The defaults are:
 
 The endpoint is `GET|PUT /plugin/SpoolManager/mmuRouting`. It returns slot assignments, loaded state, the active contract, the slot decision, and dry-run/live status.
 
-Assign five SpoolManager spool database IDs and enable decision logging without hardware movement:
+Assign spools with the existing five sidebar selectors. Tool 0 is MMU position 1,
+Tool 1 is position 2, through Tool 4 as position 5. The API may also update the
+same visible assignments and enable decision logging without hardware movement:
 
 ```json
 {
@@ -70,7 +72,7 @@ OctoPrint `@SPOOLMANAGER` boundary commands are consumed by OctoPrint and are no
 ## Printer #5 rollout
 
 1. Install this feature branch and disable the Prusa MMU plugin.
-2. Assign the five physical slots through the API.
+2. Assign the five physical slots with the existing SpoolManager sidebar selectors.
 3. Enable routing with `dryRun: true` and run both standalone and ContinuousPrint selections. Confirm the returned session decision and logs.
 4. Test a virtual printer or disconnected serial capture and compare the emitted fresh/retained sequences.
 5. With an empty nozzle, reconcile `UNLOADED`, switch `dryRun` off, and run a supervised purge-only test.

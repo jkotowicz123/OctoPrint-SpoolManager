@@ -23,6 +23,7 @@ from octoprint_SpoolManager.mmu_routing import (
 	parse_contract_file,
 	runtime_template_errors_file,
 	select_slot,
+	spool_accounting_targets,
 	should_retain_for_next,
 	should_count_for_odometer,
 )
@@ -215,6 +216,18 @@ class SpoolmanagerPlugin(
 						  "filamentmanager=" + self._filamentManagerPluginImplementationState + " ")
 		pass
 
+	def _getSpoolAccountingTargets(self, selectedSpools):
+		pairs = spool_accounting_targets(
+			len(selectedSpools or []),
+			mmu_active=self._mmuRoutingSession.active,
+			dry_run=self._mmuRoutingSession.dry_run,
+			selected_slot=self._mmuRoutingSession.slot
+		)
+		return [
+			(gcodeToolIndex, spoolSlot, selectedSpools[spoolSlot])
+			for gcodeToolIndex, spoolSlot in pairs
+		]
+
 	# get the plugin with status information
 	# [0] == status-string
 	# [1] == implementaiton of the plugin
@@ -289,10 +302,14 @@ class SpoolmanagerPlugin(
 			return requiredWeightResultDict
 
 		# loop over all tools
+		accountingTargets = dict(
+			(gcodeToolIndex, (spoolSlot, spoolModel))
+			for gcodeToolIndex, spoolSlot, spoolModel in self._getSpoolAccountingTargets(selectedSpools)
+		)
 		for toolIndex, filamentLength in enumerate(self.metaDataFilamentLengths):
 			if forToolIndex is not None and forToolIndex != toolIndex:
 				continue
-			selectedSpool = selectedSpools[toolIndex] if toolIndex < len(selectedSpools) else None
+			spoolSlot, selectedSpool = accountingTargets.get(toolIndex, (toolIndex, None))
 
 			if (selectedSpool != None):
 				diameter = selectedSpool.diameter
@@ -315,7 +332,7 @@ class SpoolmanagerPlugin(
 					if (warnUser == True):
 						self._sendMessageToClient(
 							"warning", "Filament prediction not possible!",
-							"Following fields not set in Spool '%s' (in tool %d): %s" % (selectedSpool.displayName, toolIndex, ', '.join(missing_fields))
+							"Following fields not set in Spool '%s' (in tool %d): %s" % (selectedSpool.displayName, spoolSlot, ', '.join(missing_fields))
 						)
 					someAttributesMissing = True
 				else:
@@ -341,7 +358,7 @@ class SpoolmanagerPlugin(
 						if (warnUser == True):
 							self._sendMessageToClient(
 								"warning", "Filament prediction not possible!",
-								"One of the needed fields are not a number in Spool '%s' (in tool %d): %s" % (selectedSpool.displayName, toolIndex, ', '.join(not_a_number_fields))
+								"One of the needed fields are not a number in Spool '%s' (in tool %d): %s" % (selectedSpool.displayName, spoolSlot, ', '.join(not_a_number_fields))
 							)
 						someAttributesMissing = True
 					else:
@@ -358,7 +375,7 @@ class SpoolmanagerPlugin(
 							self._logger.info("saftyWeight '" + str(saftyRequiredWeight) + "' from saftyLengthInMM '" + str(saftyLengthInMM) + "' calculated")
 							requiredWeight = requiredWeight + saftyRequiredWeight
 
-						self._logger.info("tool" + str(toolIndex) + ", requiredWeight '" + str(requiredWeight) + "',  remainingWeight '" + str(remainingWeight) + "'")
+						self._logger.info("tool" + str(spoolSlot) + ", requiredWeight '" + str(requiredWeight) + "',  remainingWeight '" + str(remainingWeight) + "'")
 
 						notEnough = False
 						if remainingWeight < requiredWeight and requiredWeight > 0:
@@ -366,13 +383,13 @@ class SpoolmanagerPlugin(
 							if (warnUser == True):
 								self._sendMessageToClient(
 									"warning", "Filament not enough!",
-									"Required on tool %d: %dg, available from Spool '%s': '%dg'" % (toolIndex, requiredWeight, selectedSpool.displayName, remainingWeight)
+									"Required on tool %d: %dg, available from Spool '%s': '%dg'" % (spoolSlot, requiredWeight, selectedSpool.displayName, remainingWeight)
 								)
 							notEnough = True
 							overallNotEnough = True
 
 						detailedSpoolResultItem = {
-							"toolIndex": toolIndex,
+							"toolIndex": spoolSlot,
 							"requiredWeight": requiredWeight,
 							"requiredLength": filamentLength,
 							"remainingWeight": remainingWeight,
@@ -386,7 +403,7 @@ class SpoolmanagerPlugin(
 			else:
 				# No selected spool for this tool-index, just create an simple entry
 				detailedSpoolResultItem = {
-					"toolIndex": toolIndex,
+					"toolIndex": spoolSlot,
 					"requiredLength": filamentLength,
 					"spoolSelected": False,
 					"spoolName": "not selected"
@@ -466,10 +483,13 @@ class SpoolmanagerPlugin(
 		reloadTable = False
 		selectedSpools = self.loadSelectedSpools()
 		self._readingFilamentMetaData()
-		for toolIndex, filamentLength in enumerate(self.metaDataFilamentLengths):
-			spoolModel = selectedSpools[toolIndex] if toolIndex < len(selectedSpools) else None
+		for toolIndex, spoolSlot, spoolModel in self._getSpoolAccountingTargets(selectedSpools):
+			if toolIndex >= len(self.metaDataFilamentLengths):
+				continue
 
 			if (spoolModel != None):
+				if self._mmuRoutingSession.active and not self._mmuRoutingSession.dry_run:
+					self.set_temp_offsets(toolIndex, spoolModel)
 				if (StringUtils.isEmpty(spoolModel.firstUse) == True):
 					firstUse = datetime.now()
 					spoolModel.firstUse = firstUse
@@ -651,7 +671,11 @@ class SpoolmanagerPlugin(
 		self._databaseManager.connectoToDatabase()
 		try:
 			selectedSpools = []
-			for toolIndex, spoolId in enumerate(selectedSpoolIds):
+			selectedEntries = list(enumerate(selectedSpoolIds))
+			if self._mmuRoutingSession.active and not self._mmuRoutingSession.dry_run:
+				slot = self._mmuRoutingSession.slot
+				selectedEntries = [(slot, selectedSpoolIds[slot])] if slot < len(selectedSpoolIds) else []
+			for toolIndex, spoolId in selectedEntries:
 				if (spoolId == None):
 					continue
 				try:
@@ -695,7 +719,7 @@ class SpoolmanagerPlugin(
 	def commitOdometerData(self, printStatus=None):
 		reload = False
 		selectedSpools = self.loadSelectedSpools()
-		for toolIndex, spoolModel in enumerate(selectedSpools):
+		for gcodeToolIndex, toolIndex, spoolModel in self._getSpoolAccountingTargets(selectedSpools):
 			if spoolModel is None:
 				self._logger.warning("Tool %d: No spool selected, could not update values after print" % toolIndex)
 				continue
@@ -707,7 +731,7 @@ class SpoolmanagerPlugin(
 			currentExtrusionLengthOdometer = None
 			try:
 				allExtrusions = self.myFilamentOdometer.getExtrusionAmount()
-				currentExtrusionLengthOdometer = allExtrusions[toolIndex]
+				currentExtrusionLengthOdometer = allExtrusions[gcodeToolIndex]
 			except (KeyError, IndexError) as e:
 				pass
 
@@ -715,10 +739,10 @@ class SpoolmanagerPlugin(
 			if printStatus == "success":
 				try:
 					self._readingFilamentMetaData()
-					if toolIndex < len(self.metaDataFilamentLengths):
-						currentExtrusionLengthMeta = self.metaDataFilamentLengths[toolIndex]
+					if gcodeToolIndex < len(self.metaDataFilamentLengths):
+						currentExtrusionLengthMeta = self.metaDataFilamentLengths[gcodeToolIndex]
 						if (
-							toolIndex == 0
+							gcodeToolIndex == 0
 							and self._mmuRoutingSession.active
 							and not self._mmuRoutingSession.dry_run
 						):
@@ -974,7 +998,7 @@ class SpoolmanagerPlugin(
 		if (contract == None):
 			contract = {"valid": False, "error": "contract_not_found"}
 
-		slotIds = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS]) or []
+		slotIds = self._getMmuSlotSpoolIds()
 		slots = []
 		self._databaseManager.connectoToDatabase()
 		try:
@@ -1043,14 +1067,7 @@ class SpoolmanagerPlugin(
 			str(unloadAtEnd), str(self._mmuLoadedState), str(self._mmuLoadedSlot), str(self._mmuRoutingSession.active), str(self._mmuRoutingSession.error)
 		)
 
-		if (self._mmuRoutingSession.active and not dryRun):
-			selectedIds = list(self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS]) or [])
-			while len(selectedIds) < 1:
-				selectedIds.append(None)
-			selectedIds[0] = decision.get("spool_id")
-			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], selectedIds)
-			self._settings.save()
-		elif (not dryRun and enforceGuard):
+		if (not dryRun and enforceGuard and not self._mmuRoutingSession.active):
 			self._logger.error("MMU hardware routing guard rejected print: %s", str(self._mmuRoutingSession.error))
 			try:
 				self._printer.cancel_print()
@@ -1301,7 +1318,6 @@ class SpoolmanagerPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED] = False
 		settings[SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN] = True
 		settings[SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER] = 5
-		settings[SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS] = [None, None, None, None, None]
 		settings[SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT] = 0.0
 		settings[SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE] = 75.0
 

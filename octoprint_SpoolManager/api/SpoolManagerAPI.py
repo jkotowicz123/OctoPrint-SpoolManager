@@ -30,6 +30,10 @@ from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
 
 class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
+	def _getMmuSlotSpoolIds(self):
+		selectedIds = list(self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS]) or [])
+		return (selectedIds + [None] * 5)[:5]
+
 	def _sendCSVUploadStatusToClient(self, importStatus, currenLineNumber, backupFilePath,  successMessages, errorCollection):
 
 		self._sendDataToClient(dict(action="csvImportStatus",
@@ -1766,7 +1770,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				for slotIndex in range(5):
 					rawId = rawSlots[slotIndex] if slotIndex < len(rawSlots) else None
 					slotIds.append(None if rawId in (None, "") else int(rawId))
-				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS], slotIds)
+				# MMU positions are the existing Tool 0-4 sidebar assignments.
+				self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS], slotIds)
 
 			if ("loadedState" in data):
 				try:
@@ -1791,7 +1796,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._mmuLoadedSlot = loadedSlot
 			self._settings.save()
 
-		slotIds = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_SLOT_SPOOL_IDS]) or []
+		slotIds = self._getMmuSlotSpoolIds()
 		slots = []
 		self._databaseManager.connectoToDatabase()
 		try:
@@ -1821,6 +1826,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"loadDistanceMm": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]),
 			"loadedState": self._mmuLoadedState,
 			"loadedSlot": self._mmuLoadedSlot,
+			"slotSource": SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS,
 			"slots": slots,
 			"session": {
 				"active": session.active,

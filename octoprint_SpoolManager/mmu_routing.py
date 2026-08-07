@@ -362,6 +362,25 @@ def should_retain_for_next(current_requirement, current_decision, next_requireme
     return available >= needed
 
 
+def spool_accounting_targets(spool_count, mmu_active=False, dry_run=True, selected_slot=None):
+    """Map logical G-code tools to the sidebar spool positions they consume."""
+    try:
+        count = max(0, int(spool_count or 0))
+    except Exception:
+        count = 0
+    if mmu_active and not dry_run:
+        try:
+            slot = int(selected_slot)
+        except Exception:
+            return []
+        if slot < 0 or slot >= count:
+            return []
+        # Single-nozzle files report all model extrusion as logical Tool 0, but
+        # the selected physical MMU input may be any sidebar position.
+        return [(0, slot)]
+    return [(index, index) for index in range(count)]
+
+
 class MmuRoutingSession(object):
     def __init__(self):
         self.reset()

@@ -14,6 +14,7 @@ from mmu_routing import (
     missing_runtime_markers,
     parse_contract_text,
     select_slot,
+    spool_accounting_targets,
     should_retain_for_next,
     should_count_for_odometer,
     runtime_template_errors,
@@ -190,6 +191,17 @@ G4 ; wait
         self.assertFalse(should_count_for_odometer("T2", {"spoolmanager:mmu_select"}))
         self.assertFalse(should_count_for_odometer("G1 E75 F1000", {"spoolmanager:mmu_transport"}))
         self.assertTrue(should_count_for_odometer("G0 X105 E36 F500", {"spoolmanager:mmu_extra_purge"}))
+
+    def test_live_single_nozzle_usage_is_charged_to_selected_mmu_position(self):
+        self.assertEqual(spool_accounting_targets(5, True, False, 1), [(0, 1)])
+        self.assertEqual(spool_accounting_targets(5, True, False, 4), [(0, 4)])
+        self.assertEqual(spool_accounting_targets(5, True, False, None), [])
+        self.assertEqual(spool_accounting_targets(5, True, False, 5), [])
+
+    def test_dry_run_and_normal_prints_keep_standard_tool_accounting(self):
+        expected = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
+        self.assertEqual(spool_accounting_targets(5, True, True, 1), expected)
+        self.assertEqual(spool_accounting_targets(5, False, False, None), expected)
 
 
 if __name__ == "__main__":
