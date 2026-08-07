@@ -520,7 +520,16 @@ class SpoolmanagerPlugin(
 		except Exception:
 			return None
 
-	def _getCurrentJobFile(self):
+	def _getCurrentJobFile(self, selectedFile=None):
+		# FileSelected already carries the authoritative storage location.  Use it
+		# before consulting the printer snapshot, which can still describe the
+		# previous/empty job while OctoPrint is dispatching the selection event.
+		if (isinstance(selectedFile, dict)):
+			origin = selectedFile.get("origin")
+			path = selectedFile.get("path")
+			name = selectedFile.get("name")
+			if (origin != None and path != None):
+				return origin, path, name
 		try:
 			data = self._printer.get_current_data()
 			if (data == None or "job" not in data):
@@ -885,7 +894,7 @@ class SpoolmanagerPlugin(
 
 	def _on_file_selectionChanged(self, payload):
 		try:
-			self._prepareMmuRoutingForCurrentJob(enforceGuard=False)
+			self._prepareMmuRoutingForCurrentJob(enforceGuard=False, selectedFile=payload)
 		except Exception:
 			self._logger.exception("Could not prepare MMU routing after file selection change")
 		self.checkRemainingFilament()
@@ -962,7 +971,7 @@ class SpoolmanagerPlugin(
 			self._logger.warning("ContinuousPrint lookahead unavailable; MMU will unload: %s", str(e))
 			return None
 
-	def _prepareMmuRoutingForCurrentJob(self, enforceGuard=False):
+	def _prepareMmuRoutingForCurrentJob(self, enforceGuard=False, selectedFile=None):
 		self._mmuRoutingSession.reset()
 		enabled = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED])
 		dryRun = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_DRY_RUN])
@@ -974,7 +983,7 @@ class SpoolmanagerPlugin(
 		if (not enabled or currentPrinter != configuredPrinter):
 			return
 
-		origin, path, name = self._getCurrentJobFile()
+		origin, path, name = self._getCurrentJobFile(selectedFile=selectedFile)
 		gcodePath = None
 		if (origin == "local" and path != None):
 			try:
