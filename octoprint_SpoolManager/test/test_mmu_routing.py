@@ -117,11 +117,14 @@ G4 ; wait
 
         session.handle_marker("START_SEQUENCE_BEGIN")
         expanded = session.rewrite("M569 S0 E ; spreadcycle")
-        self.assertEqual(expanded[-2][0], "T2 ; SM_PURPOSE=MMU_SELECT")
+        self.assertEqual(expanded[0], "M569 S0 E")
+        self.assertEqual(expanded[-2][0], "T2")
         self.assertIn("spoolmanager:mmu_select", expanded[-2][2])
-        self.assertEqual(expanded[-1][0], "G1 E75 F1000 ; SM_PURPOSE=MMU_TRANSPORT")
+        self.assertEqual(expanded[-1][0], "G1 E75 F1000")
         self.assertIn("spoolmanager:mmu_transport", expanded[-1][2])
         self.assertIn("X105 E36", session.rewrite("G0 X25 E4 F500 ; purge")[0])
+        for injected in expanded[1:]:
+            self.assertNotIn(";", injected[0])
 
     def test_retained_load_keeps_start_purge_and_skips_unload(self):
         decision = select_slot(self.contract, self.slots)
@@ -141,9 +144,9 @@ G4 ; wait
         session.handle_marker("END_SEQUENCE_BEGIN")
         self.assertEqual(session.rewrite("M104 S160 ; jobox"), (None,))
         rewritten = session.rewrite("G4 ; wait")
-        self.assertEqual(rewritten[0][0], "M702 ; SM_PURPOSE=MMU_UNLOAD")
+        self.assertEqual(rewritten[0][0], "M702")
         self.assertIn("spoolmanager:mmu_unload", rewritten[0][2])
-        self.assertEqual(rewritten[1], "G4 ; wait")
+        self.assertEqual(rewritten[1], "G4")
         self.assertIsNone(session.rewrite("G4 ; wait"))
 
     def test_continuousprint_repeated_set_is_its_own_next_path(self):

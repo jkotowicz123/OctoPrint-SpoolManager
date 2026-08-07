@@ -452,27 +452,27 @@ class MmuRoutingSession(object):
 
         if self.region == REGION_PURGE_AREA and self.fresh_load:
             if re.match(r"^\s*G29\s+P1\s+X0\s+Y0\s+W50\s+H20\s+C\b", upper):
-                return (re.sub(r"\bW50\b", "W130", command, count=1, flags=re.I),)
+                return (_without_inline_comment(re.sub(r"\bW50\b", "W130", command, count=1, flags=re.I)),)
 
         if self.region == REGION_START and self.fresh_load:
             if re.match(r"^\s*M569\s+S0\s+E\b", upper):
                 setup = [
-                    command,
-                    ("M708 A0x0b X5 ; SM_PURPOSE=MMU_SETUP", None, {"spoolmanager:mmu_setup"}),
-                    ("M708 A0x0d X140 ; SM_PURPOSE=MMU_SETUP", None, {"spoolmanager:mmu_setup"}),
-                    ("M708 A0x11 X140 ; SM_PURPOSE=MMU_SETUP", None, {"spoolmanager:mmu_setup"}),
-                    ("M708 A0x14 X20 ; SM_PURPOSE=MMU_SETUP", None, {"spoolmanager:mmu_setup"}),
-                    ("M708 A0x1e X12 ; SM_PURPOSE=MMU_SETUP", None, {"spoolmanager:mmu_setup"}),
-                    ("T%d ; SM_PURPOSE=MMU_SELECT" % self.slot, None, {"spoolmanager:mmu_select"}),
-                    ("G1 E%s F1000 ; SM_PURPOSE=MMU_TRANSPORT" % _format_number(self.load_distance_mm), None, {"spoolmanager:mmu_transport"}),
+                    _without_inline_comment(command),
+                    ("M708 A0x0b X5", None, {"spoolmanager:mmu_setup"}),
+                    ("M708 A0x0d X140", None, {"spoolmanager:mmu_setup"}),
+                    ("M708 A0x11 X140", None, {"spoolmanager:mmu_setup"}),
+                    ("M708 A0x14 X20", None, {"spoolmanager:mmu_setup"}),
+                    ("M708 A0x1e X12", None, {"spoolmanager:mmu_setup"}),
+                    ("T%d" % self.slot, None, {"spoolmanager:mmu_select"}),
+                    ("G1 E%s F1000" % _format_number(self.load_distance_mm), None, {"spoolmanager:mmu_transport"}),
                 ]
                 return setup
             replacements = (
-                (r"^\s*G0\s+X25\s+E4\s+F500\b", "G0 X105 E36 F500 ; purge; SM_PURPOSE=MMU_EXTRA_PURGE"),
-                (r"^\s*G0\s+X35\s+E4\s+F650\b", "G0 X115 E4 F650 ; purge"),
-                (r"^\s*G0\s+X45\s+E4\s+F800\b", "G0 X125 E4 F800 ; purge"),
-                (r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", "G0 X128 Z0.05 F8000 ; wipe, move close to the bed"),
-                (r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", "G0 X131 Z0.2 F8000 ; wipe, move quickly away from the bed"),
+                (r"^\s*G0\s+X25\s+E4\s+F500\b", "G0 X105 E36 F500"),
+                (r"^\s*G0\s+X35\s+E4\s+F650\b", "G0 X115 E4 F650"),
+                (r"^\s*G0\s+X45\s+E4\s+F800\b", "G0 X125 E4 F800"),
+                (r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", "G0 X128 Z0.05 F8000"),
+                (r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", "G0 X131 Z0.2 F8000"),
             )
             for pattern, replacement in replacements:
                 if re.match(pattern, upper):
@@ -487,9 +487,13 @@ class MmuRoutingSession(object):
                 return (None,)
             if self.unload_at_end and not self.unload_injected and re.match(r"^\s*G4(?:\s|;|$)", upper):
                 self.unload_injected = True
-                return [("M702 ; SM_PURPOSE=MMU_UNLOAD", None, {"spoolmanager:mmu_unload"}), command]
+                return [("M702", None, {"spoolmanager:mmu_unload"}), _without_inline_comment(command)]
 
         return None
+
+
+def _without_inline_comment(value):
+    return str(value or "").split(";", 1)[0].rstrip()
 
 
 def _format_number(value):
