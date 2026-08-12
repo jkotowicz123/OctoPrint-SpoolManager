@@ -17,6 +17,7 @@ from mmu_routing import (
     missing_runtime_markers,
     parse_contract_text,
     routing_bypass_reason,
+    maintenance_bypass_files,
     select_slot,
     spool_accounting_targets,
     should_retain_for_next,
@@ -155,6 +156,9 @@ G4 ; wait
 
     def test_maintenance_files_and_explicit_marker_bypass_routing(self):
         self.assertEqual(routing_bypass_reason("Swap Plate with Doors.gcode"), "maintenance_filename")
+        self.assertEqual(routing_bypass_reason("Jobox Load Plate.gcode"), "maintenance_filename")
+        self.assertEqual(routing_bypass_reason("Jobox Eject Plate.gcode"), "maintenance_filename")
+        self.assertEqual(routing_bypass_reason("uploads/JOBOX LOAD PLATE.GCODE"), "maintenance_filename")
         self.assertEqual(
             routing_bypass_reason("custom.gcode", "; SPOOLMANAGER_ROUTING_BYPASS = maintenance"),
             "marker:maintenance",
@@ -166,6 +170,12 @@ G4 ; wait
         self.assertTrue(session.allow_print)
         self.assertFalse(session.active)
         self.assertIsNone(session.rewrite("T0"))
+
+    def test_new_maintenance_files_survive_an_older_saved_bypass_list(self):
+        merged = maintenance_bypass_files(["Swap Plate with Doors.gcode", "Custom Service.gcode"])
+        self.assertIn("Jobox Load Plate.gcode", merged)
+        self.assertIn("Jobox Eject Plate.gcode", merged)
+        self.assertIn("Custom Service.gcode", merged)
 
     def test_continuousprint_automation_files_bypass_routing(self):
         self.assertEqual(

@@ -16,6 +16,7 @@ from octoprint_SpoolManager.newodometer import NewFilamentOdometer
 from octoprint_SpoolManager.mmu_routing import (
 	DEFAULT_LOAD_DISTANCE_MM,
 	DEFAULT_MAINTENANCE_BYPASS_FILES,
+	maintenance_bypass_files,
 	LEGACY_LOAD_DISTANCE_MM,
 	MmuRoutingSession,
 	STATE_LOADED,
@@ -1159,7 +1160,11 @@ class SpoolmanagerPlugin(
 				except Exception:
 					gcodePath = None
 
-		bypassFiles = self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES]) or list(DEFAULT_MAINTENANCE_BYPASS_FILES)
+		# Always retain built-in maintenance jobs when upgrading an installation
+		# whose saved list predates newly added Jobox actions.
+		bypassFiles = maintenance_bypass_files(
+			self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES])
+		)
 		# ContinuousPrint automation scripts are temporary real print jobs, not
 		# material-bearing models. Check the storage path before the basename so
 		# its private automation directory can be recognized safely.

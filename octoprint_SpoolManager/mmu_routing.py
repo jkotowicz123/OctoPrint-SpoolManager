@@ -16,6 +16,8 @@ LEGACY_LOAD_DISTANCE_MM = 75.0
 DEFAULT_MAINTENANCE_BYPASS_FILES = (
     "Swap Plate with Doors.gcode",
     "Swap Plate with Doors-2.gcode",
+    "Jobox Load Plate.gcode",
+    "Jobox Eject Plate.gcode",
 )
 CONTINUOUSPRINT_AUTOMATION_DIR = "continuousprint/tmp/"
 
@@ -32,6 +34,19 @@ REQUIRED_RUNTIME_MARKERS = (
     "@SPOOLMANAGER END_SEQUENCE_BEGIN",
     "@SPOOLMANAGER END_SEQUENCE_END",
 )
+
+
+def maintenance_bypass_files(configured=None):
+    """Merge built-in maintenance jobs with any names saved in older settings."""
+    merged = []
+    seen = set()
+    for value in list(DEFAULT_MAINTENANCE_BYPASS_FILES) + list(configured or []):
+        name = str(value or "").strip()
+        key = name.lower()
+        if name and key not in seen:
+            merged.append(name)
+            seen.add(key)
+    return merged
 
 
 def parse_routing_bypass_text(text):

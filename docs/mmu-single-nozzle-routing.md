@@ -23,7 +23,7 @@ Hardware movement is disabled by default. The defaults are:
 - Standalone prints unload by default.
 - ContinuousPrint retains filament only when its verified next path has the same material/color, resolves to the same physical spool, and that spool has enough weight for both prints.
 - The Prusa MMU plugin may remain installed for its navbar and supplies action-completion events. Its single-filament rewrite/prompt must remain disabled so SpoolManager alone owns routing.
-- Exact maintenance filenames `Swap Plate with Doors.gcode` and `Swap Plate with Doors-2.gcode`, or files containing `; SPOOLMANAGER_ROUTING_BYPASS = maintenance`, bypass routing without changing the remembered loaded state.
+- Exact maintenance filenames `Swap Plate with Doors.gcode`, `Swap Plate with Doors-2.gcode`, `Jobox Load Plate.gcode`, and `Jobox Eject Plate.gcode`, or files containing `; SPOOLMANAGER_ROUTING_BYPASS = maintenance`, bypass routing without changing the remembered loaded state.
 
 ## Configuration API
 
