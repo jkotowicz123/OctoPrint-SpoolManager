@@ -24,6 +24,7 @@ Hardware movement is disabled by default. The defaults are:
 - ContinuousPrint retains filament only when its verified next path has the same material/color, resolves to the same physical spool, and that spool has enough weight for both prints.
 - The Prusa MMU plugin may remain installed for its navbar and supplies action-completion events. Its single-filament rewrite/prompt must remain disabled so SpoolManager alone owns routing.
 - Exact maintenance filenames `Swap Plate with Doors.gcode`, `Swap Plate with Doors-2.gcode`, `Jobox Load Plate.gcode`, and `Jobox Eject Plate.gcode`, or files containing `; SPOOLMANAGER_ROUTING_BYPASS = maintenance`, bypass routing without changing the remembered loaded state.
+- Fresh-load purge uses `mmuPurgePasses` (1–3, default 2). Every pass keeps the MMU3 `E/X = 0.4` ratio and `F500/F650/F800` progression. Before each additional pass the nozzle lifts 0.6 mm above its next purge level, travels back to X15 without extrusion, and repeats the same known-safe front-edge path at the next 0.2 mm Z level.
 
 ## Configuration API
 
@@ -65,9 +66,9 @@ State cannot be reconciled while printing or paused.
 
 ## Runtime behavior
 
-Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W235, then injects the Prusa MMU3 setup, optional non-interactive `M702 W255` recovery, restores the bed/nozzle targets cleared by recovery, selects runtime `Tn`, performs the profile-accurate 17 mm nozzle load, and purges through X231. The 17 mm transport is excluded from consumption; the 72 mm purge delta is charged to logical tool 0 and the selected physical spool.
+Fresh-load mode preserves the ordinary single-nozzle start through mesh probing, expands the purge-area probe from W50 to W235, then injects the Prusa MMU3 setup, optional non-interactive `M702 W255` recovery, restores the bed/nozzle targets cleared by recovery, selects runtime `Tn`, performs the profile-accurate 17 mm nozzle load, and purges along the front edge. With the default two passes it extrudes about 175 mm total in the purge sequence: the first pass ends at X225, the nozzle travels back above the line, the second pass repeats from X15 at Z0.4, and the wipe exits beyond the line toward X231. The 17 mm transport is excluded from consumption; the 156 mm purge delta is charged to logical tool 0 and the selected physical spool.
 
-Retained mode keeps the original W50 probe and short purge. JoBox's `E-6`, fan cooling, and 160 °C prelude are removed from the bounded end sequence in both live MMU modes. Unload mode inserts one `M702` before the end wait command.
+Retained mode keeps the original W50 probe and short purge. JoBox's `E-6`, fan cooling, and 160 °C prelude are removed from the bounded end sequence in both live MMU modes. Unload mode inserts one `M702` before the end wait command, then raises Z by 5 mm in relative mode and restores absolute coordinates before shutting down the hotend.
 
 OctoPrint `@SPOOLMANAGER` boundary commands are consumed by OctoPrint and are not sent to printer firmware. Unmarked and non-target G-code passes through unchanged.
 

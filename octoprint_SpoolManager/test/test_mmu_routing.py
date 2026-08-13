@@ -132,9 +132,55 @@ G4 ; wait
         self.assertEqual(expanded[-1][0], "G1 E17 F1000")
         self.assertIn("spoolmanager:mmu_transport", expanded[-1][2])
         self.assertIn("X205 E76", session.rewrite("G0 X25 E4 F500 ; purge")[0])
-        self.assertEqual(session.extra_purge_mm, 72.0)
+        self.assertEqual(session.rewrite("G0 X35 E4 F650 ; purge")[0], "G0 X215 E4 F650")
+        purge_tail = session.rewrite("G0 X45 E4 F800 ; purge")
+        purge_commands = [entry if isinstance(entry, str) else entry[0] for entry in purge_tail]
+        self.assertEqual(purge_commands, [
+            "G0 X225 E4 F800",
+            "G0 Z1 F8000",
+            "G0 X15 F8000",
+            "G0 Z0.4 F8000",
+            "G0 X205 E76 F500",
+            "G0 X215 E4 F650",
+            "G0 X225 E4 F800",
+        ])
+        self.assertIn("spoolmanager:mmu_extra_purge", purge_tail[4][2])
+        self.assertEqual(session.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X228 Z0.05 F8000")
+        self.assertEqual(session.rewrite("G0 X51 Z0.2 F8000")[0], "G0 X231 Z0.2 F8000")
+        self.assertEqual(session.extra_purge_mm, 156.0)
         for injected in expanded[1:]:
             self.assertNotIn(";", injected[0])
+
+    def test_purge_pass_setting_supports_one_to_three_passes(self):
+        decision = select_slot(self.contract, self.slots)
+
+        one_pass = MmuRoutingSession()
+        one_pass.configure(
+            True, False, self.contract, decision, STATE_UNLOADED, purge_passes=1
+        )
+        one_pass.handle_marker("START_SEQUENCE_BEGIN")
+        self.assertEqual(one_pass.rewrite("G0 X45 E4 F800"), ["G0 X225 E4 F800"])
+        self.assertEqual(one_pass.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X228 Z0.05 F8000")
+        self.assertEqual(one_pass.extra_purge_mm, 72.0)
+
+        three_pass = MmuRoutingSession()
+        three_pass.configure(
+            True, False, self.contract, decision, STATE_UNLOADED, purge_passes=9
+        )
+        self.assertEqual(three_pass.purge_passes, 3)
+        three_pass.handle_marker("START_SEQUENCE_BEGIN")
+        purge_tail = three_pass.rewrite("G0 X45 E4 F800")
+        commands = [entry if isinstance(entry, str) else entry[0] for entry in purge_tail]
+        self.assertEqual(commands[-6:], [
+            "G0 Z1.2 F8000",
+            "G0 X15 F8000",
+            "G0 Z0.6 F8000",
+            "G0 X205 E76 F500",
+            "G0 X215 E4 F650",
+            "G0 X225 E4 F800",
+        ])
+        self.assertEqual(three_pass.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X228 Z0.05 F8000")
+        self.assertEqual(three_pass.extra_purge_mm, 240.0)
 
     def test_unknown_state_injects_sensor_aware_recovery_before_select(self):
         decision = select_slot(self.contract, self.slots)
@@ -228,9 +274,12 @@ G4 ; wait
         rewritten = session.rewrite("G4 ; wait")
         self.assertEqual(rewritten[0][0], "M702")
         self.assertIn("spoolmanager:mmu_unload", rewritten[0][2])
-        self.assertEqual(rewritten[1][0], "M104 S0")
-        self.assertIn("spoolmanager:mmu_unload_shutdown", rewritten[1][2])
-        self.assertEqual(rewritten[2], "G4")
+        self.assertEqual([entry[0] for entry in rewritten[1:4]], ["G91", "G1 Z5 F720", "G90"])
+        for lift_command in rewritten[1:4]:
+            self.assertIn("spoolmanager:mmu_unload_lift", lift_command[2])
+        self.assertEqual(rewritten[4][0], "M104 S0")
+        self.assertIn("spoolmanager:mmu_unload_shutdown", rewritten[4][2])
+        self.assertEqual(rewritten[5], "G4")
         self.assertIsNone(session.rewrite("G4 ; wait"))
 
     def test_retained_filament_does_not_defer_hotend_shutdown(self):

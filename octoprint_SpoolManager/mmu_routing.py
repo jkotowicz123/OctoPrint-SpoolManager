@@ -13,6 +13,11 @@ STATE_LOADED = "LOADED"
 
 DEFAULT_LOAD_DISTANCE_MM = 17.0
 LEGACY_LOAD_DISTANCE_MM = 75.0
+DEFAULT_PURGE_PASSES = 2
+MIN_PURGE_PASSES = 1
+MAX_PURGE_PASSES = 3
+FIRST_PASS_EXTRA_PURGE_MM = 72.0
+ADDITIONAL_PASS_PURGE_MM = 84.0
 DEFAULT_MAINTENANCE_BYPASS_FILES = (
     "Swap Plate with Doors.gcode",
     "Swap Plate with Doors-2.gcode",
@@ -525,6 +530,7 @@ class MmuRoutingSession(object):
         self.recovery_required = False
         self.unload_at_end = True
         self.load_distance_mm = DEFAULT_LOAD_DISTANCE_MM
+        self.purge_passes = DEFAULT_PURGE_PASSES
         self.extra_purge_mm = 0.0
         self.unload_injected = False
         self.recovery_injected = False
@@ -538,7 +544,8 @@ class MmuRoutingSession(object):
         self.error = None
 
     def configure(self, enabled, dry_run, contract, decision, loaded_state=STATE_UNKNOWN,
-                  loaded_slot=None, unload_at_end=True, load_distance_mm=DEFAULT_LOAD_DISTANCE_MM):
+                  loaded_slot=None, unload_at_end=True, load_distance_mm=DEFAULT_LOAD_DISTANCE_MM,
+                  purge_passes=DEFAULT_PURGE_PASSES):
         self.reset()
         self.enabled = bool(enabled)
         self.dry_run = bool(dry_run)
@@ -546,6 +553,10 @@ class MmuRoutingSession(object):
         self.decision = decision
         self.unload_at_end = bool(unload_at_end)
         self.load_distance_mm = float(load_distance_mm or DEFAULT_LOAD_DISTANCE_MM)
+        try:
+            self.purge_passes = max(MIN_PURGE_PASSES, min(MAX_PURGE_PASSES, int(purge_passes)))
+        except Exception:
+            self.purge_passes = DEFAULT_PURGE_PASSES
         if not self.enabled:
             return
         if not contract or not contract.get("valid"):
@@ -559,8 +570,12 @@ class MmuRoutingSession(object):
         self.fresh_load = not retained
         self.recovery_required = bool(not self.dry_run and loaded_state == STATE_UNKNOWN)
         if self.fresh_load:
-            # The full-width fresh-load purge adds 72 mm over the regular MK4 line.
-            self.extra_purge_mm = 72.0
+            # The first full-width pass adds 72 mm over the regular MK4 line;
+            # each complete return pass adds another 84 mm at the MMU3 E/X ratio.
+            self.extra_purge_mm = (
+                FIRST_PASS_EXTRA_PURGE_MM
+                + ADDITIONAL_PASS_PURGE_MM * (self.purge_passes - 1)
+            )
 
     def configure_bypass(self, enabled, dry_run, reason):
         self.reset()
@@ -641,13 +656,42 @@ class MmuRoutingSession(object):
             replacements = (
                 (r"^\s*G0\s+X25\s+E4\s+F500\b", "G0 X205 E76 F500"),
                 (r"^\s*G0\s+X35\s+E4\s+F650\b", "G0 X215 E4 F650"),
-                (r"^\s*G0\s+X45\s+E4\s+F800\b", "G0 X225 E4 F800"),
-                (r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", "G0 X228 Z0.05 F8000"),
-                (r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", "G0 X231 Z0.2 F8000"),
             )
             for pattern, replacement in replacements:
                 if re.match(pattern, upper):
                     return (replacement,)
+            if re.match(r"^\s*G0\s+X45\s+E4\s+F800\b", upper):
+                result = ["G0 X225 E4 F800"]
+                for pass_index in range(2, self.purge_passes + 1):
+                    z_height = 0.2 * pass_index
+                    travel_height = z_height + 0.6
+                    result.extend([
+                        (
+                            "G0 Z%s F8000" % _format_number(travel_height),
+                            None,
+                            {"spoolmanager:mmu_extra_purge_position"},
+                        ),
+                        ("G0 X15 F8000", None, {"spoolmanager:mmu_extra_purge_position"}),
+                        (
+                            "G0 Z%s F8000" % _format_number(z_height),
+                            None,
+                            {"spoolmanager:mmu_extra_purge_position"},
+                        ),
+                    ])
+                    pass_commands = (
+                        "G0 X205 E76 F500",
+                        "G0 X215 E4 F650",
+                        "G0 X225 E4 F800",
+                    )
+                    result.extend(
+                        (pass_command, None, {"spoolmanager:mmu_extra_purge"})
+                        for pass_command in pass_commands
+                    )
+                return result
+            if re.match(r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", upper):
+                return ("G0 X228 Z0.05 F8000",)
+            if re.match(r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", upper):
+                return ("G0 X231 Z0.2 F8000",)
 
         if self.region == REGION_END:
             if re.match(r"^\s*G1\s+E-6(?:\.0+)?\s+F100\b", upper):
@@ -665,6 +709,13 @@ class MmuRoutingSession(object):
             if self.unload_at_end and not self.unload_injected and re.match(r"^\s*G4(?:\s|;|$)", upper):
                 self.unload_injected = True
                 result = [("M702", None, {"spoolmanager:mmu_unload"})]
+                # Move away from the strand released by ramming. Use a relative
+                # positive-only move, then restore the sliced absolute XYZ mode.
+                result.extend([
+                    ("G91", None, {"spoolmanager:mmu_unload_lift"}),
+                    ("G1 Z5 F720", None, {"spoolmanager:mmu_unload_lift"}),
+                    ("G90", None, {"spoolmanager:mmu_unload_lift"}),
+                ])
                 if self.deferred_hotend_off:
                     result.append((self.deferred_hotend_off, None, {"spoolmanager:mmu_unload_shutdown"}))
                 result.append(_without_inline_comment(command))

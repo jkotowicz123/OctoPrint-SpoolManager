@@ -54,4 +54,5 @@ class SettingsKeys():
 	SETTINGS_KEY_MMU_PRINTER_NUMBER = "mmuPrinterNumber"
 	SETTINGS_KEY_MMU_RESERVE_WEIGHT = "mmuReserveWeight"
 	SETTINGS_KEY_MMU_LOAD_DISTANCE = "mmuLoadDistanceMm"
+	SETTINGS_KEY_MMU_PURGE_PASSES = "mmuPurgePasses"
 	SETTINGS_KEY_MMU_BYPASS_FILES = "mmuRoutingBypassFiles"

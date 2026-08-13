@@ -15,6 +15,7 @@ from octoprint_SpoolManager.DatabaseManager import DatabaseManager
 from octoprint_SpoolManager.newodometer import NewFilamentOdometer
 from octoprint_SpoolManager.mmu_routing import (
 	DEFAULT_LOAD_DISTANCE_MM,
+	DEFAULT_PURGE_PASSES,
 	DEFAULT_MAINTENANCE_BYPASS_FILES,
 	maintenance_bypass_files,
 	LEGACY_LOAD_DISTANCE_MM,
@@ -1225,6 +1226,10 @@ class SpoolmanagerPlugin(
 			loadDistance = float(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]) or DEFAULT_LOAD_DISTANCE_MM)
 		except Exception:
 			loadDistance = DEFAULT_LOAD_DISTANCE_MM
+		try:
+			purgePasses = int(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES]) or DEFAULT_PURGE_PASSES)
+		except Exception:
+			purgePasses = DEFAULT_PURGE_PASSES
 
 		unloadAtEnd = True
 		nextPath = self._getContinuousPrintNextPath()
@@ -1259,13 +1264,14 @@ class SpoolmanagerPlugin(
 			loaded_state=self._mmuLoadedState,
 			loaded_slot=self._mmuLoadedSlot,
 			unload_at_end=unloadAtEnd,
-			load_distance_mm=loadDistance
+			load_distance_mm=loadDistance,
+			purge_passes=purgePasses
 		)
 
 		self._logger.info(
-			"MMU routing decision: file=%s dryRun=%s contract=%s decision=%s nextPath=%s unloadAtEnd=%s state=%s loadedSlot=%s active=%s error=%s",
+			"MMU routing decision: file=%s dryRun=%s contract=%s decision=%s nextPath=%s unloadAtEnd=%s purgePasses=%s state=%s loadedSlot=%s active=%s error=%s",
 			str(name or path), str(dryRun), str(contract), str(decision), str(nextPath),
-			str(unloadAtEnd), str(self._mmuLoadedState), str(self._mmuLoadedSlot), str(self._mmuRoutingSession.active), str(self._mmuRoutingSession.error)
+			str(unloadAtEnd), str(self._mmuRoutingSession.purge_passes), str(self._mmuLoadedState), str(self._mmuLoadedSlot), str(self._mmuRoutingSession.active), str(self._mmuRoutingSession.error)
 		)
 
 		if (not dryRun and enforceGuard and not self._mmuRoutingSession.allow_print):
@@ -1427,6 +1433,12 @@ class SpoolmanagerPlugin(
 		oldToolOffsetEnabled = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_TOOL_OFFSET_ENABLED])
 		oldBedOffsetEnabled = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_BED_OFFSET_ENABLED])
 		oldEnclosureOffsetEnabled = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_ENCLOSURE_OFFSET_ENABLED])
+		if SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES in data:
+			try:
+				purgePasses = int(data.get(SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES))
+			except Exception:
+				purgePasses = DEFAULT_PURGE_PASSES
+			data[SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES] = max(1, min(3, purgePasses))
 
 		# # default save function
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
@@ -1534,6 +1546,7 @@ class SpoolmanagerPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER] = 5
 		settings[SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT] = 0.0
 		settings[SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE] = DEFAULT_LOAD_DISTANCE_MM
+		settings[SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES] = DEFAULT_PURGE_PASSES
 		settings[SettingsKeys.SETTINGS_KEY_MMU_BYPASS_FILES] = list(DEFAULT_MAINTENANCE_BYPASS_FILES)
 
 		## Database

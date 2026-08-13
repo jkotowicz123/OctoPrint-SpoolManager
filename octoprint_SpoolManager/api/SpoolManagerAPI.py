@@ -1754,13 +1754,23 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			data = request.get_json(silent=True) or {}
 			routingChanged = any(key in data for key in (
 				"enabled", "dryRun", "printerNumber", "reserveWeight", "loadDistanceMm",
-				"slotSpoolIds", "loadedState"
+				"purgePasses", "slotSpoolIds", "loadedState"
 			))
 			try:
 				if ((self._printer.is_printing() or self._printer.is_paused()) and len(data) > 0):
 					return jsonify({"error": "MMU routing settings cannot be changed during a print"}), 409
 			except Exception:
 				pass
+			purgePasses = None
+			if ("purgePasses" in data):
+				try:
+					purgePasses = int(data.get("purgePasses"))
+					if float(data.get("purgePasses")) != purgePasses:
+						raise ValueError("not an integer")
+				except Exception:
+					return jsonify({"error": "purgePasses must be an integer between 1 and 3"}), 400
+				if purgePasses < 1 or purgePasses > 3:
+					return jsonify({"error": "purgePasses must be an integer between 1 and 3"}), 400
 			if ("enabled" in data):
 				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_ROUTING_ENABLED], bool(data.get("enabled")))
 			if ("dryRun" in data):
@@ -1771,6 +1781,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT], max(0.0, float(data.get("reserveWeight"))))
 			if ("loadDistanceMm" in data):
 				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE], max(0.0, float(data.get("loadDistanceMm"))))
+			if ("purgePasses" in data):
+				self._settings.set([SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES], purgePasses)
 			if ("slotSpoolIds" in data):
 				rawSlots = data.get("slotSpoolIds")
 				if (not isinstance(rawSlots, list) or len(rawSlots) > 5):
@@ -1832,6 +1844,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"printerNumber": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PRINTER_NUMBER]),
 			"reserveWeight": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_RESERVE_WEIGHT]),
 			"loadDistanceMm": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_LOAD_DISTANCE]),
+			"purgePasses": self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES]),
 			"loadedState": self._mmuLoadedState,
 			"loadedSlot": self._mmuLoadedSlot,
 			"loadedStateSource": getattr(self, "_mmuStateSource", "unknown"),
@@ -1845,6 +1858,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 				"dryRun": session.dry_run,
 				"slot": session.slot,
 				"freshLoad": session.fresh_load,
+				"purgePasses": session.purge_passes,
+				"extraPurgeMm": session.extra_purge_mm,
 				"recoveryRequired": session.recovery_required,
 				"unloadAtEnd": session.unload_at_end,
 				"bypass": session.bypass,
