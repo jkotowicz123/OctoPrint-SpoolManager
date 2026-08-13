@@ -16,6 +16,7 @@ LEGACY_LOAD_DISTANCE_MM = 75.0
 DEFAULT_PURGE_PASSES = 2
 MIN_PURGE_PASSES = 1
 MAX_PURGE_PASSES = 3
+UNLOAD_EXTRA_LIFT_MM = 15.0
 FIRST_PASS_EXTRA_PURGE_MM = 72.0
 ADDITIONAL_PASS_PURGE_MM = 84.8
 DEFAULT_MAINTENANCE_BYPASS_FILES = (
@@ -309,6 +310,53 @@ def runtime_template_errors_file(path):
         return runtime_template_errors(handle)
 
 
+def _unload_lift_target_lines(lines, extra_lift_mm):
+    in_end = False
+    end_z = None
+    max_print_height = None
+    number = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)"
+    for raw_line in lines:
+        line = raw_line.strip()
+        if line == "@SPOOLMANAGER END_SEQUENCE_BEGIN":
+            in_end = True
+            continue
+        if line == "@SPOOLMANAGER END_SEQUENCE_END":
+            in_end = False
+            continue
+        height_match = re.match(
+            r"^;\s*max_print_height\s*=\s*(%s)\s*$" % number,
+            line,
+            re.I,
+        )
+        if height_match:
+            max_print_height = float(height_match.group(1))
+        if in_end:
+            if re.match(r"^G4(?:\s|;|$)", line, re.I):
+                in_end = False
+                continue
+            if re.match(r"^G[01]\b", line, re.I):
+                z_match = re.search(r"(?:^|\s)Z(%s)(?:\s|;|$)" % number, line, re.I)
+                if z_match:
+                    end_z = float(z_match.group(1))
+    if end_z is None or max_print_height is None:
+        return None
+    target = min(end_z + float(extra_lift_mm), max_print_height)
+    return target if target > end_z + 0.0005 else None
+
+
+def unload_lift_target_text(text, extra_lift_mm=UNLOAD_EXTRA_LIFT_MM):
+    """Return a capped absolute Z target, or None when no extra lift is safe."""
+    return _unload_lift_target_lines(
+        str(text or "").splitlines(),
+        extra_lift_mm,
+    )
+
+
+def unload_lift_target_file(path, extra_lift_mm=UNLOAD_EXTRA_LIFT_MM):
+    with io.open(path, "r", encoding="utf-8", errors="replace") as handle:
+        return _unload_lift_target_lines(handle, extra_lift_mm)
+
+
 def build_slot(slot_index, spool):
     if spool is None:
         return {"slot": int(slot_index), "spool_id": None, "active": False}
@@ -537,6 +585,7 @@ class MmuRoutingSession(object):
         self.restore_bed_wait = None
         self.restore_hotend_wait = None
         self.deferred_hotend_off = None
+        self.unload_lift_z = None
         self.bypass = False
         self.bypass_reason = None
         self.contract = None
@@ -545,7 +594,7 @@ class MmuRoutingSession(object):
 
     def configure(self, enabled, dry_run, contract, decision, loaded_state=STATE_UNKNOWN,
                   loaded_slot=None, unload_at_end=True, load_distance_mm=DEFAULT_LOAD_DISTANCE_MM,
-                  purge_passes=DEFAULT_PURGE_PASSES):
+                  purge_passes=DEFAULT_PURGE_PASSES, unload_lift_z=None):
         self.reset()
         self.enabled = bool(enabled)
         self.dry_run = bool(dry_run)
@@ -553,6 +602,10 @@ class MmuRoutingSession(object):
         self.decision = decision
         self.unload_at_end = bool(unload_at_end)
         self.load_distance_mm = float(load_distance_mm or DEFAULT_LOAD_DISTANCE_MM)
+        try:
+            self.unload_lift_z = float(unload_lift_z) if unload_lift_z is not None else None
+        except Exception:
+            self.unload_lift_z = None
         try:
             self.purge_passes = max(MIN_PURGE_PASSES, min(MAX_PURGE_PASSES, int(purge_passes)))
         except Exception:
@@ -708,14 +761,19 @@ class MmuRoutingSession(object):
                 return (None,)
             if self.unload_at_end and not self.unload_injected and re.match(r"^\s*G4(?:\s|;|$)", upper):
                 self.unload_injected = True
-                result = [("M702", None, {"spoolmanager:mmu_unload"})]
-                # Move away from the strand released by ramming. Use a relative
-                # positive-only move, then restore the sliced absolute XYZ mode.
-                result.extend([
-                    ("G91", None, {"spoolmanager:mmu_unload_lift"}),
-                    ("G1 Z5 F720", None, {"spoolmanager:mmu_unload_lift"}),
-                    ("G90", None, {"spoolmanager:mmu_unload_lift"}),
-                ])
+                # PrusaSlicer has already capped its end lift. Add clearance only
+                # when the precomputed absolute target remains within machine Z.
+                result = []
+                if self.unload_lift_z is not None:
+                    result.extend([
+                        ("G90", None, {"spoolmanager:mmu_unload_lift"}),
+                        (
+                            "G1 Z%s F720" % _format_number(self.unload_lift_z),
+                            None,
+                            {"spoolmanager:mmu_unload_lift"},
+                        ),
+                    ])
+                result.append(("M702", None, {"spoolmanager:mmu_unload"}))
                 if self.deferred_hotend_off:
                     result.append((self.deferred_hotend_off, None, {"spoolmanager:mmu_unload_shutdown"}))
                 result.append(_without_inline_comment(command))

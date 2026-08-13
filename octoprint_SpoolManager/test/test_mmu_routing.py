@@ -23,6 +23,7 @@ from mmu_routing import (
     should_retain_for_next,
     should_count_for_odometer,
     runtime_template_errors,
+    unload_lift_target_text,
 )
 
 
@@ -264,20 +265,35 @@ G4 ; wait
     def test_unload_is_inserted_once_before_wait_and_jobox_cooldown_is_removed(self):
         decision = select_slot(self.contract, self.slots)
         session = MmuRoutingSession()
-        session.configure(True, False, self.contract, decision, STATE_UNLOADED, unload_at_end=True)
+        session.configure(
+            True, False, self.contract, decision, STATE_UNLOADED,
+            unload_at_end=True, unload_lift_z=38.2
+        )
         session.handle_marker("END_SEQUENCE_BEGIN")
         self.assertEqual(session.rewrite("M104 S160 ; jobox"), (None,))
         self.assertEqual(session.rewrite("M104 S0 ; turn off temperature"), (None,))
         rewritten = session.rewrite("G4 ; wait")
-        self.assertEqual(rewritten[0][0], "M702")
-        self.assertIn("spoolmanager:mmu_unload", rewritten[0][2])
-        self.assertEqual([entry[0] for entry in rewritten[1:4]], ["G91", "G1 Z5 F720", "G90"])
-        for lift_command in rewritten[1:4]:
+        self.assertEqual([entry[0] for entry in rewritten[:2]], ["G90", "G1 Z38.2 F720"])
+        for lift_command in rewritten[:2]:
             self.assertIn("spoolmanager:mmu_unload_lift", lift_command[2])
-        self.assertEqual(rewritten[4][0], "M104 S0")
-        self.assertIn("spoolmanager:mmu_unload_shutdown", rewritten[4][2])
-        self.assertEqual(rewritten[5], "G4")
+        self.assertEqual(rewritten[2][0], "M702")
+        self.assertIn("spoolmanager:mmu_unload", rewritten[2][2])
+        self.assertEqual(rewritten[3][0], "M104 S0")
+        self.assertIn("spoolmanager:mmu_unload_shutdown", rewritten[3][2])
+        self.assertEqual(rewritten[4], "G4")
         self.assertIsNone(session.rewrite("G4 ; wait"))
+
+    def test_unload_lift_is_absolute_and_capped_to_printer_height(self):
+        template = """@SPOOLMANAGER END_SEQUENCE_BEGIN
+G1 Z%s F300 ; sliced capped end lift
+G4 ; wait
+@SPOOLMANAGER END_SEQUENCE_END
+; max_print_height = 220
+"""
+        self.assertEqual(unload_lift_target_text(template % "23.2"), 38.2)
+        self.assertEqual(unload_lift_target_text(template % "213"), 220.0)
+        self.assertIsNone(unload_lift_target_text(template % "220"))
+        self.assertIsNone(unload_lift_target_text(template.replace("; max_print_height = 220", "") % "23.2"))
 
     def test_retained_filament_does_not_defer_hotend_shutdown(self):
         decision = select_slot(self.contract, self.slots)

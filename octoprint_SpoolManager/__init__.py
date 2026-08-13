@@ -31,6 +31,7 @@ from octoprint_SpoolManager.mmu_routing import (
 	routing_bypass_reason,
 	routing_bypass_reason_file,
 	runtime_template_errors_file,
+	unload_lift_target_file,
 	select_slot,
 	spool_accounting_targets,
 	should_retain_for_next,
@@ -1230,6 +1231,12 @@ class SpoolmanagerPlugin(
 			purgePasses = int(self._settings.get([SettingsKeys.SETTINGS_KEY_MMU_PURGE_PASSES]) or DEFAULT_PURGE_PASSES)
 		except Exception:
 			purgePasses = DEFAULT_PURGE_PASSES
+		unloadLiftZ = None
+		if (gcodePath != None):
+			try:
+				unloadLiftZ = unload_lift_target_file(gcodePath)
+			except Exception as e:
+				self._logger.warning("Could not calculate capped MMU unload lift for %s: %s", str(name or path), str(e))
 
 		unloadAtEnd = True
 		nextPath = self._getContinuousPrintNextPath()
@@ -1265,7 +1272,8 @@ class SpoolmanagerPlugin(
 			loaded_slot=self._mmuLoadedSlot,
 			unload_at_end=unloadAtEnd,
 			load_distance_mm=loadDistance,
-			purge_passes=purgePasses
+			purge_passes=purgePasses,
+			unload_lift_z=unloadLiftZ
 		)
 
 		self._logger.info(
