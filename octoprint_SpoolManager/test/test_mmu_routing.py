@@ -137,17 +137,16 @@ G4 ; wait
         purge_commands = [entry if isinstance(entry, str) else entry[0] for entry in purge_tail]
         self.assertEqual(purge_commands, [
             "G0 X225 E4 F800",
-            "G0 Z1 F8000",
-            "G0 X15 F8000",
-            "G0 Z0.4 F8000",
-            "G0 X205 E76 F500",
-            "G0 X215 E4 F650",
-            "G0 X225 E4 F800",
+            "G0 Y-2 E0.8 F800",
+            "G0 X35 E76 F500",
+            "G0 X25 E4 F650",
+            "G0 X15 E4 F800",
         ])
-        self.assertIn("spoolmanager:mmu_extra_purge", purge_tail[4][2])
-        self.assertEqual(session.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X228 Z0.05 F8000")
-        self.assertEqual(session.rewrite("G0 X51 Z0.2 F8000")[0], "G0 X231 Z0.2 F8000")
-        self.assertEqual(session.extra_purge_mm, 156.0)
+        self.assertIn("spoolmanager:mmu_extra_purge", purge_tail[1][2])
+        self.assertIn("spoolmanager:mmu_extra_purge", purge_tail[2][2])
+        self.assertEqual(session.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X12 Z0.05 F8000")
+        self.assertEqual(session.rewrite("G0 X51 Z0.2 F8000")[0], "G0 X9 Z0.2 F8000")
+        self.assertEqual(session.extra_purge_mm, 156.8)
         for injected in expanded[1:]:
             self.assertNotIn(";", injected[0])
 
@@ -171,16 +170,14 @@ G4 ; wait
         three_pass.handle_marker("START_SEQUENCE_BEGIN")
         purge_tail = three_pass.rewrite("G0 X45 E4 F800")
         commands = [entry if isinstance(entry, str) else entry[0] for entry in purge_tail]
-        self.assertEqual(commands[-6:], [
-            "G0 Z1.2 F8000",
-            "G0 X15 F8000",
-            "G0 Z0.6 F8000",
+        self.assertEqual(commands[-4:], [
+            "G0 Y0 E0.8 F800",
             "G0 X205 E76 F500",
             "G0 X215 E4 F650",
             "G0 X225 E4 F800",
         ])
         self.assertEqual(three_pass.rewrite("G0 X48 Z0.05 F8000")[0], "G0 X228 Z0.05 F8000")
-        self.assertEqual(three_pass.extra_purge_mm, 240.0)
+        self.assertEqual(three_pass.extra_purge_mm, 241.6)
 
     def test_unknown_state_injects_sensor_aware_recovery_before_select(self):
         decision = select_slot(self.contract, self.slots)

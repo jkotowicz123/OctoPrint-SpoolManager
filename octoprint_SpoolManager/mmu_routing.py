@@ -17,7 +17,7 @@ DEFAULT_PURGE_PASSES = 2
 MIN_PURGE_PASSES = 1
 MAX_PURGE_PASSES = 3
 FIRST_PASS_EXTRA_PURGE_MM = 72.0
-ADDITIONAL_PASS_PURGE_MM = 84.0
+ADDITIONAL_PASS_PURGE_MM = 84.8
 DEFAULT_MAINTENANCE_BYPASS_FILES = (
     "Swap Plate with Doors.gcode",
     "Swap Plate with Doors-2.gcode",
@@ -663,35 +663,35 @@ class MmuRoutingSession(object):
             if re.match(r"^\s*G0\s+X45\s+E4\s+F800\b", upper):
                 result = ["G0 X225 E4 F800"]
                 for pass_index in range(2, self.purge_passes + 1):
-                    z_height = 0.2 * pass_index
-                    travel_height = z_height + 0.6
-                    result.extend([
-                        (
-                            "G0 Z%s F8000" % _format_number(travel_height),
-                            None,
-                            {"spoolmanager:mmu_extra_purge_position"},
-                        ),
-                        ("G0 X15 F8000", None, {"spoolmanager:mmu_extra_purge_position"}),
-                        (
-                            "G0 Z%s F8000" % _format_number(z_height),
-                            None,
-                            {"spoolmanager:mmu_extra_purge_position"},
-                        ),
-                    ])
-                    pass_commands = (
-                        "G0 X205 E76 F500",
-                        "G0 X215 E4 F650",
-                        "G0 X225 E4 F800",
-                    )
+                    y_position = -4.0 + 2.0 * (pass_index - 1)
+                    result.append((
+                        "G0 Y%s E0.8 F800" % _format_number(y_position),
+                        None,
+                        {"spoolmanager:mmu_extra_purge"},
+                    ))
+                    if pass_index % 2 == 0:
+                        pass_commands = (
+                            "G0 X35 E76 F500",
+                            "G0 X25 E4 F650",
+                            "G0 X15 E4 F800",
+                        )
+                    else:
+                        pass_commands = (
+                            "G0 X205 E76 F500",
+                            "G0 X215 E4 F650",
+                            "G0 X225 E4 F800",
+                        )
                     result.extend(
                         (pass_command, None, {"spoolmanager:mmu_extra_purge"})
                         for pass_command in pass_commands
                     )
                 return result
             if re.match(r"^\s*G0\s+X48\s+Z0\.05\s+F8000\b", upper):
-                return ("G0 X228 Z0.05 F8000",)
+                wipe_x = 12 if self.purge_passes % 2 == 0 else 228
+                return ("G0 X%d Z0.05 F8000" % wipe_x,)
             if re.match(r"^\s*G0\s+X51\s+Z0\.2\s+F8000\b", upper):
-                return ("G0 X231 Z0.2 F8000",)
+                wipe_x = 9 if self.purge_passes % 2 == 0 else 231
+                return ("G0 X%d Z0.2 F8000" % wipe_x,)
 
         if self.region == REGION_END:
             if re.match(r"^\s*G1\s+E-6(?:\.0+)?\s+F100\b", upper):
