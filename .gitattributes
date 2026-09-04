@@ -1,0 +1,9 @@
+/.github export-ignore
+/3rdPartySoftware export-ignore
+/.travis.yml.notusedanymore export-ignore
+/docker-compose.yml export-ignore
+/docs export-ignore
+/screenshots export-ignore
+/testdata export-ignore
+/octoprint_SpoolManager/test export-ignore
+/ABOUT.md export-ignore
