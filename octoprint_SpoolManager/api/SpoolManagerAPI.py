@@ -27,8 +27,32 @@ from octoprint_SpoolManager.common import StringUtils, CSVExportImporter, Consum
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.common.SettingsKeys import SettingsKeys
 from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
+from octoprint_SpoolManager.sheet_assignment import should_refresh_currently_printing
 
 class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
+
+	def _isActiveLocalPrinterSheetAssignment(self, printerNumber):
+		try:
+			currentPrinterNumber = self._getCurrentPrinterNumber()
+			return should_refresh_currently_printing(
+				currentPrinterNumber,
+				printerNumber,
+				self._printer.is_printing(),
+				self._printer.is_paused()
+			)
+		except Exception:
+			return False
+
+	def _refreshCurrentlyPrintingAfterSheetAssignment(self, printerNumber, refreshRequired):
+		if not refreshRequired:
+			return False
+
+		self._storeObjectsInfoOnCurrentSheet()
+		self._logger.info(
+			"Refreshed currentlyPrinting after assigning a sheet during an active print on printer #%s",
+			str(printerNumber)
+		)
+		return True
 
 	def _getMmuSlotSpoolIds(self):
 		selectedIds = list(self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_SPOOLS_DATABASE_IDS]) or [])
@@ -703,16 +727,24 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		if (printerNumber == None):
 			return flask.jsonify(), 400
 
+		refreshCurrentlyPrinting = self._isActiveLocalPrinterSheetAssignment(printerNumber)
 		self._databaseManager.connectoToDatabase()
 		try:
 			sheetModel = self._databaseManager.loadSheetByNid(databaseId, withReusedConnection=True)
 			if (sheetModel == None):
 				return flask.jsonify(), 404
 
-			sheetModel = self._databaseManager.assignSheetToPrinter(sheetModel, printerNumber, withReusedConnection=True)
+			sheetModel = self._databaseManager.assignSheetToPrinter(
+				sheetModel,
+				printerNumber,
+				withReusedConnection=True,
+				clearPreviousCurrentlyPrinting=refreshCurrentlyPrinting
+			)
 			payload = Transformer.transformSheetModelToDict(sheetModel)
 		finally:
 			self._databaseManager.closeDatabase()
+
+		currentlyPrintingRefreshed = self._refreshCurrentlyPrintingAfterSheetAssignment(printerNumber, refreshCurrentlyPrinting)
 
 		try:
 			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
@@ -726,7 +758,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 		json_object = json.dumps({
 			"printerNumber": printerLabel,
-			"sheet": payload
+			"sheet": payload,
+			"currentlyPrintingRefreshed": currentlyPrintingRefreshed
 		}, indent=4, ensure_ascii=False)
 		return flask.Response(json_object, status=200, mimetype='application/json')
 
@@ -1599,6 +1632,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		if (printerNumber == None):
 			return flask.jsonify(), 400
 
+		refreshCurrentlyPrinting = self._isActiveLocalPrinterSheetAssignment(printerNumber)
 		self._databaseManager.connectoToDatabase()
 		try:
 			sheetModel = None
@@ -1610,10 +1644,17 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			if (sheetModel == None):
 				return flask.jsonify(), 404
 
-			sheetModel = self._databaseManager.assignSheetToPrinter(sheetModel, printerNumber, withReusedConnection=True)
+			sheetModel = self._databaseManager.assignSheetToPrinter(
+				sheetModel,
+				printerNumber,
+				withReusedConnection=True,
+				clearPreviousCurrentlyPrinting=refreshCurrentlyPrinting
+			)
 			payload = Transformer.transformSheetModelToDict(sheetModel)
 		finally:
 			self._databaseManager.closeDatabase()
+
+		currentlyPrintingRefreshed = self._refreshCurrentlyPrintingAfterSheetAssignment(printerNumber, refreshCurrentlyPrinting)
 
 		self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SHEET_ASSIGNED, {
 			"databaseId": payload.get("databaseId"),
@@ -1623,7 +1664,8 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 		})
 
 		return flask.jsonify({
-			"sheet": payload
+			"sheet": payload,
+			"currentlyPrintingRefreshed": currentlyPrintingRefreshed
 		})
 
 	@octoprint.plugin.BlueprintPlugin.route("/appendSheetToMagazine", methods=["PUT"])

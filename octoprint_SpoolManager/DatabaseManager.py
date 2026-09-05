@@ -1902,14 +1902,17 @@ class DatabaseManager(object):
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "unassignSheet")
 
-	def assignSheetToPrinter(self, sheetModel, printerNumber, withReusedConnection=False):
+	def assignSheetToPrinter(self, sheetModel, printerNumber, withReusedConnection=False, clearPreviousCurrentlyPrinting=False):
 		def databaseCallMethode():
 			with self._database.atomic() as transaction:
 				try:
-					SheetModel.update({
+					previousValues = {
 						SheetModel.printerNumber: None,
 						SheetModel.magazinePosition: None
-					}).where(
+					}
+					if clearPreviousCurrentlyPrinting:
+						previousValues[SheetModel.currentlyPrinting] = None
+					SheetModel.update(previousValues).where(
 						(SheetModel.printerNumber == int(printerNumber)) &
 						(SheetModel.magazinePosition.is_null(True)) &
 						(SheetModel.databaseId != sheetModel.databaseId)
@@ -1917,6 +1920,8 @@ class DatabaseManager(object):
 
 					sheetModel.printerNumber = int(printerNumber)
 					sheetModel.magazinePosition = None
+					if clearPreviousCurrentlyPrinting:
+						sheetModel.currentlyPrinting = None
 					sheetModel.save()
 					transaction.commit()
 					return sheetModel
@@ -2136,4 +2141,3 @@ class DatabaseManager(object):
 					return None
 
 		return self._handleReusableConnection(databaseCallMethode, withReusedConnection, "deleteConsumable")
-
