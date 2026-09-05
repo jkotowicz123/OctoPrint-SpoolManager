@@ -43,6 +43,7 @@ from octoprint_SpoolManager.api.SpoolManagerAPI import SpoolManagerAPI
 from octoprint_SpoolManager.common import StringUtils
 from octoprint_SpoolManager.common.SettingsKeys import SettingsKeys
 from octoprint_SpoolManager.common.EventBusKeys import EventBusKeys
+from octoprint_SpoolManager.filament_accounting import remaining_metadata_length
 
 import json
 import re
@@ -87,6 +88,10 @@ class SpoolmanagerPlugin(
 		self._lastPrintState = None
 
 		self.metaDataFilamentLengths = []
+		# Length already assigned to earlier spools during pause or a deliberate
+		# mid-print spool switch. The final slicer total must only contribute the
+		# unassigned remainder to the last spool.
+		self._committedPrintFilamentLengths = {}
 
 		self.alreadyCanceled = False
 
@@ -761,17 +766,20 @@ class SpoolmanagerPlugin(
 				pass
 
 			currentExtrusionLengthMeta = None
+			metadataTotalLength = None
+			previouslyCommittedLength = float(self._committedPrintFilamentLengths.get(gcodeToolIndex, 0.0) or 0.0)
 			if printStatus == "success":
 				try:
 					self._readingFilamentMetaData()
 					if gcodeToolIndex < len(self.metaDataFilamentLengths):
-						currentExtrusionLengthMeta = self.metaDataFilamentLengths[gcodeToolIndex]
+						metadataTotalLength = self.metaDataFilamentLengths[gcodeToolIndex]
 						if (
 							gcodeToolIndex == 0
 							and self._mmuRoutingSession.active
 							and not self._mmuRoutingSession.dry_run
 						):
-							currentExtrusionLengthMeta += self._mmuRoutingSession.extra_purge_mm
+							metadataTotalLength += self._mmuRoutingSession.extra_purge_mm
+						currentExtrusionLengthMeta = remaining_metadata_length(metadataTotalLength, previouslyCommittedLength)
 				except Exception:
 					currentExtrusionLengthMeta = None
 
@@ -811,6 +819,9 @@ class SpoolmanagerPlugin(
 
 			self._databaseManager.saveSpool(spoolModel)
 
+			if printStatus in (None, "paused") and currentExtrusionLength is not None:
+				self._committedPrintFilamentLengths[gcodeToolIndex] = previouslyCommittedLength + max(0.0, float(currentExtrusionLength))
+
 			eventPayload = {
 				"toolId": toolIndex,
 				"databaseId": spoolModel.databaseId,
@@ -822,13 +833,17 @@ class SpoolmanagerPlugin(
 				"usedWeightThisPrint": usedWeight,
 				"calculationSource": calculationSource,
 				"odometerLengthThisPrint": currentExtrusionLengthOdometer,
-				"metadataLengthThisPrint": currentExtrusionLengthMeta
+				"metadataLengthThisPrint": currentExtrusionLengthMeta,
+				"metadataTotalLength": metadataTotalLength,
+				"previouslyCommittedLength": previouslyCommittedLength
 			}
 			self._sendPayload2EventBus(EventBusKeys.EVENT_BUS_SPOOL_WEIGHT_UPDATED_AFTER_PRINT, eventPayload)
 
 			reload = True
 
 		self.myFilamentOdometer.reset_extruded_length()
+		if printStatus not in (None, "paused"):
+			self._committedPrintFilamentLengths = {}
 
 		if reload:
 			self._sendDataToClient(dict(
@@ -1410,6 +1425,7 @@ class SpoolmanagerPlugin(
 
 		elif (Events.PRINT_STARTED == event):
 			self.alreadyCanceled = False
+			self._committedPrintFilamentLengths = {}
 			self._prepareMmuRoutingForCurrentJob(enforceGuard=True, selectedFile=payload)
 			self._on_printJobStarted()
 
