@@ -441,7 +441,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 
 	##############################################################################################   ALLOWED TO PRINT
 	@octoprint.plugin.BlueprintPlugin.route("/allowedToPrint", methods=["GET"])
-	def allowed_to_print(self):
+	def allowed_to_print(self, enforceChecks=False):
 
 		checkForSelectedSpool = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_WARN_IF_SPOOL_NOT_SELECTED])
 		checkForFilamentLength = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_WARN_IF_FILAMENT_NOT_ENOUGH])
@@ -507,7 +507,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 						result['filamentNotEnough'].append(infoData)
 					# add every spool for reminding, if more the 0gr is needed
 					result['reminderSpoolSelection'].append(infoData)
-			elif checkForSelectedSpool:
+			elif checkForSelectedSpool or enforceChecks:
 				if (detailedSpoolResult is not None):
 					if (detailedSpoolResult["requiredLength"] > 0):
 						result['noSpoolSelected'].append(infoData)
@@ -532,7 +532,7 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			# 		result['noSpoolSelected'].append(infoData)
 
 		# check if the user want a popup
-		if (checkForFilamentLength == False):
+		if (checkForFilamentLength == False and enforceChecks == False):
 			result['filamentNotEnough'] = []
 
 		if (reminderSelectingSpool == False):
@@ -547,6 +547,10 @@ class SpoolManagerAPI(octoprint.plugin.BlueprintPlugin):
 			"bedOffsetEnabled": self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_BED_OFFSET_ENABLED]),
 			"enclosureOffsetEnabled": self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_ENCLOSURE_OFFSET_ENABLED]),
 		})
+
+	def allowed_to_print_for_queue(self):
+		"""Apply safety checks even when interactive warning popups are disabled."""
+		return self.allowed_to_print(enforceChecks=True)
 
 
 	#############################################################################################  START PRINT CONFIRMED
