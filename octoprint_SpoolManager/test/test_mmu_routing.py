@@ -68,6 +68,16 @@ class MmuRoutingTests(unittest.TestCase):
         self.assertTrue(decision["ok"])
         self.assertEqual(decision["slot"], 2)
 
+    def test_order_camelcase_color_matches_inventory_spaces_without_fuzzy_matching(self):
+        requirement = dict(self.contract, material_key="pla", color="pastelBlue",
+                           color_key="pastelblue", color_hex="")
+        for name in ["pastel blue", "Pastel-Blue", "pastelBlue"]:
+            slots = [build_slot(0, FakeSpool(923, "PLA", name, "#b8d6fc", 500))]
+            self.assertTrue(select_slot(requirement, slots)["ok"], name)
+        for material, name in [("PLA", "blue"), ("PLA", "pastel green"), ("PETG", "pastel blue")]:
+            slots = [build_slot(0, FakeSpool(923, material, name, "#b8d6fc", 500))]
+            self.assertFalse(select_slot(requirement, slots)["ok"])
+
     def test_live_contract_requires_all_bounded_runtime_markers(self):
         all_markers = "\n".join([
             "@SPOOLMANAGER PURGE_AREA_BEGIN",

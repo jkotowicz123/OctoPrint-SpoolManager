@@ -389,7 +389,10 @@ def _slot_matches(requirement, slot):
         normalize_key(slot.get("color_key") or slot.get("color_name")),
         normalize_key(slot.get("color")),
     ])
-    return required_key in slot_keys
+    # OM uses camelCase color names; inventory labels may contain spaces or dashes.
+    # Compare the complete normalized name, never a substring or fuzzy match.
+    compact_required = normalize_key(required_key).replace("-", "")
+    return bool(compact_required) and compact_required in {key.replace("-", "") for key in slot_keys}
 
 
 def select_slot(requirement, slots, loaded_slot=None, reserve_g=0.0):
