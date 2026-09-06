@@ -286,25 +286,19 @@ class SpoolmanagerPlugin(
 
 		pass
 
-	def _readingFilamentMetaData(self):
-		filamentLengthPresentInMeta = False
+	def _readingFilamentMetaData(self, selectedFile=None):
+		# PrintDone may be dispatched after Continuous Print has already selected
+		# the next file. Accounting must use the completed event's file identity.
 		self.metaDataFilamentLengths = []
-		if ("job" in self._printer.get_current_data()):
-			jobData = self._printer.get_current_data()["job"]
-			if ("file" in jobData):
-				fileData = jobData["file"]
-				origin = fileData["origin"]
-				path = fileData["path"]
-				if (origin !=  None and path != None):
-					metadata = self._file_manager.get_metadata(origin, path)
-					if ("analysis" in metadata):
-						if ("filament" in metadata["analysis"]):
-							for toolName, toolData in metadata["analysis"]["filament"].items():
-								toolIndex = int(toolName[4:])
-								self.metaDataFilamentLengths += [0.0] * (toolIndex + 1 - len(self.metaDataFilamentLengths))
-								self.metaDataFilamentLengths[toolIndex] = toolData["length"]
-								filamentLengthPresentInMeta = True
-		return filamentLengthPresentInMeta
+		origin, path, _ = self._getCurrentJobFile(selectedFile)
+		if origin is None or path is None:
+			return False
+		metadata = self._file_manager.get_metadata(origin, path) or {}
+		for toolName, toolData in (metadata.get("analysis", {}).get("filament", {}) or {}).items():
+			toolIndex = int(toolName[4:])
+			self.metaDataFilamentLengths += [0.0] * (toolIndex + 1 - len(self.metaDataFilamentLengths))
+			self.metaDataFilamentLengths[toolIndex] = toolData["length"]
+		return bool(self.metaDataFilamentLengths)
 
 	def _evaluateRequiredWeight(self, selectedSpools, forToolIndex=None, warnUser=False):
 
@@ -660,6 +654,9 @@ class SpoolmanagerPlugin(
 					break
 			maxBytes = maxBytes * 2
 
+		if objectsInfoJson is None:
+			return
+
 		quantities = {}
 		if (objectsInfoJson != None):
 			quantities = self._aggregateObjectQuantities(objectsInfoJson)
@@ -743,7 +740,7 @@ class SpoolmanagerPlugin(
 		finally:
 			self._databaseManager.closeDatabase()
 
-	def commitOdometerData(self, printStatus=None):
+	def commitOdometerData(self, printStatus=None, printFile=None):
 		reload = False
 		selectedSpools = self.loadSelectedSpools()
 		for gcodeToolIndex, toolIndex, spoolModel in self._getSpoolAccountingTargets(selectedSpools):
@@ -767,7 +764,7 @@ class SpoolmanagerPlugin(
 			previouslyCommittedLength = float(self._committedPrintFilamentLengths.get(gcodeToolIndex, 0.0) or 0.0)
 			if printStatus == "success":
 				try:
-					self._readingFilamentMetaData()
+					self._readingFilamentMetaData(printFile)
 					if gcodeToolIndex < len(self.metaDataFilamentLengths):
 						metadataTotalLength = self.metaDataFilamentLengths[gcodeToolIndex]
 						if (
@@ -782,7 +779,7 @@ class SpoolmanagerPlugin(
 
 			calculationSource = "odometer"
 			currentExtrusionLength = currentExtrusionLengthOdometer
-			if printStatus == "success" and currentExtrusionLengthMeta is not None and currentExtrusionLengthMeta > 0:
+			if printStatus == "success" and currentExtrusionLengthMeta is not None and currentExtrusionLengthMeta >= 0:
 				calculationSource = "metadata"
 				currentExtrusionLength = currentExtrusionLengthMeta
 
@@ -849,7 +846,7 @@ class SpoolmanagerPlugin(
 
 	#### print job finished
 	def _on_printJobFinished(self, printStatus, payload):
-		self.commitOdometerData(printStatus)
+		self.commitOdometerData(printStatus, printFile=payload)
 
 		if (self._mmuRoutingSession.active and not self._mmuRoutingSession.dry_run):
 			if (printStatus == "success"):
