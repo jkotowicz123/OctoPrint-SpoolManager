@@ -74,6 +74,44 @@
         <div data-bind="visible: currentPrinterNumber() != null">
             <div>
                 <b>Sheets</b>
+                <button class="btn btn-mini pull-right"
+                        data-bind="click: sidebarToggleSheetPicker, disable: sidebarSheetAssignmentBusy">
+                    <span data-bind="text: sidebarSheetPickerOpen() ? 'Zamknij listę' : 'Przypisz płyty'"></span>
+                </button>
+            </div>
+
+            <div data-bind="visible: sidebarSheetPickerOpen" style="clear:both; margin-top:7px; padding:7px; border:1px solid #ddd; border-radius:4px;">
+                <input type="search" class="input-block-level" style="margin-bottom:5px;"
+                       placeholder="Szukaj ID, typu lub opisu"
+                       data-bind="value: sidebarSheetPickerQuery, valueUpdate: 'input', disable: sidebarSheetAssignmentBusy">
+                <div style="max-height:190px; overflow-y:auto; border-top:1px solid #eee;">
+                    <!-- ko if: sidebarAvailableSheets().length == 0 -->
+                    <div style="padding:6px 0;"><i>Brak wolnych płyt</i></div>
+                    <!-- /ko -->
+                    <div data-bind="foreach: sidebarAvailableSheets">
+                        <div style="display:flex; align-items:center; gap:5px; padding:4px 0; border-bottom:1px solid #eee;">
+                            <input type="checkbox"
+                                   data-bind="checked: $root.sidebarSelectedSheetIds, checkedValue: databaseId(), disable: $root.sidebarSheetAssignmentBusy">
+                            <span style="min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                  data-bind="attr: {title: note}">
+                                <b>#<span data-bind="text: databaseId"></span></b>
+                                <span data-bind="text: sheetTypeName() || 'Unknown'"></span>
+                            </span>
+                            <button class="btn btn-mini" title="Ustaw jako płytę na stole"
+                                    data-bind="click: $root.sidebarSetAvailableSheetCurrent.bind($data, $data), disable: $root.sidebarSheetAssignmentBusy">Stół</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:4px; margin-top:6px; align-items:center;">
+                    <button class="btn btn-mini btn-primary" style="flex:1;"
+                            data-bind="click: sidebarAppendSelectedSheets, disable: sidebarSheetAssignmentBusy() || sidebarSelectedSheetCount() == 0">
+                        Do magazynka (<span data-bind="text: sidebarSelectedSheetCount"></span>)
+                    </button>
+                    <button class="btn btn-mini" title="Wyczyść zaznaczenie"
+                            data-bind="click: sidebarClearSheetSelection, disable: sidebarSheetAssignmentBusy">×</button>
+                </div>
+                <div style="margin-top:4px; font-size:11px; line-height:1.25;"
+                     data-bind="visible: sidebarSheetAssignmentStatus, text: sidebarSheetAssignmentStatus"></div>
             </div>
 
             <div style="margin-top: 6px;">

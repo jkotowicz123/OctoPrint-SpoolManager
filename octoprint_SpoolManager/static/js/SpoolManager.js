@@ -142,6 +142,38 @@ $(function() {
         self.sheetTypes = ko.observableArray([]);
         self.sheetFilterQuery = ko.observable("");
         self.currentSheetEditItem = ko.observable(null);
+        self.sidebarSheetPickerOpen = ko.observable(false);
+        self.sidebarSheetPickerQuery = ko.observable("");
+        self.sidebarSelectedSheetIds = ko.observableArray([]);
+        self.sidebarSheetAssignmentBusy = ko.observable(false);
+        self.sidebarSheetAssignmentStatus = ko.observable("");
+
+        self.sidebarAvailableSheets = ko.pureComputed(function(){
+            var query = (self.sidebarSheetPickerQuery() || "").trim().toLowerCase();
+            var sheets = ko.utils.arrayFilter(self.sheets(), function(sheet){
+                var assignedPrinter = sheet.printerNumber();
+                if (assignedPrinter != null && String(assignedPrinter).trim() !== "") return false;
+                if (!query) return true;
+                var searchable = [
+                    sheet.databaseId(),
+                    sheet.nid(),
+                    sheet.sheetTypeName(),
+                    sheet.note()
+                ].join(" ").toLowerCase();
+                return searchable.indexOf(query) !== -1;
+            });
+            return sheets.sort(function(a, b){
+                var at = (a.sheetTypeName() || "").toLowerCase();
+                var bt = (b.sheetTypeName() || "").toLowerCase();
+                if (at < bt) return -1;
+                if (at > bt) return 1;
+                return (parseInt(a.databaseId()) || 0) - (parseInt(b.databaseId()) || 0);
+            });
+        });
+
+        self.sidebarSelectedSheetCount = ko.pureComputed(function(){
+            return self.sidebarSelectedSheetIds().length;
+        });
 
         self.consumables = ko.observableArray([]);
         self.consumableFilterQuery = ko.observable("");
@@ -907,6 +939,81 @@ $(function() {
                     return self._createSheetItem(sheetData);
                 }));
             });
+        }
+
+        self.sidebarToggleSheetPicker = function(){
+            var next = !self.sidebarSheetPickerOpen();
+            self.sidebarSheetPickerOpen(next);
+            self.sidebarSheetAssignmentStatus("");
+            if (next) self.loadSheets();
+        }
+
+        self.sidebarClearSheetSelection = function(){
+            self.sidebarSelectedSheetIds([]);
+            self.sidebarSheetPickerQuery("");
+            self.sidebarSheetAssignmentStatus("");
+        }
+
+        self._sidebarSheetRequestError = function(xhr){
+            var response = xhr && xhr.responseJSON;
+            return (response && (response.error || response.message)) ||
+                (xhr && xhr.status ? ("HTTP " + xhr.status) : "Nie udało się przypisać płyty.");
+        }
+
+        self.sidebarSetAvailableSheetCurrent = function(sheetItem){
+            if (self.sidebarSheetAssignmentBusy() || self.currentPrinterNumber() == null || !sheetItem || sheetItem.databaseId() == null){
+                return;
+            }
+            var current = self.sidebarCurrentSheet();
+            if (current && !confirm("Zastąpić płytę na stole drukarki #" + self.currentPrinterNumber() + " płytą " + sheetItem.databaseId() + "?")){
+                return;
+            }
+            self.sidebarSheetAssignmentBusy(true);
+            self.sidebarSheetAssignmentStatus("Przypisywanie płyty…");
+            self.apiClient.callAssignSheetToPrinter(self.currentPrinterNumber(), sheetItem.databaseId(), function(){
+                self.sidebarSheetAssignmentStatus("Płyta " + sheetItem.databaseId() + " jest na stole.");
+                self.sidebarSheetAssignmentBusy(false);
+                self.sidebarSelectedSheetIds.remove(sheetItem.databaseId());
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            }, function(xhr){
+                self.sidebarSheetAssignmentStatus(self._sidebarSheetRequestError(xhr));
+                self.sidebarSheetAssignmentBusy(false);
+            });
+        }
+
+        self.sidebarAppendSelectedSheets = function(){
+            if (self.sidebarSheetAssignmentBusy() || self.currentPrinterNumber() == null) return;
+            var ids = self.sidebarSelectedSheetIds().slice();
+            if (ids.length === 0) return;
+
+            self.sidebarSheetAssignmentBusy(true);
+            self.sidebarSheetAssignmentStatus("Dodawanie 0/" + ids.length + "…");
+            var completed = 0;
+
+            var finish = function(message){
+                self.sidebarSheetAssignmentBusy(false);
+                self.sidebarSheetAssignmentStatus(message);
+                self.loadSheetsStateForSidebar();
+                self.loadSheets();
+            };
+
+            var appendNext = function(){
+                if (completed >= ids.length){
+                    finish("Dodano " + completed + " płyt do magazynka.");
+                    return;
+                }
+                var id = ids[completed];
+                self.apiClient.callAppendSheetToMagazine(self.currentPrinterNumber(), id, function(){
+                    completed += 1;
+                    self.sidebarSelectedSheetIds.remove(id);
+                    self.sidebarSheetAssignmentStatus("Dodawanie " + completed + "/" + ids.length + "…");
+                    appendNext();
+                }, function(xhr){
+                    finish("Dodano " + completed + "/" + ids.length + ". " + self._sidebarSheetRequestError(xhr));
+                });
+            };
+            appendNext();
         }
 
         self.sidebarSetSheetFromScan = function(){

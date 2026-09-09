@@ -295,7 +295,7 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
         });
     }
 
-    this.callAssignSheetToPrinter = function (printerNumber, databaseId, responseHandler){
+    this.callAssignSheetToPrinter = function (printerNumber, databaseId, responseHandler, errorHandler){
         var payload = {
             printerNumber: printerNumber,
             databaseId: databaseId
@@ -306,12 +306,14 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
             contentType: "application/json; charset=UTF-8",
             data: JSON.stringify(payload),
             type: "PUT"
-        }).always(function( data ){
-            responseHandler(data);
+        }).done(function(data){
+            if (responseHandler) responseHandler(data);
+        }).fail(function(xhr){
+            if (errorHandler) errorHandler(xhr);
         });
     }
 
-    this.callAppendSheetToMagazine = function (printerNumber, databaseId, responseHandler){
+    this.callAppendSheetToMagazine = function (printerNumber, databaseId, responseHandler, errorHandler){
         var payload = {
             printerNumber: printerNumber,
             databaseId: databaseId
@@ -322,8 +324,10 @@ function SpoolManagerAPIClient(pluginId, baseUrl) {
             contentType: "application/json; charset=UTF-8",
             data: JSON.stringify(payload),
             type: "PUT"
-        }).always(function( data ){
-            responseHandler(data);
+        }).done(function(data){
+            if (responseHandler) responseHandler(data);
+        }).fail(function(xhr){
+            if (errorHandler) errorHandler(xhr);
         });
     }
 
