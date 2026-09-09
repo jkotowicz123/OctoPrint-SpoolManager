@@ -115,6 +115,7 @@
             </div>
 
             <div style="margin-top: 6px;">
+                <div><b>Płyta na blacie</b></div>
                 <!-- ko if: sidebarCurrentSheet -->
                 <div data-bind="with: sidebarCurrentSheet">
                     <div>
@@ -123,12 +124,12 @@
                         <span data-bind="visible: databaseId() != null"> (<span data-bind="text: databaseId"></span>)</span>
                     </div>
                     <div class="btn-group" style="margin-top: 2px;">
-                        <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Unassign</button>
+                        <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Odepnij</button>
                     </div>
                 </div>
                 <!-- /ko -->
                 <!-- ko ifnot: sidebarCurrentSheet -->
-                <div><i>None</i></div>
+                <div><i>Brak</i></div>
                 <!-- /ko -->
             </div>
 
