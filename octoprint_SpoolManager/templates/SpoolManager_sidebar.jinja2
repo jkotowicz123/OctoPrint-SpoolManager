@@ -132,20 +132,24 @@
                 <!-- /ko -->
             </div>
 
-            <div style="margin-top: 6px;" data-bind="visible: pluginSettings.showSheetMagazineInSidebar">
-                <div><b>Magazine</b></div>
+            <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #ddd;">
+                <div><b>Magazynek (<span data-bind="text: sidebarMagazineSheets().length"></span>)</b></div>
                 <!-- ko if: sidebarMagazineSheets().length == 0 -->
-                <div><i>Empty</i></div>
+                <div><i>Pusty</i></div>
                 <!-- /ko -->
                 <div data-bind="foreach: sidebarMagazineSheets">
-                    <div style="margin-top: 2px;">
-                        <span data-bind="text: magazinePosition"></span>.
-                        <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
-                        <span data-bind="visible: !sheetTypeName()">Unknown</span>
-                        <span data-bind="visible: databaseId() != null"> (<span data-bind="text: databaseId"></span>)</span>
-                        <div class="btn-group" style="margin-top: 2px;">
-                            <button class="btn btn-mini" data-bind="click: $root.sidebarSetSheetFromMagazine.bind($data, $data)">Set</button>
-                            <button class="btn btn-mini" data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Remove</button>
+                    <div style="display:flex; gap:5px; align-items:center; margin-top:4px;">
+                        <span style="min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            <b><span data-bind="text: magazinePosition"></span>.</b>
+                            <span data-bind="visible: sheetTypeName, text: sheetTypeName"></span>
+                            <span data-bind="visible: !sheetTypeName()">Nieznana</span>
+                            <span data-bind="visible: databaseId() != null"> (#<span data-bind="text: databaseId"></span>)</span>
+                        </span>
+                        <div class="btn-group">
+                            <button class="btn btn-mini" title="Przenieś płytę z magazynka na stół"
+                                    data-bind="click: $root.sidebarSetSheetFromMagazine.bind($data, $data)">Na stół</button>
+                            <button class="btn btn-mini" title="Usuń przypisanie płyty do drukarki"
+                                    data-bind="click: $root.sidebarUnassignSheet.bind($data, $data)">Odepnij</button>
                         </div>
                     </div>
                 </div>
